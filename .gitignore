@@ -1,0 +1,14 @@
+# Xcode build output (xcodebuild -derivedDataPath build), including downloaded Swift packages
+PlaceLock/build/
+DerivedData/
+
+# Per-user Xcode state
+xcuserdata/
+*.xcuserstate
+
+# Swift Package Manager
+.build/
+.swiftpm/
+
+# macOS
+.DS_Store
