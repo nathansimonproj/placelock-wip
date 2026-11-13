@@ -1,79 +1,52 @@
 import FamilyControls
 import SwiftUI
 
-/// The rules: which apps are blocked, and the allowlist of places where they unblock on their own.
+/// Where you set things up once: which apps are blocked, and the places where they unblock.
 struct RulesView: View {
     @EnvironmentObject private var model: AppModel
     @ObservedObject private var sync = SyncEngine.shared
     @Binding var placeSheet: PlaceSheet?
     @Binding var showPicker: Bool
+    @State private var showInfo = false
 
     var body: some View {
         NavigationStack {
             List {
                 if model.inSetupWindow { setupWindow }
                 blockedApps
-                allowlist
-                if sync.isEnabled { backup }
+                places
+                if sync.isAvailable || DebugView.isAvailable { settings }
             }
             .navigationTitle("Rules")
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("How the 24-hour wait works", systemImage: "info.circle") { showInfo = true }
+                }
+            }
+            .sheet(isPresented: $showInfo) { WaitInfoSheet() }
         }
-    }
-
-    // MARK: Backup
-
-    private var backup: some View {
-        Section {
-            Label(backupText, systemImage: backupSymbol)
-                .foregroundStyle(backupIsProblem ? .orange : .secondary)
-        } header: {
-            Text("Backup")
-        } footer: {
-            Text("Places and unlock history are backed up to your account. Blocked apps stay on this phone.")
-        }
-    }
-
-    private var backupText: String {
-        let pending = sync.pendingCount > 0 ? " · \(sync.pendingCount) waiting" : ""
-        switch sync.status {
-        case .off: return "Off"
-        case .idle, .syncing: return "Backing up…" + pending
-        case .synced(let date): return "Backed up \(date.formatted(.relative(presentation: .named)))" + pending
-        case .failed(let reason): return "Not backed up: \(reason)" + pending
-        }
-    }
-
-    private var backupSymbol: String {
-        switch sync.status {
-        case .failed: "exclamationmark.icloud"
-        case .synced: "checkmark.icloud"
-        default: "icloud"
-        }
-    }
-
-    private var backupIsProblem: Bool {
-        if case .failed = sync.status { true } else { false }
     }
 
     // MARK: Setup window
 
     @State private var confirmFinish = false
 
+    /// One slim row while the first 24 h are open.
     private var setupWindow: some View {
         Section {
-            VStack(alignment: .leading, spacing: 6) {
-                Label("Setup window · \(model.setupEndsAt.shortTimeLeft) left", systemImage: "hourglass")
-                    .font(.headline).foregroundStyle(.indigo)
-                Text("Changes apply right away for now. After setup, new places and bigger areas take 24 hours to start working.")
-                    .font(.footnote).foregroundStyle(.secondary)
+            HStack {
+                Label("Setup · \(model.setupEndsAt.shortTimeLeft) left", systemImage: "hourglass")
+                    .foregroundStyle(.secondary)
+                Spacer()
+                Button("Finish") { confirmFinish = true }
+                    .confirmationDialog("Finish setup?", isPresented: $confirmFinish, titleVisibility: .visible) {
+                        Button("Finish setup") { model.finishSetup() }
+                    } message: {
+                        Text("From now on, new places and bigger areas take 24 hours to start working. This can't be undone.")
+                    }
             }
-            .padding(.vertical, 4)
-            Button("Finish setup now", systemImage: "checkmark.seal") { confirmFinish = true }
-                .confirmationDialog("Finish setup?", isPresented: $confirmFinish, titleVisibility: .visible) {
-                    Button("Finish setup") { model.finishSetup() }
-                } message: {
-                    Text("From now on, new places and bigger areas take 24 hours to start working. This can't be undone.")
-                }
+        } footer: {
+            Text("Changes apply right away until setup ends.")
         }
     }
 
@@ -112,37 +85,35 @@ struct RulesView: View {
             }
 
             Button(model.blockList.isEmpty ? "Choose apps to block" : "Add or remove apps",
-                   systemImage: "plus.circle.fill") { showPicker = true }
+                   systemImage: "plus") { showPicker = true }
                 .disabled(model.screenTimeAccess != .approved)
         } header: {
             Text("Blocked apps")
         } footer: {
-            Text(model.inSetupWindow
-                 ? "Blocked everywhere except the places below. Swipe left to remove one."
-                 : "Blocked everywhere except the places below. Removing an app takes 24 hours, so you can't unblock one on a whim.")
+            Text("Blocked everywhere except your places. Swipe left to remove one.")
         }
     }
 
-    // MARK: Allowlist
+    // MARK: Places
 
-    private var allowlist: some View {
+    private var places: some View {
         Section {
             ForEach(model.places) { place in
                 Button { placeSheet = .edit(place) } label: {
                     PlaceRow(place: place, isHere: place.id == model.activePlace?.id)
                         .contentShape(Rectangle())
                 }
-                .buttonStyle(.plain) // keep row text black/gray instead of tinted blue
+                .buttonStyle(.plain) // keep row text black/gray instead of tinted
             }
             .onDelete(perform: model.deletePlaces)
 
             ForEach(model.placeSlots, id: \.self) { slot in
                 Button { placeSheet = .fill(slot: slot) } label: {
                     HStack(spacing: 12) {
-                        PlaceIcon(symbol: Place.symbol(for: slot), tint: .orange)
+                        PlaceIcon(symbol: Place.symbol(for: slot), isHere: false)
                         VStack(alignment: .leading, spacing: 2) {
                             Text(slot).foregroundStyle(.primary)
-                            Text("Set location").font(.footnote).foregroundStyle(.orange)
+                            Text("Set location").font(.footnote).foregroundStyle(.secondary)
                         }
                         Spacer()
                         Image(systemName: "chevron.right").font(.footnote.weight(.semibold)).foregroundStyle(.tertiary)
@@ -153,16 +124,65 @@ struct RulesView: View {
             }
             .onDelete(perform: model.deleteSlots)
 
-            Button("Add place", systemImage: "plus.circle.fill") { placeSheet = .add }
+            Button("Add place", systemImage: "plus") { placeSheet = .add }
                 .disabled(model.places.count >= GeofenceMonitor.maxPlaces)
         } header: {
-            Text("Allowlist")
+            Text("Places")
         } footer: {
-            Text(model.inSetupWindow
-                 ? "Apps unblock on their own while you're at one of these and lock again when you leave. Tap a place to edit it."
-                 : "Apps unblock on their own while you're at one of these. New places and bigger areas take 24 hours to start working, so you can't add one on the spot."
-            )
+            Text("Apps unblock while you're at one of these.")
         }
+    }
+
+    // MARK: Settings
+
+    private var settings: some View {
+        Section("Settings") {
+            if sync.isAvailable {
+                NavigationLink { BackupView() } label: {
+                    LabeledContent {
+                        Text(BackupView.statusText(sync))
+                            .foregroundStyle(BackupView.isProblem(sync) ? Theme.waiting : .secondary)
+                            .lineLimit(1)
+                    } label: {
+                        Label("Backup", systemImage: "icloud")
+                    }
+                }
+            }
+            if DebugView.isAvailable {
+                NavigationLink { DebugView() } label: {
+                    Label("Debug", systemImage: "ladybug")
+                }
+            }
+        }
+    }
+}
+
+/// The 24-hour rules in one place, instead of repeated in every footer.
+private struct WaitInfoSheet: View {
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            VStack(alignment: .leading, spacing: Theme.medium) {
+                Text("Some changes wait 24 hours, so you can't unblock apps on a whim.")
+                    .font(.title3.weight(.semibold))
+                VStack(alignment: .leading, spacing: 12) {
+                    Label("Removing a blocked app", systemImage: "app.badge")
+                    Label("Adding a new place", systemImage: "mappin")
+                    Label("Making a place's area bigger", systemImage: "arrow.up.left.and.arrow.down.right")
+                }
+                .foregroundStyle(.secondary)
+                Text("During your first 24 hours (setup), every change applies right away.")
+                    .foregroundStyle(.secondary)
+                Spacer()
+            }
+            .padding(Theme.large)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } }
+            }
+        }
+        .presentationDetents([.medium])
     }
 }
 
@@ -172,7 +192,7 @@ private struct PlaceRow: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            PlaceIcon(symbol: place.symbol, tint: isHere ? .green : place.isActive() ? .accentColor : .gray)
+            PlaceIcon(symbol: place.symbol, isHere: isHere)
             VStack(alignment: .leading, spacing: 2) {
                 Text(place.name).foregroundStyle(.primary)
                 Text([place.address, "\(Int(place.radius)) m"].compactMap { $0 }.joined(separator: " · "))
@@ -180,11 +200,12 @@ private struct PlaceRow: View {
             }
             Spacer()
             if let starts = place.activeAfter, !place.isActive() {
-                Badge(text: "Starts in \(starts.shortTimeLeft)", symbol: "clock", tint: .orange)
+                Countdown(text: "Starts in \(starts.shortTimeLeft)")
             } else if isHere {
-                Badge(text: "Here now", symbol: nil, tint: .green)
+                Circle().fill(.tint).frame(width: 8, height: 8)
+                    .accessibilityLabel("Here now")
             } else if let change = place.pendingChange {
-                Badge(text: "New area in \(change.appliesAt.shortTimeLeft)", symbol: "clock", tint: .orange)
+                Countdown(text: "New area in \(change.appliesAt.shortTimeLeft)")
             }
             Image(systemName: "chevron.right").font(.footnote.weight(.semibold)).foregroundStyle(.tertiary)
         }
@@ -203,7 +224,7 @@ private struct BlockedRow<Content: View>: View {
             content
             Spacer()
             if let removeAt {
-                Badge(text: "Unblocks in \(removeAt.shortTimeLeft)", symbol: "clock", tint: .orange)
+                Countdown(text: "Unblocks in \(removeAt.shortTimeLeft)")
             }
         }
         .swipeActions(edge: .trailing) {
@@ -212,38 +233,33 @@ private struct BlockedRow<Content: View>: View {
                 // action would animate it away first.
                 Button("Remove", systemImage: "minus.circle", action: remove).tint(.red)
             } else {
-                Button("Keep blocked", systemImage: "lock.fill", action: keep).tint(.blue)
+                Button("Keep blocked", systemImage: "lock.fill", action: keep).tint(.accentColor)
             }
         }
     }
 }
 
-private struct Badge: View {
+/// A 24 h wait. The only orange in the app.
+private struct Countdown: View {
     let text: String
-    let symbol: String?
-    let tint: Color
 
     var body: some View {
-        HStack(spacing: 3) {
-            if let symbol { Image(systemName: symbol) }
-            Text(text)
-        }
-        .font(.caption.bold()).foregroundStyle(tint)
-        .padding(.horizontal, 8).padding(.vertical, 4)
-        .background(tint.opacity(0.15), in: Capsule())
-        .fixedSize()
+        Label(text, systemImage: "clock")
+            .font(.caption.weight(.semibold))
+            .foregroundStyle(Theme.waiting)
+            .fixedSize()
     }
 }
 
+/// A place's symbol: plain, in the accent while you're there.
 private struct PlaceIcon: View {
     let symbol: String
-    let tint: Color
+    let isHere: Bool
 
     var body: some View {
         Image(systemName: symbol)
-            .font(.system(size: 16, weight: .semibold))
-            .foregroundStyle(.white)
-            .frame(width: 34, height: 34)
-            .background(tint, in: RoundedRectangle(cornerRadius: 9))
+            .font(.system(size: 17, weight: .medium))
+            .foregroundStyle(isHere ? AnyShapeStyle(.tint) : AnyShapeStyle(.secondary))
+            .frame(width: 28)
     }
 }

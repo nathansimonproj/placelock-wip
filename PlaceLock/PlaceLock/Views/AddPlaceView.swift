@@ -155,8 +155,8 @@ struct AddPlaceView: View {
                 UserAnnotation()
                 if let center {
                     MapCircle(center: center, radius: radius)
-                        .foregroundStyle(.blue.opacity(0.2))
-                        .stroke(.blue, lineWidth: 2)
+                        .foregroundStyle(Color.accentColor.opacity(0.2))
+                        .stroke(Color.accentColor, lineWidth: 2)
                 }
             }
             .simultaneousGesture(TapGesture().onEnded { dismissKeyboard() })
@@ -165,7 +165,7 @@ struct AddPlaceView: View {
                 center = context.region.center
             }
             Image(systemName: "mappin")
-                .font(.title).foregroundStyle(.red)
+                .font(.title).foregroundStyle(.tint)
                 .offset(y: -14)
                 .allowsHitTesting(false)
         }

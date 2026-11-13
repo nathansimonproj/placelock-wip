@@ -43,15 +43,28 @@ struct RootView: View {
             case .edit(let place): AddPlaceView(editing: place)
             }
         }
-        #if SCREEN_TIME
-        .familyActivityPicker(isPresented: $showPicker, selection: $model.blockList.selection)
-        #else
-        .sheet(isPresented: $showPicker) { SimulatedAppPicker() }
-        #endif
-        .task { model.requestNotificationPermission() }
+        .blockedAppPicker(isPresented: $showPicker, model: model)
+        // First-run setup. It asks for location, Screen Time and notifications with the reason on screen.
+        .fullScreenCover(isPresented: .init(get: { !model.hasOnboarded }, set: { _ in })) {
+            OnboardingView()
+        }
         #if DEBUG
         // Launch with `-sheet add` to open Add place directly (for screenshots).
         .onAppear { if UserDefaults.standard.string(forKey: "sheet") == "add" { placeSheet = .add } }
+        #endif
+    }
+}
+
+extension View {
+    /// Choosing apps to block: Apple's picker in Screen Time builds, the stand-in list otherwise.
+    @ViewBuilder
+    func blockedAppPicker(isPresented: Binding<Bool>, model: AppModel) -> some View {
+        #if SCREEN_TIME
+        familyActivityPicker(isPresented: isPresented,
+                             selection: Binding(get: { model.blockList.selection },
+                                                set: { model.blockList.selection = $0 }))
+        #else
+        sheet(isPresented: isPresented) { SimulatedAppPicker().environmentObject(model) }
         #endif
     }
 }

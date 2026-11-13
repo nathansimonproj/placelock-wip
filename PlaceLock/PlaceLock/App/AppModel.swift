@@ -17,7 +17,11 @@ final class AppModel: ObservableObject {
             save(places, key: Keys.places)
             shareAllowedPlaces()
             if !applyingRemote { SyncEngine.shared.placesChanged(old: oldValue, new: places) }
-            Task { await GeofenceMonitor.shared.sync(places); await reconcile() }
+            Task {
+                // Before the location prompt is answered, startUp syncs them once it is.
+                if location.authorization != .notDetermined { await GeofenceMonitor.shared.sync(places) }
+                await reconcile()
+            }
         }
     }
     /// True while taking places from the server, so they aren't queued to upload again.
@@ -40,7 +44,17 @@ final class AppModel: ObservableObject {
             if session == nil { ShieldManager.lock(blockList) } // newly picked apps get blocked right away
         }
     }
-    @Published private(set) var session: UnlockSession? { didSet { save(session, key: Keys.session) } }
+    @Published private(set) var session: UnlockSession? {
+        didSet {
+            save(session, key: Keys.session)
+            // A visit ended (left, locked by hand, or moved to another place): log it for Home's stats.
+            if let old = oldValue, old.id != session?.id {
+                visits = Visit.trimmed(visits + [Visit(placeID: old.placeID, start: old.visitStartedAt, end: .now)])
+            }
+        }
+    }
+    /// Finished unlock visits from the last two weeks, oldest first. On this phone only.
+    @Published private(set) var visits: [Visit] = [] { didSet { save(visits, key: Keys.visits) } }
     /// Places you're at but chose to stay locked at ("Lock until I leave").
     /// A place leaves this set once iOS sees you leave it.
     @Published private(set) var pausedPlaceIDs: Set<UUID> = [] { didSet { save(pausedPlaceIDs, key: Keys.paused) } }
@@ -89,13 +103,36 @@ final class AppModel: ObservableObject {
     private enum Keys {
         static let places = "places", session = "session", blockList = "blockList", paused = "pausedPlaces"
         static let slots = "placeSlots", seeded = "seededDefaultPlaces", setupEnds = "setupEndsAt"
-        static let screenTime = "screenTimeAccess"
+        static let screenTime = "screenTimeAccess", onboarded = "onboarded", visits = "visits"
     }
 
+    /// First-run setup (`OnboardingView`) is done or skipped.
+    @Published private(set) var hasOnboarded: Bool
+
     private init() {
+        if Storage.defaults.object(forKey: Keys.onboarded) == nil {
+            // First launch with this flag. Installs from before first-run setup existed were set
+            // up by hand: they're the ones that already seeded starter places. Decided only once,
+            // since a new install seeds on its first launch too.
+            hasOnboarded = Storage.defaults.bool(forKey: Keys.seeded)
+            Storage.defaults.set(hasOnboarded, forKey: Keys.onboarded)
+        } else {
+            hasOnboarded = Storage.defaults.bool(forKey: Keys.onboarded)
+        }
         places = load([Place].self, key: Keys.places) ?? []
         blockList = load(BlockList.self, key: Keys.blockList) ?? BlockList()
         session = load(UnlockSession.self, key: Keys.session)
+        visits = load([Visit].self, key: Keys.visits) ?? []
+        #if DEBUG
+        // Launch with `-demoHistory YES` to fill today with two sample visits (for screenshots).
+        if UserDefaults.standard.bool(forKey: "demoHistory"), visits.isEmpty, places.count >= 2 {
+            let today = Calendar.current.startOfDay(for: .now)
+            visits = [
+                Visit(placeID: places[0].id, start: today.addingTimeInterval(7.5 * 3600), end: today.addingTimeInterval(8.75 * 3600)),
+                Visit(placeID: places[1].id, start: today.addingTimeInterval(12.2 * 3600), end: today.addingTimeInterval(13.1 * 3600)),
+            ].filter { $0.end < .now }
+        }
+        #endif
         pausedPlaceIDs = load(Set<UUID>.self, key: Keys.paused) ?? []
         placeSlots = load([String].self, key: Keys.slots) ?? []
         if let saved = load(Date.self, key: Keys.setupEnds) {
@@ -126,7 +163,13 @@ final class AppModel: ObservableObject {
         let have = Set(places.map { $0.name.lowercased() })
         let newPlaces = DefaultPlaces.places.filter { !have.contains($0.name.lowercased()) }
         let newSlots = DefaultPlaces.slots.filter { !have.contains($0.lowercased()) && !placeSlots.contains($0) }
-        places += newPlaces // property observers don't run in init, so save explicitly
+        // Observers do run here (this is a method, even though init calls it). Seeded places
+        // aren't the user's edits, so don't queue them for sync: the first sync uploads them,
+        // or drops them when the account already has places with these names (a reinstall
+        // that kept its Keychain sign-in), instead of making duplicates.
+        applyingRemote = true
+        places += newPlaces
+        applyingRemote = false
         placeSlots += newSlots
         save(places, key: Keys.places)
         save(placeSlots, key: Keys.slots)
@@ -172,10 +215,25 @@ final class AppModel: ObservableObject {
     /// Runs on every launch, including background relaunches for geofence events.
     func startUp() async {
         Log.app.info("Launch: \(self.places.count) places, session=\(self.activePlace?.name ?? "none", privacy: .public)")
-        await GeofenceMonitor.shared.start { await AppModel.shared.reconcile() }
-        await GeofenceMonitor.shared.sync(places)
+        if location.authorization == .notDetermined {
+            // Watching places makes iOS show the location prompt right away. On a new install,
+            // wait until first-run setup has explained why and the user has answered it.
+            Log.app.info("Waiting for the location prompt before watching places")
+            Task {
+                await location.waitForDecision()
+                await startWatchingPlaces()
+                await reconcile()
+            }
+        } else {
+            await startWatchingPlaces()
+        }
         await reconcile()
         SyncEngine.shared.start() // after the lock state is settled; sync never gates blocking
+    }
+
+    private func startWatchingPlaces() async {
+        await GeofenceMonitor.shared.start { await AppModel.shared.reconcile() }
+        await GeofenceMonitor.shared.sync(places)
     }
 
     // MARK: Lock state
@@ -424,8 +482,16 @@ final class AppModel: ObservableObject {
 
     // MARK: Notifications
 
-    func requestNotificationPermission() {
-        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { _, _ in }
+    /// Asked during first-run setup, where the reason is on screen. True if allowed.
+    @discardableResult
+    func requestNotificationPermission() async -> Bool {
+        (try? await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound])) ?? false
+    }
+
+    func finishOnboarding() {
+        hasOnboarded = true
+        Storage.defaults.set(true, forKey: Keys.onboarded)
+        Log.app.info("First-run setup finished")
     }
 
     private func notify(_ text: String) {

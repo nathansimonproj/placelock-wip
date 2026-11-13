@@ -44,8 +44,10 @@ struct SimulatedAppPicker: View {
 }
 
 /// What opening a blocked app would look like. With real Screen Time this is the system shield.
+/// Same words as the real one (`ShieldConfigurationExtension`).
 struct MockShieldView: View {
     let appName: String
+    @EnvironmentObject private var model: AppModel
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -54,11 +56,11 @@ struct MockShieldView: View {
             Image(systemName: SimulatedApps.symbol(for: appName))
                 .font(.system(size: 56)).foregroundStyle(.secondary)
             Image(systemName: "lock.fill").font(.title).foregroundStyle(.tint)
-            Text("\(appName) is blocked").font(.title2.bold())
-            Text("It unblocks on its own when you're at one of your allowed places.")
+            Text("\(appName) is locked").font(.title2.bold())
+            Text(Brand.opensAt(model.places.filter { $0.isActive() }.map(\.name)))
                 .multilineTextAlignment(.center).foregroundStyle(.secondary)
             Spacer()
-            Button("OK") { dismiss() }
+            Button(Brand.shieldButton) { dismiss() }
                 .buttonStyle(.borderedProminent).controlSize(.large)
             Text("Simulated block screen").font(.caption).foregroundStyle(.tertiary)
         }

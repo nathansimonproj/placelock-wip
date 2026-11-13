@@ -36,6 +36,7 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.nsimon.PlaceLock
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor # Assets.xcassets; Shared/Brand.swift mirrors it
         # project-paid.yml adds SCREEN_TIME here for real Screen Time blocking.
         # Set here (not project-wide) so $(inherited) keeps DEBUG in Debug builds.
         SWIFT_ACTIVE_COMPILATION_CONDITIONS: "$(inherited)"

@@ -34,6 +34,8 @@ final class PlaceSearch: NSObject, ObservableObject {
                 slowTimer = Task { [weak self] in
                     try? await Task.sleep(for: .seconds(Self.slowAfter))
                     guard let self, !Task.isCancelled, self.isSearching else { return }
+                    // Stop the spinner so the screen doesn't look stuck. Late results still show.
+                    self.isSearching = false
                     self.message = "Search is taking a while, so your connection may be slow. You can clear the search and drag the map to drop a pin instead."
                     Log.app.info("Search slow: no response after \(Int(Self.slowAfter))s for \(trimmed, privacy: .public)")
                 }

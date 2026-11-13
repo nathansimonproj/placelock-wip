@@ -36,10 +36,22 @@ final class LocationService: NSObject, ObservableObject, CLLocationManagerDelega
         }
     }
 
+    private var decisionWaiters: [CheckedContinuation<Void, Never>] = []
+
+    /// Returns once the user has answered the location prompt (right away if they already have).
+    func waitForDecision() async {
+        guard authorization == .notDetermined else { return }
+        await withCheckedContinuation { decisionWaiters.append($0) }
+    }
+
     nonisolated func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         let status = manager.authorizationStatus
         Task { @MainActor in
             self.authorization = status
+            if status != .notDetermined {
+                self.decisionWaiters.forEach { $0.resume() }
+                self.decisionWaiters = []
+            }
             // Chain straight into the Always prompt after While Using is granted.
             if status == .authorizedWhenInUse { self.manager.requestAlwaysAuthorization() }
         }
