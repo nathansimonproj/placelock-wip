@@ -113,7 +113,7 @@ struct RulesView: View {
 
             Button(model.blockList.isEmpty ? "Choose apps to block" : "Add or remove apps",
                    systemImage: "plus.circle.fill") { showPicker = true }
-                .disabled(!ShieldManager.isAuthorized)
+                .disabled(model.screenTimeAccess != .approved)
         } header: {
             Text("Blocked apps")
         } footer: {

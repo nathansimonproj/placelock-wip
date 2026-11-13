@@ -6,7 +6,7 @@ options:
 settings:
   base:
     SWIFT_VERSION: "5.0"
-    DEVELOPMENT_TEAM: R6W24T35J6 # free Personal Team -> blocking is simulated. See Roadmap.md to switch.
+    DEVELOPMENT_TEAM: R6W24T35J6 # free Personal Team -> blocking is simulated. project-paid.yml switches it.
     CODE_SIGN_STYLE: Automatic
 packages:
   Supabase:
@@ -20,11 +20,7 @@ targets:
     dependencies:
       - package: Supabase
         product: Supabase
-    # Paid team: uncomment to request the Screen Time (Family Controls) entitlement.
-    # entitlements:
-    #   path: PlaceLock/PlaceLock.entitlements
-    #   properties:
-    #     com.apple.developer.family-controls: true
+    # Real Screen Time blocking (entitlements, App Group, extensions) is in project-paid.yml.
     info:
       path: PlaceLock/Info.plist
       properties:
@@ -40,7 +36,7 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.nsimon.PlaceLock
-        # Paid team: change to "$(inherited) SCREEN_TIME" to use real Screen Time blocking.
+        # project-paid.yml adds SCREEN_TIME here for real Screen Time blocking.
         # Set here (not project-wide) so $(inherited) keeps DEBUG in Debug builds.
         SWIFT_ACTIVE_COMPILATION_CONDITIONS: "$(inherited)"
         TARGETED_DEVICE_FAMILY: "1"

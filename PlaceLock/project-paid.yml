@@ -1,0 +1,72 @@
+# Real Screen Time blocking (paid Apple Developer team). Generate with:
+#   xcodegen generate --spec project-paid.yml
+# Plain `xcodegen generate` builds the free version (simulated blocking) from project.yml.
+#
+# This file includes project.yml and only adds to it. Its values win over project.yml's, and
+# lists (like dependencies) are appended.
+include:
+  - project.yml
+
+settings:
+  base:
+    DEVELOPMENT_TEAM: PAID_TEAM_ID # TODO: your paid team ID (developer.apple.com › Membership details)
+
+targets:
+  PlaceLock:
+    entitlements:
+      path: PlaceLock/PlaceLock.entitlements
+      properties: &screenTimeEntitlements
+        com.apple.developer.family-controls: true
+        com.apple.security.application-groups: [group.com.nsimon.PlaceLock] # SharedStore.appGroup
+    dependencies:
+      - target: PlaceLockShield
+      - target: PlaceLockSessionCap
+    settings:
+      base:
+        SWIFT_ACTIVE_COMPILATION_CONDITIONS: "$(inherited) SCREEN_TIME"
+
+  # The block screen: "Instagram is blocked · Unblocks at Gym, Soccer Field or Home".
+  PlaceLockShield:
+    type: app-extension
+    platform: iOS
+    sources:
+      - Extensions/Shield
+      - PlaceLock/Shared
+    entitlements:
+      path: Extensions/Shield/Shield.entitlements
+      properties: *screenTimeEntitlements
+    info:
+      path: Extensions/Shield/Info.plist
+      properties:
+        CFBundleDisplayName: PlaceLock Shield
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.ManagedSettingsUI.shield-configuration-service
+          NSExtensionPrincipalClass: $(PRODUCT_MODULE_NAME).ShieldConfigurationExtension
+    settings:
+      base: &extensionSettings
+        PRODUCT_BUNDLE_IDENTIFIER: com.nsimon.PlaceLock.Shield
+        SWIFT_ACTIVE_COMPILATION_CONDITIONS: "$(inherited) SCREEN_TIME"
+        TARGETED_DEVICE_FAMILY: "1"
+        GENERATE_INFOPLIST_FILE: NO
+
+  # The 8 h safety cap: blocks apps again if the app hasn't rechecked in time.
+  PlaceLockSessionCap:
+    type: app-extension
+    platform: iOS
+    sources:
+      - Extensions/SessionCap
+      - PlaceLock/Shared
+    entitlements:
+      path: Extensions/SessionCap/SessionCap.entitlements
+      properties: *screenTimeEntitlements
+    info:
+      path: Extensions/SessionCap/Info.plist
+      properties:
+        CFBundleDisplayName: PlaceLock Session Cap
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.deviceactivity.monitor-extension
+          NSExtensionPrincipalClass: $(PRODUCT_MODULE_NAME).SessionCapMonitor
+    settings:
+      base:
+        <<: *extensionSettings
+        PRODUCT_BUNDLE_IDENTIFIER: com.nsimon.PlaceLock.SessionCap

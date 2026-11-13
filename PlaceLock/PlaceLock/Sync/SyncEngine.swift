@@ -57,7 +57,7 @@ final class SyncEngine: ObservableObject {
             client = nil
             status = .off
         }
-        state = UserDefaults.standard.data(forKey: Self.stateKey)
+        state = Storage.defaults.data(forKey: Self.stateKey)
             .flatMap { try? JSONDecoder().decode(State.self, from: $0) } ?? State()
         pendingCount = state.outbox.count
     }
@@ -254,6 +254,6 @@ final class SyncEngine: ObservableObject {
     }
 
     private func persist() {
-        UserDefaults.standard.set(try? JSONEncoder().encode(state), forKey: Self.stateKey)
+        Storage.defaults.set(try? JSONEncoder().encode(state), forKey: Self.stateKey)
     }
 }

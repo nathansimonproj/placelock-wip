@@ -1,3 +1,5 @@
+import CoreLocation
+import MapKit
 import SwiftUI
 
 /// Where you stand right now: locked, or unlocked at one of your places.
@@ -7,15 +9,19 @@ struct HomeView: View {
     @Binding var placeSheet: PlaceSheet?
     var showRules: () -> Void
 
-    @State private var screenTimeApproved = ShieldManager.isAuthorized
     @State private var shieldPreviewApp: String?
     @State private var openedWhileUnlocked: String?
+    /// Live GPS fix while Home is on screen, for the "Estimated location" line. Display only:
+    /// the lock state comes from geofences either way.
+    @State private var here: CLLocation?
+    @State private var address: String?
+    @State private var addressFix: CLLocation?
 
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 20) {
-                    if !screenTimeApproved || !location.hasAlways { setupCard }
+                    if model.screenTimeAccess != .approved || !location.hasAlways { setupCard }
                     statusCard
                     #if DEBUG
                     simulateCard
@@ -27,6 +33,7 @@ struct HomeView: View {
             }
             .background(Color(.systemGroupedBackground))
             .navigationTitle("PlaceLock")
+            .task(id: location.authorization) { await followLocation() }
             .sheet(item: $shieldPreviewApp) { MockShieldView(appName: $0) }
             .alert("\(openedWhileUnlocked ?? "") would open normally",
                    isPresented: .init(get: { openedWhileUnlocked != nil }, set: { if !$0 { openedWhileUnlocked = nil } })) {
@@ -67,6 +74,9 @@ struct HomeView: View {
                     Label("at \(place.name)", systemImage: place.symbol)
                         .font(.headline).foregroundStyle(.green)
                 }
+                Label("Estimated location: \(estimatedLocation)", systemImage: "location.fill")
+                    .font(.footnote.monospacedDigit()).foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
             }
 
             Text(statusDetail)
@@ -90,6 +100,51 @@ struct HomeView: View {
         .padding(24)
         .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 28))
         .animation(.default, value: place?.id)
+    }
+
+    /// e.g. "4700 Brooklyn Ave NE (±8 m)". Coordinates until the address lookup comes back.
+    private var estimatedLocation: String {
+        guard location.authorization == .authorizedAlways || location.authorization == .authorizedWhenInUse else {
+            return "location access off"
+        }
+        guard let here else { return "finding…" }
+        let place = address ?? String(format: "%.5f, %.5f", here.coordinate.latitude, here.coordinate.longitude)
+        return "\(place) (±\(Int(here.horizontalAccuracy.rounded())) m)"
+    }
+
+    /// Follows GPS while Home is on screen. Skips tiny changes so the card doesn't redraw every
+    /// second, and looks up the street address again after moving about 25 m (Apple rate-limits lookups).
+    private func followLocation() async {
+        guard location.authorization == .authorizedAlways || location.authorization == .authorizedWhenInUse else {
+            here = nil
+            return
+        }
+        do {
+            for try await update in CLLocationUpdate.liveUpdates() {
+                guard let fix = update.location, fix.horizontalAccuracy >= 0 else { continue }
+                if let here, fix.distance(from: here) < 3,
+                   abs(fix.horizontalAccuracy - here.horizontalAccuracy) < 3 { continue }
+                here = fix
+                if addressFix.map({ fix.distance(from: $0) >= 25 }) ?? true {
+                    addressFix = fix
+                    address = await Self.streetAddress(at: fix) ?? address
+                }
+            }
+        } catch {
+            Log.app.error("Live location stopped: \(error.localizedDescription, privacy: .public)")
+        }
+    }
+
+    private static func streetAddress(at fix: CLLocation) async -> String? {
+        if #available(iOS 26, *) {
+            guard let request = MKReverseGeocodingRequest(location: fix),
+                  let item = try? await request.mapItems.first else { return nil }
+            return item.address?.shortAddress ?? item.address?.fullAddress
+        } else {
+            guard let mark = try? await CLGeocoder().reverseGeocodeLocation(fix).first else { return nil }
+            let street = [mark.subThoroughfare, mark.thoroughfare].compactMap { $0 }.joined(separator: " ")
+            return street.isEmpty ? mark.name : street
+        }
     }
 
     private var statusDetail: String {
@@ -204,7 +259,8 @@ struct HomeView: View {
 
     private var setupCard: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Label("Finish setup", systemImage: "exclamationmark.circle.fill")
+            Label(model.screenTimeAccess == .turnedOff ? "Blocking is off" : "Finish setup",
+                  systemImage: "exclamationmark.circle.fill")
                 .font(.headline).foregroundStyle(.orange)
             if !location.hasAlways {
                 Text("PlaceLock needs location set to Always so it can unblock apps when you arrive and lock them when you leave.")
@@ -219,15 +275,19 @@ struct HomeView: View {
                 }
                 .buttonStyle(.borderedProminent)
             }
-            if !screenTimeApproved {
-                Button("Allow Screen Time access") {
+            if model.screenTimeAccess == .turnedOff {
+                Text("Screen Time access was turned off in Settings, so PlaceLock can't block apps right now.")
+                    .font(.subheadline).foregroundStyle(.secondary)
+            }
+            if model.screenTimeAccess != .approved {
+                Button(model.screenTimeAccess == .turnedOff ? "Turn Screen Time access back on" : "Allow Screen Time access") {
                     Task {
                         do {
                             try await ShieldManager.requestAuthorization()
                         } catch {
                             model.message = "Screen Time access failed: \(error.localizedDescription)"
                         }
-                        screenTimeApproved = ShieldManager.isAuthorized
+                        await model.reconcile() // re-reads access and puts the block back on
                     }
                 }
                 .buttonStyle(.borderedProminent)

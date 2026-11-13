@@ -15,6 +15,7 @@ final class AppModel: ObservableObject {
     @Published var places: [Place] = [] {
         didSet {
             save(places, key: Keys.places)
+            shareAllowedPlaces()
             if !applyingRemote { SyncEngine.shared.placesChanged(old: oldValue, new: places) }
             Task { await GeofenceMonitor.shared.sync(places); await reconcile() }
         }
@@ -34,6 +35,7 @@ final class AppModel: ObservableObject {
                 return
             }
             save(blockList, key: Keys.blockList)
+            SharedStore.blockedSelection = blockList.selection
             scheduleNextActivation()
             if session == nil { ShieldManager.lock(blockList) } // newly picked apps get blocked right away
         }
@@ -48,6 +50,19 @@ final class AppModel: ObservableObject {
     /// Until this time (first 24 h after install) place changes apply instantly, so initial
     /// setup has no wait. "Finish setup" ends it early.
     @Published private(set) var setupEndsAt: Date = .distantPast { didSet { save(setupEndsAt, key: Keys.setupEnds) } }
+    /// Whether PlaceLock may block apps. Screen Time access can be turned off in Settings at any
+    /// time, which silently removes every block, so this is checked on every reconcile.
+    @Published private(set) var screenTimeAccess: ScreenTimeAccess = .notYet {
+        didSet { Storage.defaults.set(screenTimeAccess.rawValue, forKey: Keys.screenTime) }
+    }
+
+    enum ScreenTimeAccess: String {
+        case approved
+        /// Never granted on this install.
+        case notYet
+        /// Granted before, then turned off in Settings.
+        case turnedOff
+    }
 
     private var activationTimer: Task<Void, Never>?
     private var bypassRemovalHold = false
@@ -74,6 +89,7 @@ final class AppModel: ObservableObject {
     private enum Keys {
         static let places = "places", session = "session", blockList = "blockList", paused = "pausedPlaces"
         static let slots = "placeSlots", seeded = "seededDefaultPlaces", setupEnds = "setupEndsAt"
+        static let screenTime = "screenTimeAccess"
     }
 
     private init() {
@@ -88,13 +104,25 @@ final class AppModel: ObservableObject {
             setupEndsAt = .now.addingTimeInterval(PlaceRules.changeDelay) // first launch (or first with this feature)
             save(setupEndsAt, key: Keys.setupEnds)
         }
+        // A saved "approved" that no longer holds is left for `refreshScreenTimeAccess` to catch,
+        // so it can warn that access was turned off.
+        let savedAccess = Storage.defaults.string(forKey: Keys.screenTime).flatMap(ScreenTimeAccess.init)
+        screenTimeAccess = ShieldManager.isAuthorized ? .approved : (savedAccess ?? .notYet)
         seedDefaultPlacesOnce()
+        // Property observers don't run in init, so share what the extensions need explicitly.
+        shareAllowedPlaces()
+        SharedStore.blockedSelection = blockList.selection
+    }
+
+    /// The block screen lists where apps unblock. Only places that work right now count.
+    private func shareAllowedPlaces() {
+        SharedStore.allowedPlaceNames = places.filter { $0.isActive() }.map(\.name)
     }
 
     /// Adds the starter allowlist (`DefaultPlaces`) one time per install, skipping any name
     /// you already have. Deleting a starter place later doesn't bring it back.
     private func seedDefaultPlacesOnce() {
-        guard !UserDefaults.standard.bool(forKey: Keys.seeded) else { return }
+        guard !Storage.defaults.bool(forKey: Keys.seeded) else { return }
         let have = Set(places.map { $0.name.lowercased() })
         let newPlaces = DefaultPlaces.places.filter { !have.contains($0.name.lowercased()) }
         let newSlots = DefaultPlaces.slots.filter { !have.contains($0.lowercased()) && !placeSlots.contains($0) }
@@ -102,7 +130,7 @@ final class AppModel: ObservableObject {
         placeSlots += newSlots
         save(places, key: Keys.places)
         save(placeSlots, key: Keys.slots)
-        UserDefaults.standard.set(true, forKey: Keys.seeded)
+        Storage.defaults.set(true, forKey: Keys.seeded)
         Log.app.info("Seeded \(newPlaces.count) places, \(newSlots.count) slots")
     }
 
@@ -166,6 +194,7 @@ final class AppModel: ObservableObject {
     }
 
     private func reconcileNow() async {
+        await refreshScreenTimeAccess()
         applyDueChanges()
         defer { scheduleNextActivation() }
 
@@ -195,6 +224,7 @@ final class AppModel: ObservableObject {
             let moved = UnlockSession(placeID: to, startedAt: .now)
             session = moved
             SyncEngine.shared.sessionStarted(moved)
+            startSessionCap()
             Log.app.info("Moved session from \(from.uuidString, privacy: .public) to \(to.uuidString, privacy: .public)")
         case .lock(let reason):
             // LockRules locks a running session for one of three reasons; name it for history.
@@ -222,6 +252,7 @@ final class AppModel: ObservableObject {
         let started = UnlockSession(placeID: place.id, startedAt: .now)
         session = started
         SyncEngine.shared.sessionStarted(started)
+        startSessionCap()
         message = nil
         notify("Arrived at \(place.name), apps unblocked.")
     }
@@ -232,11 +263,43 @@ final class AppModel: ObservableObject {
            place.distanceOutside(here) <= here.horizontalAccuracy {
             Log.app.info("8 h recheck: still at \(place.name, privacy: .public)")
             session = session?.rechecked(at: .now) ?? UnlockSession(placeID: place.id, startedAt: .now)
+            // The SessionCap extension may already have blocked apps again if this ran late.
+            ShieldManager.unlock()
+            startSessionCap()
         } else {
             pausedPlaceIDs.insert(place.id) // don't flip straight back to unlocked from a stale reading
             lockNow(reason: "Couldn't confirm you're still at \(place.name). Apps locked until you leave and come back.",
                     end: .recheckFailed)
         }
+    }
+
+    /// Backstop for the 8 h recheck when the app isn't running: the SessionCap extension
+    /// blocks the apps again if the app hasn't confirmed you're still there in time.
+    private func startSessionCap() {
+        guard let session, let place = activePlace else { return }
+        ShieldManager.startSessionCap(from: session.startedAt, maxSession: LockRules.maxSession, placeName: place.name)
+    }
+
+    // MARK: Screen Time access
+
+    /// Re-reads whether PlaceLock may block apps and warns once if access was turned off.
+    func refreshScreenTimeAccess() async {
+        var approved = ShieldManager.isAuthorized
+        if !approved, screenTimeAccess == .approved {
+            // The status can read as not approved for a moment right after launch. Look again
+            // before calling it turned off.
+            try? await Task.sleep(for: .seconds(1))
+            approved = ShieldManager.isAuthorized
+        }
+        let access: ScreenTimeAccess = approved ? .approved : (screenTimeAccess == .notYet ? .notYet : .turnedOff)
+        guard access != screenTimeAccess else { return }
+        if access == .turnedOff {
+            Log.app.error("Screen Time access was turned off")
+            notify("Screen Time access is off, so PlaceLock can't block apps. Open PlaceLock to turn it back on.")
+        } else {
+            Log.app.info("Screen Time access: \(access.rawValue, privacy: .public)")
+        }
+        screenTimeAccess = access
     }
 
     /// "Lock until I leave": lock now, and don't auto-unlock here again until you've left.
@@ -252,6 +315,7 @@ final class AppModel: ObservableObject {
         let wasUnlocked = session != nil
         Log.app.info("Lock (was unlocked: \(wasUnlocked)): \(reason ?? "manual", privacy: .public)")
         ShieldManager.lock(blockList)
+        ShieldManager.stopSessionCap()
         if let session { SyncEngine.shared.sessionEnded(session, reason: end) }
         session = nil
         if let reason {
@@ -316,7 +380,10 @@ final class AppModel: ObservableObject {
         activationTimer?.cancel()
         // Overdue items count too (wait 0 s): otherwise rescheduling just after something came due
         // would skip it until the next launch.
-        let next = (places.flatMap { [$0.activeAfter, $0.pendingChange?.appliesAt] } + [blockList.pendingRemovals.next])
+        // The 8 h recheck counts too, so an app left open does it on time.
+        let recheckDue = session.map { $0.startedAt.addingTimeInterval(LockRules.maxSession) }
+        let next = (places.flatMap { [$0.activeAfter, $0.pendingChange?.appliesAt] }
+                    + [blockList.pendingRemovals.next, recheckDue])
             .compactMap { $0 }.min()
         guard let next else { return }
         activationTimer = Task { [weak self] in
@@ -388,15 +455,15 @@ final class AppModel: ObservableObject {
             .removePendingNotificationRequests(withIdentifiers: [activationNoticeID(id, change: change)])
     }
 
-    // MARK: Persistence (UserDefaults JSON is plenty for an MVP)
+    // MARK: Persistence (UserDefaults JSON is plenty for an MVP; App Group in Screen Time builds)
 
     private func save<T: Encodable>(_ value: T?, key: String) {
-        guard let value else { UserDefaults.standard.removeObject(forKey: key); return }
-        UserDefaults.standard.set(try? JSONEncoder().encode(value), forKey: key)
+        guard let value else { Storage.defaults.removeObject(forKey: key); return }
+        Storage.defaults.set(try? JSONEncoder().encode(value), forKey: key)
     }
 
     private func load<T: Decodable>(_ type: T.Type, key: String) -> T? {
-        guard let data = UserDefaults.standard.data(forKey: key) else { return nil }
+        guard let data = Storage.defaults.data(forKey: key) else { return nil }
         return try? JSONDecoder().decode(type, from: data)
     }
 }
