@@ -28,23 +28,12 @@ struct HomeView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(background.ignoresSafeArea())
-        // Locked is dark whatever the system setting, so text and glass read on the gradient.
-        .environment(\.colorScheme, unlocked ? .light : .dark)
-        .toolbarColorScheme(unlocked ? .light : .dark, for: .tabBar)
         .overlay(alignment: .bottom) { Toast().padding(.bottom, 150) }
-        .animation(.smooth(duration: 1.2), value: unlocked)
+        // Locked is dark whatever the system setting, so text and glass read on the gradient.
+        .calmBackground()
     }
 
     private var needsFix: Bool { !location.hasAlways || model.screenTimeAccess != .approved }
-
-    private var background: some View {
-        LinearGradient(
-            colors: unlocked
-                ? [Color(red: 0.93, green: 0.96, blue: 0.94), Color(red: 0.80, green: 0.89, blue: 0.84)]
-                : [Color(red: 0.09, green: 0.13, blue: 0.12), Color(red: 0.18, green: 0.29, blue: 0.25)],
-            startPoint: .top, endPoint: .bottom)
-    }
 
     // MARK: Status
 

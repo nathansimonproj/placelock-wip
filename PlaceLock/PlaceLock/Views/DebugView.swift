@@ -23,6 +23,7 @@ struct DebugView: View {
             #endif
             if ShieldManager.isSimulated { testMode }
         }
+        .calmList()
         .navigationTitle("Debug")
         .navigationBarTitleDisplayMode(.inline)
         .sheet(item: $shieldPreviewApp) { MockShieldView(appName: $0) }
@@ -55,6 +56,7 @@ struct DebugView: View {
                  ? "Using real location. Pick a spot to see how the app reacts."
                  : "Real location is ignored until you pick Real location.")
         }
+        .calmRows()
     }
 
     private func spotRow(_ title: String, symbol: String, spot: AppModel.SimulatedSpot?) -> some View {
@@ -87,5 +89,6 @@ struct DebugView: View {
         } footer: {
             Text("Test mode: blocking is simulated until the paid developer account.")
         }
+        .calmRows()
     }
 }

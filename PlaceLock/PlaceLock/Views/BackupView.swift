@@ -17,6 +17,7 @@ struct BackupView: View {
                      ? "Your account was deleted. Turning backup back on starts a new account and backs up this phone's places."
                      : "Places and unlock history are backed up to your account. Blocked apps stay on this phone.")
             }
+            .calmRows()
 
             Section {
                 if sync.status == .turnedOff {
@@ -36,7 +37,9 @@ struct BackupView: View {
                     }
                 }
             }
+            .calmRows()
         }
+        .calmList()
         .navigationTitle("Backup")
         .navigationBarTitleDisplayMode(.inline)
         .alert("Couldn't delete your account",

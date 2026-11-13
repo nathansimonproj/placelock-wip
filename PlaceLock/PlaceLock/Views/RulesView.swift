@@ -17,6 +17,7 @@ struct RulesView: View {
                 places
                 if sync.isAvailable || DebugView.isAvailable { settings }
             }
+            .calmList()
             .navigationTitle("Rules")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -48,6 +49,7 @@ struct RulesView: View {
         } footer: {
             Text("Changes apply right away until setup ends.")
         }
+        .calmRows()
     }
 
     // MARK: Blocked apps
@@ -92,6 +94,7 @@ struct RulesView: View {
         } footer: {
             Text("Blocked everywhere except your places. Swipe left to remove one.")
         }
+        .calmRows()
     }
 
     // MARK: Places
@@ -131,6 +134,7 @@ struct RulesView: View {
         } footer: {
             Text("Apps unblock while you're at one of these.")
         }
+        .calmRows()
     }
 
     // MARK: Settings
@@ -154,6 +158,7 @@ struct RulesView: View {
                 }
             }
         }
+        .calmRows()
     }
 }
 
@@ -177,7 +182,8 @@ private struct WaitInfoSheet: View {
                 Spacer()
             }
             .padding(Theme.large)
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+            .calmBackground()
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } }
             }
