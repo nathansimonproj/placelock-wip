@@ -1,8 +1,9 @@
 import FamilyControls
 import SwiftUI
 
-/// Variant C, "Calm": Home as a quiet room. Locked is a deep evening gradient with a slowly
-/// breathing circle (a nod to one sec's breathing pause); unlocked turns light and airy.
+/// Variant C, "Calm": Home as a quiet room. A deep evening gradient with a slowly breathing
+/// circle (a nod to one sec's breathing pause). It looks the same locked or unlocked; only the
+/// words and the lock icon change.
 /// No streaks or scores: reviewers say those turn focus apps into one more thing to check.
 struct HomeView: View {
     @EnvironmentObject private var model: AppModel
@@ -13,6 +14,14 @@ struct HomeView: View {
     private var unlocked: Bool { model.activePlace != nil }
 
     var body: some View {
+        // Inside a NavigationStack like Rules, with its bar hidden, so iOS's tab bar looks and
+        // behaves the same on both tabs. Without it the tab bar's glass came out pale on Home.
+        NavigationStack {
+            content.toolbar(.hidden, for: .navigationBar)
+        }
+    }
+
+    private var content: some View {
         TimelineView(.periodic(from: .now, by: 60)) { context in
             VStack(spacing: 0) {
                 if needsFix { FixBanner().padding(.horizontal, Theme.medium).padding(.top, Theme.small) }
@@ -96,7 +105,7 @@ struct HomeView: View {
                 Text(unlocked ? "\(model.blockedCount) apps open here" : "\(model.blockedCount) apps resting")
                     .font(.caption).foregroundStyle(.secondary)
             }
-            .opacity(unlocked ? 1 : 0.7)
+            .opacity(0.7)
         }
     }
 
@@ -111,7 +120,7 @@ struct HomeView: View {
                         VStack(alignment: .leading, spacing: 10) {
                             Image(systemName: place.symbol)
                                 .font(.system(size: 18, weight: .medium))
-                                .foregroundStyle(isHere ? AnyShapeStyle(.white) : AnyShapeStyle(.primary))
+                                .foregroundStyle(.primary)
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(place.name).font(.subheadline.weight(.semibold))
                                 Group {
@@ -126,12 +135,12 @@ struct HomeView: View {
                                 .font(.caption)
                             }
                         }
-                        .foregroundStyle(isHere ? AnyShapeStyle(.white) : AnyShapeStyle(.primary))
+                        .foregroundStyle(.primary)
                         .frame(width: 112, alignment: .leading)
                         .padding(14)
                         .background {
                             RoundedRectangle(cornerRadius: 20)
-                                .fill(isHere ? AnyShapeStyle(Color(uiColor: Brand.accent)) : AnyShapeStyle(.ultraThinMaterial))
+                                .fill(.ultraThinMaterial)
                         }
                     }
                     .buttonStyle(.plain)
@@ -179,16 +188,16 @@ private struct BreathingLock: View {
     var body: some View {
         ZStack {
             Circle()
-                .fill(.white.opacity(unlocked ? 0.35 : 0.05))
+                .fill(.white.opacity(0.05))
                 .frame(width: 250, height: 250)
                 .scaleEffect(inhale ? 1 : 0.82)
             Circle()
-                .fill(.white.opacity(unlocked ? 0.5 : 0.08))
+                .fill(.white.opacity(0.08))
                 .frame(width: 180, height: 180)
                 .scaleEffect(inhale ? 1 : 0.88)
             Image(systemName: unlocked ? "lock.open.fill" : "lock.fill")
                 .font(.system(size: 54, weight: .medium))
-                .foregroundStyle(unlocked ? AnyShapeStyle(Color(uiColor: Brand.accent)) : AnyShapeStyle(.white))
+                .foregroundStyle(.white)
                 .contentTransition(.symbolEffect(.replace))
         }
         .onAppear {

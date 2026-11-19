@@ -20,36 +20,29 @@ enum Theme {
     /// Only for countdowns ("Starts in 18 h", "Unblocks in 3 h").
     static let waiting = Color.orange
 
-    /// Deep evening while locked, a light sage while unlocked. The unlocked end is dark enough
-    /// that white glass cards and the tab bar still stand out against it.
-    static func gradient(unlocked: Bool) -> LinearGradient {
-        LinearGradient(
-            colors: unlocked
-                ? [Color(red: 0.89, green: 0.92, blue: 0.90), Color(red: 0.66, green: 0.75, blue: 0.70)]
-                : [Color(red: 0.09, green: 0.13, blue: 0.12), Color(red: 0.18, green: 0.29, blue: 0.25)],
-            startPoint: .top, endPoint: .bottom)
-    }
+    /// The one background: a deep evening green. It's the same whether apps are locked or not;
+    /// only the words and the lock icon change.
+    static let gradient = LinearGradient(
+        colors: [Color(red: 0.09, green: 0.13, blue: 0.12), Color(red: 0.18, green: 0.29, blue: 0.25)],
+        startPoint: .top, endPoint: .bottom)
 
     /// Glass behind list rows on the gradient.
     static var rowBackground: some View { Rectangle().fill(.ultraThinMaterial) }
 }
 
-/// The Home look for any screen: the lock-state gradient behind it, dark text styles while
-/// locked, and a tab bar and navigation bar that match.
+/// The app's one look for any screen: the dark green gradient behind it, and dark mode for the
+/// screen, tab bar and navigation bar whatever the phone's setting.
 private struct CalmBackground: ViewModifier {
-    @EnvironmentObject private var model: AppModel
-
     func body(content: Content) -> some View {
-        let unlocked = model.activePlace != nil
         content
-            .background(Theme.gradient(unlocked: unlocked).ignoresSafeArea())
-            .environment(\.colorScheme, unlocked ? .light : .dark)
-            // Lists resolve the accent from the window (light), so pick the variant by hand:
-            // the darker sage is hard to read on the locked gradient.
-            .tint(Color(uiColor: Brand.accent.resolvedColor(
-                with: UITraitCollection(userInterfaceStyle: unlocked ? .light : .dark))))
-            .toolbarColorScheme(unlocked ? .light : .dark, for: .tabBar, .navigationBar)
-            .animation(.smooth(duration: 1.2), value: unlocked)
+            .background(Theme.gradient.ignoresSafeArea())
+            .environment(\.colorScheme, .dark)
+            // Lists resolve the accent from the window (light), so pick the dark variant by hand:
+            // the darker sage is hard to read on the gradient.
+            .tint(Color(uiColor: Brand.accent.resolvedColor(with: UITraitCollection(userInterfaceStyle: .dark))))
+            // The bars are forced dark too. Left alone on the gradient, iOS's glass tab bar picked
+            // dark icons on a dark pill and an almost invisible selected tab.
+            .toolbarColorScheme(.dark, for: .tabBar, .navigationBar)
     }
 }
 

@@ -113,7 +113,7 @@ struct RulesView: View {
             ForEach(model.placeSlots, id: \.self) { slot in
                 Button { placeSheet = .fill(slot: slot) } label: {
                     HStack(spacing: 12) {
-                        PlaceIcon(symbol: Place.symbol(for: slot), isHere: false)
+                        PlaceIcon(symbol: Place.symbol(for: slot))
                         VStack(alignment: .leading, spacing: 2) {
                             Text(slot).foregroundStyle(.primary)
                             Text("Set location").font(.footnote).foregroundStyle(.secondary)
@@ -198,7 +198,7 @@ private struct PlaceRow: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            PlaceIcon(symbol: place.symbol, isHere: isHere)
+            PlaceIcon(symbol: place.symbol)
             VStack(alignment: .leading, spacing: 2) {
                 Text(place.name).foregroundStyle(.primary)
                 Text([place.address, "\(Int(place.radius)) m"].compactMap { $0 }.joined(separator: " · "))
@@ -208,8 +208,7 @@ private struct PlaceRow: View {
             if let starts = place.activeAfter, !place.isActive() {
                 Countdown(text: "Starts in \(starts.shortTimeLeft)")
             } else if isHere {
-                Circle().fill(.tint).frame(width: 8, height: 8)
-                    .accessibilityLabel("Here now")
+                Text("Here").font(.footnote).foregroundStyle(.secondary)
             } else if let change = place.pendingChange {
                 Countdown(text: "New area in \(change.appliesAt.shortTimeLeft)")
             }
@@ -257,15 +256,14 @@ private struct Countdown: View {
     }
 }
 
-/// A place's symbol: plain, in the accent while you're there.
+/// A place's symbol.
 private struct PlaceIcon: View {
     let symbol: String
-    let isHere: Bool
 
     var body: some View {
         Image(systemName: symbol)
             .font(.system(size: 17, weight: .medium))
-            .foregroundStyle(isHere ? AnyShapeStyle(.tint) : AnyShapeStyle(.secondary))
+            .foregroundStyle(.secondary)
             .frame(width: 28)
     }
 }
