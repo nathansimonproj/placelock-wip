@@ -1,6 +1,6 @@
 # PlaceLock Roadmap
 
-Last updated: 2026-11-12. The full design is in [Plan.md](Plan.md). This file tracks the ship plan, what's built, temporary workarounds, and what's next.
+Last updated: 2026-11-19. The full design is in [Plan.md](Plan.md). This file tracks the ship plan, what's built, temporary workarounds, and what's next.
 
 ## Ship plan (written 2026-11-10)
 The critical path is Apple, not code. Real blocking needs the paid account, and the App Store needs Apple to approve a separate Family Controls **distribution** entitlement, which can take days to weeks. Request it first and do everything else while waiting.
@@ -8,7 +8,7 @@ The critical path is Apple, not code. Real blocking needs the paid account, and 
 ### Free-account plan (written 2026-11-12)
 Until the paid account, these can't be done: real shields, Apple's app picker, the two extensions, the App Group, Sign in with Apple, push notifications, TestFlight, and filing the distribution request. Everything else can. Work in this order:
 
-1. **Keep both builds compiling.** After any blocking change, run `xcodegen generate --spec project-paid.yml`, build with `CODE_SIGNING_ALLOWED=NO`, then run plain `xcodegen generate` to go back. Last checked 2026-11-12: paid build succeeds, free build passes all 63 tests.
+1. **Keep both builds compiling.** After any blocking change, run `xcodegen generate --spec project-paid.yml`, build with `CODE_SIGNING_ALLOWED=NO`, then run plain `xcodegen generate` to go back. Last checked 2026-11-19, after the Calm UI: paid build succeeds, free build passes all 77 tests. The tests use Swift Testing, so look for "Test run with 77 tests"; xcodebuild's XCTest line always says "Executed 0 tests".
 2. **Test location on the iPhone (Phase 2).** This is the riskiest part, and it works fully on the free account.
    - Real walks, plus Xcode `.gpx` routes for repeatable tests.
    - With the app force-quit, after a restart, in Low Power Mode, and with location briefly off.
@@ -16,10 +16,10 @@ Until the paid account, these can't be done: real shields, Apple's app picker, t
    - The `sessions` rows in Supabase (Backend).
    - The place-search spinner (Known issues).
 3. **Shippable to strangers (Phase 3).**
-   - Build the "Allow Screen Time access" setup step now, behind `#if SCREEN_TIME`.
+   - Build the "Allow Screen Time access" setup step now, behind `#if SCREEN_TIME`. Done 2026-11-12, along with first-run setup and Release-only starter places. Still to do: app icon, Rules tab name, notification wording, dark mode and large text, and the Plan.md rewrite.
    - Any new UI that shows blocked apps goes through one small view: names in the free build, `Label(token)` in the paid build. Real tokens have no names.
 4. **Backend leftovers.**
-   - "Delete account".
+   - "Delete account". Done 2026-11-12, along with the `SyncEngine` tests. The rate limit is a dashboard setting (see Backend).
    - CAPTCHA or rate limits for anonymous sign-ins.
    - Tests for `SyncEngine`'s I/O with a mocked client.
    - Optional: restoring on a new phone by linking an email with a 6-digit Supabase code. It works on the free team, needs no universal links, and doesn't trigger Apple's rule that Google login also requires Sign in with Apple. Sign in with Apple can come later.
@@ -68,11 +68,15 @@ All of this is written and compiles in the paid build (`CODE_SIGNING_ALLOWED=NO`
 - [x] 24 h delay on removing blocked apps (2026-11-11).
 - [x] Unit tests: 41 tests in `PlaceLockTests/` for `LockRules`, `PlaceRules` and `BlockRules` (2026-11-11). Run with ⌘U or `xcodebuild test`.
 - [ ] A few days of real use: arrival and departure timing, after a restart, battery, radius sizes.
-- [ ] Fix the place-search spinner (Known issues).
+- [ ] Fix the place-search spinner (Known issues). The spinner now stops when the "slow connection" message shows (2026-11-12). The cause is still unconfirmed.
 
 ### Phase 3: Make it shippable to strangers (about 3–4 days)
-- [ ] **Starter places.** Release builds must not seed your apartment (The M) or the IMA. Ship empty "Set location" slots (Home, Gym, Library), and keep your real places for your own builds only.
-- [ ] First-run setup in about 3 screens: why location, pick apps, set places. Ask for notifications in context, not at launch.
+- [x] **No starter places (2026-11-12).** New installs start with an empty allowlist in every build, and people add their own places during first-run setup. `Models/DefaultPlaces.swift` is empty, and the seeding code stays in case starters come back. Existing installs keep their places.
+- [x] **First-run setup (2026-11-12).** `Views/OnboardingView.swift`, shown full screen once on a new install. Installs from before it existed skip it.
+  - Steps: location (Always), Screen Time access (paid build only), pick apps, places, notifications. Each step explains why before iOS asks, and each can be skipped. Home's setup card catches whatever is left.
+  - Notifications are no longer requested at launch.
+  - **The location prompt no longer appears at launch.** Watching places (`CLMonitor`) made iOS show it immediately, before any explanation. On a new install, `startUp` now waits until the prompt is answered.
+  - Debug builds: launch with `-onboardingStep apps` (or `location`, `screenTime`, `places`, `notifications`) to open on a step.
 - [ ] App icon, final tab name for "Rules", notification wording to match ("Left Gym, apps blocked"), dark mode and large text checks.
 - [ ] Rewrite Plan.md to match the automatic-unlock design. It still describes tap-and-scan.
 
@@ -87,7 +91,7 @@ Design is in Plan.md under "Backend". In short: the phone decides blocking, the 
   - logged-out access is denied
   - account deletion cascades to every row
 - [x] Supabase project `bdbyvdfugetapjysoiml` created, migration applied, anonymous sign-ins on (2026-11-11).
-- [ ] Turn on CAPTCHA or rate limits for anonymous sign-ins before TestFlight.
+- [ ] Rate-limit anonymous sign-ins before TestFlight. This is a dashboard setting, not code: Supabase › Authentication › Rate Limits › anonymous sign-ins per hour (per IP). Something like 10 is plenty. CAPTCHA (Authentication › Attack Protection) would also need the app to send a captcha token with `signInAnonymously`, so leave it off unless abuse shows up.
 - [x] **Phone side (2026-11-11).** `PlaceLock/Sync/`, using supabase-swift 2.55.6, pinned to 2.x.
   - `SyncEngine` signs in anonymously on first launch. Each pass pulls places, merges them, syncs the setup-window end (earliest wins), then flushes the outbox.
   - Passes run on launch, on foreground, when the network returns, and after any local change. Failures retry with backoff, from 5 s up to 5 min.
@@ -95,9 +99,23 @@ Design is in Plan.md under "Backend". In short: the phone decides blocking, the 
   - **First sync:** uploads existing places. After a reinstall, the server's places replace re-seeded starter places that have the same name.
   - **Status:** Rules has a "Backup" section showing it.
   - **When it's off:** with no URL or key in Info.plist, or under unit tests, sync does nothing.
-  - **Tested:** 22 tests in `SyncRulesTests` (63 total, all passing). On the Simulator against the live project, the first sync uploaded the 3 starter places. Session upserts were checked against the live server with a temporary account, which was then deleted.
+  - **Tested:** 22 tests in `SyncRulesTests`. On the Simulator against the live project, the first sync uploaded the 3 starter places. Session upserts were checked against the live server with a temporary account, which was then deleted.
+- [x] **Server calls behind `SyncBackend` (2026-11-12).** `Sync/SyncBackend.swift` holds every Supabase call. `SyncEngine` takes a backend and the phone's data (`SyncLocal`, which is `AppModel`), so tests use fakes. `SyncEngineTests` (14 tests, 77 total, all passing) cover:
+  - first sync, restore and incremental pulls
+  - places upload before sessions
+  - offline retries, rejected rows, and the queue surviving a relaunch
+  - unusable sessions, the setup window
+  - account deletion and turning backup back on
+- [x] **Fixed: reinstalls duplicated the starter places on the server (2026-11-12).** iOS keeps the Supabase sign-in in the Keychain when the app is deleted, so a reinstall restores the same account. Seeding ran the `places` observer (Swift runs observers in methods called from `init`), which queued the starter places as edits. So the first sync uploaded them as new places instead of dropping them as duplicates.
+  - Seeding no longer queues anything.
+  - The Simulator's test account still has 15 places from repeated reinstalls. Clear it with Delete account.
+  - If you've reinstalled on the iPhone before, check its places for copies too.
 - [ ] Test an unlock → leave cycle on the iPhone and confirm the `sessions` row in the Supabase table editor.
-- [ ] "Delete account" in settings, which calls `delete_my_account()`.
+- [x] **Delete account (2026-11-12).** Rules › Backup › "Delete account", after a confirmation.
+  - It calls `delete_my_account()`, which deletes every row, then signs out and turns backup off.
+  - Places and blocked apps stay on the phone, and blocking keeps working.
+  - "Turn backup back on" starts a new account.
+  - If the server can't be reached, nothing changes and an alert says so.
 - [ ] Paid team: link Sign in with Apple so places restore on a new phone.
 
 ### Phase 4: TestFlight, then the App Store (about 1–2 weeks of calendar time)
@@ -170,7 +188,7 @@ Tried and dropped. It needed a Shortcuts "App Is Opened" automation for each app
   - One function, `AppModel.reconcile()`, decides the lock state from iOS's reading for each place. It runs after every geofence event, on launch, when the app comes to the front, and when places change.
   - **Lock until I leave:** locks now and doesn't unlock at that place again until iOS sees you leave it.
   - **Overlapping places:** leaving one place while still inside another moves the session over instead of locking.
-- [x] **Starter allowlist (2026-11-10).** Every install gets these once, from `Models/DefaultPlaces.swift`:
+- [x] **Starter allowlist (2026-11-10, removed for new installs 2026-11-12, see Phase 3).** Installs from before 2026-11-12 got these once, from `Models/DefaultPlaces.swift`:
   - **Gym:** the IMA (47.6537, −122.3012).
   - **Soccer Field:** Husky Soccer Stadium (47.6556, −122.2982).
   - **Home:** The M (4700 Brooklyn Ave NE; 47.6634, −122.3139, from OpenStreetMap). It was a "Set location" slot until 2026-11-10, and the slot mechanism remains for future starter places.
@@ -184,6 +202,11 @@ Tried and dropped. It needed a Shortcuts "App Is Opened" automation for each app
     - The blocked apps. Swipe to remove one, or add more.
     - The allowlist. Tap a place to edit it (`AddPlaceView(editing:)`), swipe to delete it.
   - Launch with `-tab rules` to open straight on Rules.
+- [x] **Calm UI refresh (2026-11-12).** Replaced the card-heavy Home above.
+  - **Home:** locked is a deep evening gradient with rings that breathe over 8 s (held still under Reduce Motion); unlocked turns light. Blocked apps show dimmed as "resting", and places are glass cards. No streaks or scores.
+  - **Everywhere else:** `calmBackground()` in `Views/Theme.swift` puts the same gradient behind Rules, Backup (`Views/BackupView.swift`) and Debug (`Views/DebugView.swift`), with glass list rows and dark bars while locked. Accent color and theme tokens are in `Shared/Brand.swift` and `Views/Theme.swift`.
+  - The block screen (`Extensions/Shield`) uses the calmer wording too.
+- [x] **Visit log (2026-11-12).** `AppModel.visits` (`Models/Visit.swift`) keeps finished unlock visits from the last two weeks, on the phone only. Home uses it for "locked since". `unlocksToday` and `lockedShareToday` are written but unused, ready for `StatsStore` and streaks. Launch with `-demoHistory YES` to fill today with two sample visits for screenshots. The server keeps its own history in `sessions`.
 - [x] **"Pretend I'm at…" simulator (Debug builds only).** A card on Home lets you pick Real location, any place, or Somewhere else. It feeds fake inside/outside readings into the same `reconcile()` the real geofences use, so unlock, lock, "Lock until I leave" and the notifications all behave for real. It's kept in memory only, so a relaunch goes back to real location. `#if DEBUG` keeps it out of Release builds. (`SWIFT_ACTIVE_COMPILATION_CONDITIONS` moved to the app target in project.yml so `DEBUG` is defined again.)
 - [x] **24 h delay on new places (2026-11-10).** Closes the "add a place where I'm standing" loophole.
   - **New places** (including filling a slot) start working 24 h after they're added (`Place.activeAfter`).
@@ -216,7 +239,7 @@ Tried and dropped. It needed a Shortcuts "App Is Opened" automation for each app
   - **Next steps:**
     1. Retest on normal Wi-Fi, both in the Simulator and on the iPhone.
     2. If it still fails, log the completer's lifecycle and try a plain `MKLocalSearch` request when the user submits.
-    3. Either way, stop the spinner once the slow message shows, so the screen doesn't look stuck.
+    3. ~~Either way, stop the spinner once the slow message shows, so the screen doesn't look stuck.~~ Done 2026-11-12. Results that arrive late still show.
     4. If Apple search stays unreliable, consider Google Places (see above).
 
 ## Next
