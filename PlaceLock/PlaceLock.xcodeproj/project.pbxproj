@@ -24,6 +24,7 @@
 		7243B324929393ED3ABBAADC /* BlockList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54519AA1DD4CAF17DF32BF3B /* BlockList.swift */; };
 		750ED36252F11E4A39ABE15D /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C01BC85CE6073FBB12EC3EF /* OnboardingView.swift */; };
 		8114ECBB039570774E1AAF87 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 51CB9DA06496E711A2C1C2A6 /* Assets.xcassets */; };
+		83B9CAD15B904C2A39045226 /* Estimate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEB4DDDB5DF4005411BEC5D5 /* Estimate.swift */; };
 		88FF662A430BDF12D22A8574 /* RulesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79A33188D87631FAFE8F0BB4 /* RulesView.swift */; };
 		A7E918B024542DA7E905CDE6 /* Log.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1A758279946CD369E3E785D /* Log.swift */; };
 		A99140E7BA3244546725BE50 /* LocationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BB4FF5F9AC07525CD9DB78A /* LocationService.swift */; };
@@ -39,6 +40,7 @@
 		E7A98364A46DBBF562638394 /* Brand.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3BBFAE4F3564799986DC02F /* Brand.swift */; };
 		EAA880B4DA66678CDC067A0C /* SyncEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CAF9493EEA45E820E20FF7B /* SyncEngine.swift */; };
 		F0238D7B9A2095779A604C9D /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53614D80BE59F5D4E4D38663 /* AppModel.swift */; };
+		F21F0EA4391EA426DAE4BC5B /* EstimateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCC930178BC75876BA07D368 /* EstimateTests.swift */; };
 		F2F3125FB8A56C57CB3F32DA /* AddPlaceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F1DB436EEAF46816BC65503 /* AddPlaceView.swift */; };
 		FBA624F16708E33579F3913C /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 175FFEB0E1BA8C86CEAC7A82 /* Supabase */; };
 /* End PBXBuildFile section */
@@ -86,11 +88,13 @@
 		A83B29AEE773F5E7AFDB2827 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		AF41772D465AFA76B4DD0F62 /* SyncRulesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncRulesTests.swift; sourceTree = "<group>"; };
 		B8ACE3FF9981C077600B49CB /* DefaultPlaces.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultPlaces.swift; sourceTree = "<group>"; };
+		BCC930178BC75876BA07D368 /* EstimateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EstimateTests.swift; sourceTree = "<group>"; };
 		BEF0A66881420B56B9639C1F /* PlaceLockTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = PlaceLockTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C3BBFAE4F3564799986DC02F /* Brand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Brand.swift; sourceTree = "<group>"; };
 		CC2205ACC9F22D561AD5A326 /* Storage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Storage.swift; sourceTree = "<group>"; };
 		E1779E7DF2B48787081442EA /* GeofenceMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeofenceMonitor.swift; sourceTree = "<group>"; };
 		F59A484B78A348C5262E7870 /* PlaceLockApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaceLockApp.swift; sourceTree = "<group>"; };
+		FEB4DDDB5DF4005411BEC5D5 /* Estimate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Estimate.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -138,6 +142,7 @@
 			isa = PBXGroup;
 			children = (
 				3AA40BCF7520E01816FF0D4C /* DelayRulesTests.swift */,
+				BCC930178BC75876BA07D368 /* EstimateTests.swift */,
 				95AFE7CF7EC4F0FF88828540 /* LockRulesTests.swift */,
 				02D01B76D7B72477A1CB4908 /* SyncEngineTests.swift */,
 				AF41772D465AFA76B4DD0F62 /* SyncRulesTests.swift */,
@@ -168,6 +173,7 @@
 		CA53F7E30C1174E566FB8B39 /* Location */ = {
 			isa = PBXGroup;
 			children = (
+				FEB4DDDB5DF4005411BEC5D5 /* Estimate.swift */,
 				E1779E7DF2B48787081442EA /* GeofenceMonitor.swift */,
 				8BB4FF5F9AC07525CD9DB78A /* LocationService.swift */,
 				4FBD08DB08E79AAF2072B19F /* PlaceSearch.swift */,
@@ -334,6 +340,7 @@
 				E7A98364A46DBBF562638394 /* Brand.swift in Sources */,
 				4494D80114B79E5C84F6E600 /* DebugView.swift in Sources */,
 				605A21D2D74E88DF0C3EAF00 /* DefaultPlaces.swift in Sources */,
+				83B9CAD15B904C2A39045226 /* Estimate.swift in Sources */,
 				DBBEC0A0E1365D0F841B71D4 /* GeofenceMonitor.swift in Sources */,
 				42C6AE3CB568197372E52A37 /* HomeView.swift in Sources */,
 				A99140E7BA3244546725BE50 /* LocationService.swift in Sources */,
@@ -363,6 +370,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D2CB59667290A998CB3C9053 /* DelayRulesTests.swift in Sources */,
+				F21F0EA4391EA426DAE4BC5B /* EstimateTests.swift in Sources */,
 				5C41A912A70BB6409E7BE0CB /* LockRulesTests.swift in Sources */,
 				443AFBC3553E2DA5961B5B35 /* SyncEngineTests.swift in Sources */,
 				D903CB3682F9B462AF4763B9 /* SyncRulesTests.swift in Sources */,

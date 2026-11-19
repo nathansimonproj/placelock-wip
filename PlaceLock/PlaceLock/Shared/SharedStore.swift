@@ -26,6 +26,20 @@ enum SharedStore {
         static let allowedPlaces = "shared.allowedPlaceNames"
         static let selection = "shared.blockedSelection"
         static let capPlace = "shared.capPlaceName"
+        static let estimate = "shared.estimate"
+    }
+
+    /// Where the app last thought you were, for the block screen's "Estimated @" line.
+    /// The block screen can't read location itself.
+    struct Estimate: Codable, Equatable {
+        /// A place name ("Gym"), a map name ("Suzzallo Library"), or "400 m from Gym".
+        var label: String
+        var at: Date
+    }
+
+    static var estimate: Estimate? {
+        get { defaults.data(forKey: Keys.estimate).flatMap { try? JSONDecoder().decode(Estimate.self, from: $0) } }
+        set { defaults.set(newValue.flatMap { try? JSONEncoder().encode($0) }, forKey: Keys.estimate) }
     }
 
     /// Names of the places that can unblock apps right now, for the block screen.

@@ -51,8 +51,12 @@ final class AppModel: ObservableObject {
             if let old = oldValue, old.id != session?.id {
                 visits = Visit.trimmed(visits + [Visit(placeID: old.placeID, start: old.visitStartedAt, end: .now)])
             }
+            if oldValue?.placeID != session?.placeID { lastEstimateAttempt = .distantPast } // re-estimate now
         }
     }
+    /// The block screen's "Estimated @" (`refreshEstimate` in Location/Estimate.swift).
+    var estimateTask: Task<Void, Never>?
+    var lastEstimateAttempt = Date.distantPast
     /// Finished unlock visits from the last two weeks, oldest first. On this phone only.
     @Published private(set) var visits: [Visit] = [] { didSet { save(visits, key: Keys.visits) } }
     /// Places you're at but chose to stay locked at ("Lock until I leave").
@@ -254,9 +258,13 @@ final class AppModel: ObservableObject {
     private func reconcileNow() async {
         await refreshScreenTimeAccess()
         applyDueChanges()
-        defer { scheduleNextActivation() }
+        defer {
+            scheduleNextActivation()
+            refreshEstimate()
+        }
 
-        let hasAlways = location.hasAlways
+        // Without Precise Location iOS stops watching places, like losing Always: lock.
+        let hasAlways = location.canWatchPlaces
         var presence: [UUID: Presence] = [:]
         if hasAlways {
             if let simulated = simulatedPresence() {

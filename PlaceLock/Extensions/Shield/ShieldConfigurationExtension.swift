@@ -2,9 +2,10 @@ import ManagedSettings
 import ManagedSettingsUI
 import UIKit
 
-/// The screen iOS shows over a blocked app: "Instagram is locked · Opens at Gym, Soccer Field or Home".
-/// iOS asks for this whenever a blocked app or website is opened. It reads the place names the app
-/// shares in the App Group (`SharedStore.allowedPlaceNames`).
+/// The screen iOS shows over a blocked app: "Instagram is locked", then "Estimated @ Suzzallo
+/// Library · 2 min ago" and "Opens at Gym, Soccer Field or Home". iOS asks for this whenever a
+/// blocked app or website is opened. It reads what the app shares in the App Group
+/// (`SharedStore.estimate` and `SharedStore.allowedPlaceNames`).
 final class ShieldConfigurationExtension: ShieldConfigurationDataSource {
     override func configuration(shielding application: Application) -> ShieldConfiguration {
         shield(for: application.localizedDisplayName)
@@ -28,7 +29,8 @@ final class ShieldConfigurationExtension: ShieldConfigurationDataSource {
             backgroundBlurStyle: .systemThickMaterial,
             icon: UIImage(systemName: "lock.fill")?.withTintColor(Brand.accent, renderingMode: .alwaysOriginal),
             title: .init(text: "\(name ?? "This app") is locked", color: .label),
-            subtitle: .init(text: Brand.opensAt(SharedStore.allowedPlaceNames), color: .secondaryLabel),
+            subtitle: .init(text: Brand.shieldSubtitle(estimate: SharedStore.estimate, places: SharedStore.allowedPlaceNames),
+                            color: .secondaryLabel),
             primaryButtonLabel: .init(text: Brand.shieldButton, color: .white),
             primaryButtonBackgroundColor: Brand.accent)
     }

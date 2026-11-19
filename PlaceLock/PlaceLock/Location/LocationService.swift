@@ -16,16 +16,28 @@ enum LocationError: LocalizedError {
 @MainActor
 final class LocationService: NSObject, ObservableObject, CLLocationManagerDelegate {
     @Published private(set) var authorization: CLAuthorizationStatus
+    /// Precise Location (Settings › PlaceLock › Location). With it off, iOS gives only a rough
+    /// area and won't watch places at all, so nothing ever unlocks.
+    @Published private(set) var isPrecise: Bool
 
     private let manager = CLLocationManager()
 
     override init() {
         authorization = manager.authorizationStatus
+        isPrecise = manager.accuracyAuthorization == .fullAccuracy
         super.init()
         manager.delegate = self
     }
 
     var hasAlways: Bool { authorization == .authorizedAlways }
+
+    /// Everything automatic unlocking needs: Always, and Precise Location on.
+    var canWatchPlaces: Bool { hasAlways && isPrecise }
+
+    /// Location is allowed, but Precise Location is off.
+    var needsPrecise: Bool {
+        (authorization == .authorizedAlways || authorization == .authorizedWhenInUse) && !isPrecise
+    }
 
     /// iOS asks for "While Using" first; asking for Always afterwards upgrades it.
     func requestPermission() {
@@ -46,8 +58,13 @@ final class LocationService: NSObject, ObservableObject, CLLocationManagerDelega
 
     nonisolated func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         let status = manager.authorizationStatus
+        let precise = manager.accuracyAuthorization == .fullAccuracy
         Task { @MainActor in
             self.authorization = status
+            if precise != self.isPrecise {
+                Log.app.info("Precise Location \(precise ? "on" : "off", privacy: .public)")
+                self.isPrecise = precise
+            }
             if status != .notDetermined {
                 self.decisionWaiters.forEach { $0.resume() }
                 self.decisionWaiters = []

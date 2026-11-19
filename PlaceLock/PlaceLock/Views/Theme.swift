@@ -20,11 +20,12 @@ enum Theme {
     /// Only for countdowns ("Starts in 18 h", "Unblocks in 3 h").
     static let waiting = Color.orange
 
-    /// Deep evening while locked, light and airy while unlocked.
+    /// Deep evening while locked, a light sage while unlocked. The unlocked end is dark enough
+    /// that white glass cards and the tab bar still stand out against it.
     static func gradient(unlocked: Bool) -> LinearGradient {
         LinearGradient(
             colors: unlocked
-                ? [Color(red: 0.93, green: 0.96, blue: 0.94), Color(red: 0.80, green: 0.89, blue: 0.84)]
+                ? [Color(red: 0.89, green: 0.92, blue: 0.90), Color(red: 0.66, green: 0.75, blue: 0.70)]
                 : [Color(red: 0.09, green: 0.13, blue: 0.12), Color(red: 0.18, green: 0.29, blue: 0.25)],
             startPoint: .top, endPoint: .bottom)
     }

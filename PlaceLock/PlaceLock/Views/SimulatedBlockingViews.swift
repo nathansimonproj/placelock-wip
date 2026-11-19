@@ -57,7 +57,8 @@ struct MockShieldView: View {
                 .font(.system(size: 56)).foregroundStyle(.secondary)
             Image(systemName: "lock.fill").font(.title).foregroundStyle(.tint)
             Text("\(appName) is locked").font(.title2.bold())
-            Text(Brand.opensAt(model.places.filter { $0.isActive() }.map(\.name)))
+            Text(Brand.shieldSubtitle(estimate: SharedStore.estimate,
+                                      places: model.places.filter { $0.isActive() }.map(\.name)))
                 .multilineTextAlignment(.center).foregroundStyle(.secondary)
             Spacer()
             Button(Brand.shieldButton) { dismiss() }

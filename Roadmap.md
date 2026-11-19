@@ -8,7 +8,7 @@ The critical path is Apple, not code. Real blocking needs the paid account, and 
 ### Free-account plan (written 2026-11-12)
 Until the paid account, these can't be done: real shields, Apple's app picker, the two extensions, the App Group, Sign in with Apple, push notifications, TestFlight, and filing the distribution request. Everything else can. Work in this order:
 
-1. **Keep both builds compiling.** After any blocking change, run `xcodegen generate --spec project-paid.yml`, build with `CODE_SIGNING_ALLOWED=NO`, then run plain `xcodegen generate` to go back. Last checked 2026-11-19, after the Calm UI: paid build succeeds, free build passes all 77 tests. The tests use Swift Testing, so look for "Test run with 77 tests"; xcodebuild's XCTest line always says "Executed 0 tests".
+1. **Keep both builds compiling.** After any blocking change, run `xcodegen generate --spec project-paid.yml`, build with `CODE_SIGNING_ALLOWED=NO`, then run plain `xcodegen generate` to go back. Last checked 2026-11-19, after the block screen estimate and custom tab bar: paid build succeeds, free build passes all 85 tests. The tests use Swift Testing, so look for "Test run with 85 tests"; xcodebuild's XCTest line always says "Executed 0 tests".
 2. **Test location on the iPhone (Phase 2).** This is the riskiest part, and it works fully on the free account.
    - Real walks, plus Xcode `.gpx` routes for repeatable tests.
    - With the app force-quit, after a restart, in Low Power Mode, and with location briefly off.
@@ -77,6 +77,9 @@ All of this is written and compiles in the paid build (`CODE_SIGNING_ALLOWED=NO`
   - Notifications are no longer requested at launch.
   - **The location prompt no longer appears at launch.** Watching places (`CLMonitor`) made iOS show it immediately, before any explanation. On a new install, `startUp` now waits until the prompt is answered.
   - Debug builds: launch with `-onboardingStep apps` (or `location`, `screenTime`, `places`, `notifications`) to open on a step.
+- [x] **Colors and tab bar (2026-11-19).** Accent is a darker sage (#3E5F51 light, #95B0A2 dark) so white text on it reads, and the unlocked gradient is a deeper sage so glass cards stand out. iOS's tab bar is hidden for `CalmTabBar` (`Views/RootView.swift`), because the system's selected pill can't be recolored and washed out on the locked gradient. Each tab reserves `CalmTabBar.space` at the bottom.
+- [x] **Block screen "Estimated @" (2026-11-19).** "Instagram is locked / Estimated @ Suzzallo Library · 2 min ago / Opens at Gym, Field or Home." The app saves its last guess in `SharedStore.estimate` after each reconcile (at most once a minute, right away when the lock state changes), since the block screen can't read location. Name order: the saved place you're inside, Apple Maps' name for the spot (`CLGeocoder`, sends the location to Apple), then "400 m from Gym". Hidden after a day. Logic in `Location/Estimate.swift`, tests in `EstimateTests`. Check on the iPhone that background wakes get a fix in time.
+- [x] **Precise Location check (2026-11-19).** With Precise Location off, iOS won't watch places at all, so nothing unlocks. `LocationService.canWatchPlaces` needs Always and Precise. Without Precise the app locks like losing Always, Home's banner says "Precise Location is off", and onboarding asks for it.
 - [ ] App icon, final tab name for "Rules", notification wording to match ("Left Gym, apps blocked"), dark mode and large text checks.
 - [ ] Rewrite Plan.md to match the automatic-unlock design. It still describes tap-and-scan.
 
@@ -231,6 +234,8 @@ Tried and dropped. It needed a Shortcuts "App Is Opened" automation for each app
 - [x] App's own log lines (`com.nsimon.PlaceLock`) for debugging. See `App/Log.swift`.
 
 ## Known issues (to fix)
+- **Every sync re-downloads the newest place (found 2026-11-19).** `SupabaseBackend.places(syncedAfter:)` sends `lastPull` with millisecond precision (`iso`), but Postgres stores microseconds, so `synced_at > lastPull` matches the last row again on every pass. Harmless (the merge drops it) but wasteful. Fix: keep the server's `synced_at` string as the cursor, or compare with `gte` and skip rows already seen.
+- **Leaving with the app killed didn't lock in the Simulator (2026-11-19).** After `simctl terminate`, iOS didn't relaunch the app for the exit within 2 minutes; opening the app caught up and locked. Likely a Simulator limit, so test force-quit + walk out on the iPhone.
 - **Place search loads forever (seen 2026-11-10, Simulator, on plane Wi-Fi).** Typing in Add place shows "Searching…" and never shows results.
   - Logs show the 8 s "slow connection" message firing. About 50 s later Apple's completer failed with `MKErrorDomain error 1` (`MKError.unknown`).
   - In that session the Simulator never got a single successful response (no "Search results" log line).

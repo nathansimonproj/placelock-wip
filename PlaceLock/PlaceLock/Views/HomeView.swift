@@ -33,7 +33,7 @@ struct HomeView: View {
         .calmBackground()
     }
 
-    private var needsFix: Bool { !location.hasAlways || model.screenTimeAccess != .approved }
+    private var needsFix: Bool { !location.canWatchPlaces || model.screenTimeAccess != .approved }
 
     // MARK: Status
 
@@ -236,7 +236,7 @@ struct FixBanner: View {
         if model.screenTimeAccess != .approved {
             return model.screenTimeAccess == .turnedOff ? "Blocking is off" : "Screen Time access needed"
         }
-        return "Location isn't set to Always"
+        return location.hasAlways ? "Precise Location is off" : "Location isn't set to Always"
     }
 
     private func fix() {
