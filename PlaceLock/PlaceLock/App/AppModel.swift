@@ -123,10 +123,14 @@ final class AppModel: ObservableObject {
         } else {
             hasOnboarded = Storage.defaults.bool(forKey: Keys.onboarded)
         }
-        places = load([Place].self, key: Keys.places) ?? []
-        blockList = load(BlockList.self, key: Keys.blockList) ?? BlockList()
-        session = load(UnlockSession.self, key: Keys.session)
-        visits = load([Visit].self, key: Keys.visits) ?? []
+        // Saved values go straight into the @Published storage. Assigning them normally runs
+        // didSet even here in init (it does for property wrappers), and those observers treat a
+        // load as an edit: `places` queued every place for upload as "edited now" on each launch,
+        // and `blockList` blocked apps because `session` wasn't loaded yet.
+        _places = Published(initialValue: load([Place].self, key: Keys.places) ?? [])
+        _blockList = Published(initialValue: load(BlockList.self, key: Keys.blockList) ?? BlockList())
+        _session = Published(initialValue: load(UnlockSession.self, key: Keys.session))
+        _visits = Published(initialValue: load([Visit].self, key: Keys.visits) ?? [])
         #if DEBUG
         // Launch with `-demoHistory YES` to fill today with two sample visits (for screenshots).
         if UserDefaults.standard.bool(forKey: "demoHistory"), visits.isEmpty, places.count >= 2 {
@@ -137,20 +141,20 @@ final class AppModel: ObservableObject {
             ].filter { $0.end < .now }
         }
         #endif
-        pausedPlaceIDs = load(Set<UUID>.self, key: Keys.paused) ?? []
-        placeSlots = load([String].self, key: Keys.slots) ?? []
+        _pausedPlaceIDs = Published(initialValue: load(Set<UUID>.self, key: Keys.paused) ?? [])
+        _placeSlots = Published(initialValue: load([String].self, key: Keys.slots) ?? [])
         if let saved = load(Date.self, key: Keys.setupEnds) {
-            setupEndsAt = saved
+            _setupEndsAt = Published(initialValue: saved)
         } else {
-            setupEndsAt = .now.addingTimeInterval(PlaceRules.changeDelay) // first launch (or first with this feature)
+            _setupEndsAt = Published(initialValue: .now.addingTimeInterval(PlaceRules.changeDelay)) // first launch (or first with this feature)
             save(setupEndsAt, key: Keys.setupEnds)
         }
         // A saved "approved" that no longer holds is left for `refreshScreenTimeAccess` to catch,
         // so it can warn that access was turned off.
         let savedAccess = Storage.defaults.string(forKey: Keys.screenTime).flatMap(ScreenTimeAccess.init)
-        screenTimeAccess = ShieldManager.isAuthorized ? .approved : (savedAccess ?? .notYet)
+        _screenTimeAccess = Published(initialValue: ShieldManager.isAuthorized ? .approved : (savedAccess ?? .notYet))
         seedDefaultPlacesOnce()
-        // Property observers don't run in init, so share what the extensions need explicitly.
+        // The loads above skip the observers, so share what the extensions need explicitly.
         shareAllowedPlaces()
         SharedStore.blockedSelection = blockList.selection
     }

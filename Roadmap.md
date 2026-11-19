@@ -8,7 +8,7 @@ The critical path is Apple, not code. Real blocking needs the paid account, and 
 ### Free-account plan (written 2026-11-12)
 Until the paid account, these can't be done: real shields, Apple's app picker, the two extensions, the App Group, Sign in with Apple, push notifications, TestFlight, and filing the distribution request. Everything else can. Work in this order:
 
-1. **Keep both builds compiling.** After any blocking change, run `xcodegen generate --spec project-paid.yml`, build with `CODE_SIGNING_ALLOWED=NO`, then run plain `xcodegen generate` to go back. Last checked 2026-11-19, after the block screen estimate and custom tab bar: paid build succeeds, free build passes all 85 tests. The tests use Swift Testing, so look for "Test run with 85 tests"; xcodebuild's XCTest line always says "Executed 0 tests".
+1. **Keep both builds compiling.** After any blocking change, run `xcodegen generate --spec project-paid.yml`, build with `CODE_SIGNING_ALLOWED=NO`, then run plain `xcodegen generate` to go back. Last checked 2026-11-19, after the block screen estimate and custom tab bar: paid build succeeds, free build passes all 87 tests. The tests use Swift Testing, so look for "Test run with 87 tests"; xcodebuild's XCTest line always says "Executed 0 tests".
 2. **Test location on the iPhone (Phase 2).** This is the riskiest part, and it works fully on the free account.
    - Real walks, plus Xcode `.gpx` routes for repeatable tests.
    - With the app force-quit, after a restart, in Low Power Mode, and with location briefly off.
@@ -113,6 +113,8 @@ Design is in Plan.md under "Backend". In short: the phone decides blocking, the 
   - Seeding no longer queues anything.
   - The Simulator's test account still has 15 places from repeated reinstalls. Clear it with Delete account.
   - If you've reinstalled on the iPhone before, check its places for copies too.
+- [x] **Fixed: every sync re-downloaded the newest place (2026-11-19).** The pull cursor was a `Date`, and Postgres's microseconds didn't survive the round trip, so `synced_at > cursor` matched the newest row again on every pass. The cursor is now the server's own `synced_at` text, read from the raw response (`PlacePage.cursor`, `SyncEngine.State.pullCursor`). State saved before this pulls everything once. Checked against the live project: foreground passes now pull nothing.
+- [x] **Fixed: every launch re-uploaded all places and re-blocked apps (2026-11-19).** Swift runs `didSet` on `@Published` properties even in `AppModel.init`, so loading saved data counted as edits. `places` queued every place as "edited now" on each launch, which could overwrite newer edits from the server. `blockList` blocked apps because `session` wasn't loaded yet, so in the paid build a cold launch (including a background relaunch) while unlocked would re-block apps until you left and came back. `init` now loads into the `@Published` storage directly (`_places = Published(initialValue:)`). Checked in the Simulator: relaunching while unlocked no longer uploads or blocks, and relaunching while away still blocks.
 - [ ] Test an unlock → leave cycle on the iPhone and confirm the `sessions` row in the Supabase table editor.
 - [x] **Delete account (2026-11-12).** Rules › Backup › "Delete account", after a confirmation.
   - It calls `delete_my_account()`, which deletes every row, then signs out and turns backup off.
@@ -234,7 +236,6 @@ Tried and dropped. It needed a Shortcuts "App Is Opened" automation for each app
 - [x] App's own log lines (`com.nsimon.PlaceLock`) for debugging. See `App/Log.swift`.
 
 ## Known issues (to fix)
-- **Every sync re-downloads the newest place (found 2026-11-19).** `SupabaseBackend.places(syncedAfter:)` sends `lastPull` with millisecond precision (`iso`), but Postgres stores microseconds, so `synced_at > lastPull` matches the last row again on every pass. Harmless (the merge drops it) but wasteful. Fix: keep the server's `synced_at` string as the cursor, or compare with `gte` and skip rows already seen.
 - **Leaving with the app killed didn't lock in the Simulator (2026-11-19).** After `simctl terminate`, iOS didn't relaunch the app for the exit within 2 minutes; opening the app caught up and locked. Likely a Simulator limit, so test force-quit + walk out on the iPhone.
 - **Place search loads forever (seen 2026-11-10, Simulator, on plane Wi-Fi).** Typing in Add place shows "Searching…" and never shows results.
   - Logs show the 8 s "slow connection" message firing. About 50 s later Apple's completer failed with `MKErrorDomain error 1` (`MKError.unknown`).

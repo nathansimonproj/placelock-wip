@@ -58,12 +58,31 @@ struct SyncEngineTests {
         let engine = makeEngine()
         await sync(engine) // empty server: records that the first sync happened
         await sync(engine) // pulls back its own upload once (merge ignores it)
-        let newest = server.rows[gym.id]?.syncedAt
+        let newest = server.rows[gym.id]?.syncedAt.map(FakeServer.cursor)
         await sync(engine)
 
         #expect(server.signIns == 1) // the saved session is reused
-        #expect(server.pulls == [nil, .distantPast, newest])
+        #expect(server.pulls == [nil, nil, newest])
         #expect(phone.places.map(\.id) == [gym.id])
+    }
+
+    /// The bug from 2026-11-19: the cursor lost precision, so every pass pulled the newest row again.
+    @Test func quietPassesPullNothing() async {
+        phone.places = [gym]
+        let engine = makeEngine()
+        await sync(engine)
+        await sync(engine) // its own upload comes back once
+        server.pulledRows = 0
+        await sync(engine)
+        await sync(engine)
+
+        #expect(server.pulledRows == 0)
+    }
+
+    @Test func cursorIsTheServersTextUnchanged() {
+        let json = Data(#"[{"id":1,"synced_at":"2026-11-19T21:00:08.123456+00:00"},{"id":2,"synced_at":"2026-11-19T21:00:09.654321+00:00"}]"#.utf8)
+        #expect(SupabaseBackend.newestSyncedAt(in: json) == "2026-11-19T21:00:09.654321+00:00")
+        #expect(SupabaseBackend.newestSyncedAt(in: Data("[]".utf8)) == nil)
     }
 
     // MARK: Uploads
@@ -228,8 +247,10 @@ final class FakeServer: SyncBackend {
     private(set) var hasStoredSession = false
     private(set) var signIns = 0
     private(set) var accountDeleted = false
-    /// `syncedAfter` of every pull, in order.
-    private(set) var pulls: [Date?] = []
+    /// The cursor of every pull, in order.
+    private(set) var pulls: [String?] = []
+    /// Rows handed out by pulls so far.
+    var pulledRows = 0
     private(set) var placeUploads: [[PlaceRecord]] = []
     /// Places by id, with the server's `syncedAt` set.
     private(set) var rows: [UUID: PlaceRecord] = [:]
@@ -280,12 +301,18 @@ final class FakeServer: SyncBackend {
         return UUID()
     }
 
-    func places(syncedAfter after: Date?) async throws -> [PlaceRecord] {
+    /// Like Postgres, cursors keep full precision: the exact seconds, as text.
+    static func cursor(_ date: Date) -> String { String(date.timeIntervalSinceReferenceDate) }
+
+    func places(syncedAfter cursor: String?) async throws -> PlacePage {
         try call("pull")
-        pulls.append(after)
-        return rows.values
+        pulls.append(cursor)
+        let after = cursor.flatMap(Double.init).map(Date.init(timeIntervalSinceReferenceDate:))
+        let page = rows.values
             .filter { row in after.map { row.syncedAt! > $0 } ?? true }
             .sorted { $0.syncedAt! < $1.syncedAt! }
+        pulledRows += page.count
+        return PlacePage(rows: page, cursor: page.last?.syncedAt.map(Self.cursor))
     }
 
     func profile(of user: UUID) async throws -> ProfileRecord {

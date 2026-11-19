@@ -66,6 +66,9 @@ final class SyncEngine: ObservableObject {
         var outbox = Outbox()
         /// Server time of the newest row pulled. Nil until the first successful sync.
         var lastPull: Date?
+        /// The newest row's `synced_at` text, passed back unchanged as the next pull's cursor
+        /// (see `PlacePage.cursor`). State saved before it existed pulls everything once.
+        var pullCursor: String?
         /// See `SyncRules.MergeInput.editedAt`.
         var editedAt: [UUID: Date] = [:]
         /// When the user deleted their account. Backup stays off while set.
@@ -232,6 +235,7 @@ final class SyncEngine: ObservableObject {
                 // The stored session can't be refreshed (revoked or expired for good).
                 Log.sync.error("Session unusable, starting a new account: \(String(describing: error), privacy: .public)")
                 state.lastPull = nil // the new account starts empty: upload everything on its first sync
+                state.pullCursor = nil
             }
         }
         let userID = try await backend.signInAnonymously()
@@ -240,7 +244,8 @@ final class SyncEngine: ObservableObject {
     }
 
     private func pullPlaces(_ backend: any SyncBackend) async throws {
-        let rows = try await backend.places(syncedAfter: state.lastPull)
+        let page = try await backend.places(syncedAfter: state.pullCursor)
+        let rows = page.rows
 
         let isFirstSync = state.lastPull == nil
         let local = self.local
@@ -251,6 +256,7 @@ final class SyncEngine: ObservableObject {
         if let places = result.places { local.applyRemotePlaces(places) }
         // On the first sync, record that it happened even if the server had no rows yet.
         state.lastPull = rows.compactMap(\.syncedAt).max() ?? state.lastPull ?? .distantPast
+        state.pullCursor = page.cursor ?? state.pullCursor
         if !rows.isEmpty || !result.uploads.isEmpty {
             Log.sync.info("Pulled \(rows.count) places (first sync: \(isFirstSync)), queued \(result.uploads.count) uploads")
         }

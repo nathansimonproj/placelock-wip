@@ -4,6 +4,15 @@ import Supabase
 /// The server calls sync makes. `SupabaseBackend` is the real one; unit tests use a fake.
 /// Errors pass through as the server sent them (`URLError` offline, `PostgrestError` from the
 /// database), because `SyncEngine` decides what to retry from their type.
+/// One pull of `places` rows.
+struct PlacePage {
+    var rows: [PlaceRecord]
+    /// The newest row's `synced_at` exactly as the server wrote it, to pass back as the next
+    /// pull's cursor. Not a `Date`: Postgres keeps microseconds, and a `Date` round trip lost
+    /// them, so `synced_at > cursor` matched the newest row again on every pass.
+    var cursor: String?
+}
+
 @MainActor
 protocol SyncBackend: AnyObject {
     /// True if a signed-in session is saved on this phone.
@@ -12,8 +21,8 @@ protocol SyncBackend: AnyObject {
     /// and any other error when the session can't be used any more.
     func storedUserID() async throws -> UUID
     func signInAnonymously() async throws -> UUID
-    /// `places` rows written after `after` (every row when nil), oldest first.
-    func places(syncedAfter after: Date?) async throws -> [PlaceRecord]
+    /// `places` rows written after `cursor` (every row when nil), oldest first.
+    func places(syncedAfter cursor: String?) async throws -> PlacePage
     func profile(of user: UUID) async throws -> ProfileRecord
     func updateProfile(_ profile: ProfileRecord, of user: UUID) async throws
     func upsert(places: [PlaceRecord]) async throws
@@ -46,10 +55,20 @@ final class SupabaseBackend: SyncBackend {
         try await client.auth.signInAnonymously().user.id
     }
 
-    func places(syncedAfter after: Date?) async throws -> [PlaceRecord] {
+    func places(syncedAfter cursor: String?) async throws -> PlacePage {
         var query = client.from("places").select()
-        if let after { query = query.gt("synced_at", value: Self.iso(after)) }
-        return try await query.order("synced_at").execute().value
+        if let cursor { query = query.gt("synced_at", value: cursor) }
+        let response: PostgrestResponse<[PlaceRecord]> = try await query.order("synced_at").execute()
+        return PlacePage(rows: response.value, cursor: Self.newestSyncedAt(in: response.data))
+    }
+
+    /// The last `synced_at` string in a JSON array of rows sorted by it, untouched.
+    static func newestSyncedAt(in json: Data) -> String? {
+        struct Stamp: Decodable {
+            var syncedAt: String?
+            enum CodingKeys: String, CodingKey { case syncedAt = "synced_at" }
+        }
+        return (try? JSONDecoder().decode([Stamp].self, from: json))?.compactMap(\.syncedAt).last
     }
 
     func profile(of user: UUID) async throws -> ProfileRecord {
@@ -80,9 +99,4 @@ final class SupabaseBackend: SyncBackend {
         try? await client.auth.signOut(scope: .local)
     }
 
-    private static func iso(_ date: Date) -> String {
-        let f = ISO8601DateFormatter()
-        f.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        return f.string(from: date)
-    }
 }
