@@ -9,7 +9,7 @@ include:
 
 settings:
   base:
-    DEVELOPMENT_TEAM: PAID_TEAM_ID # TODO: your paid team ID (developer.apple.com › Membership details)
+    DEVELOPMENT_TEAM: R6W24T35J6 # paid Apple Developer Program team (same ID as the old Personal Team)
 
 targets:
   PlaceLock:
