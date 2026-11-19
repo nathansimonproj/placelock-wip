@@ -19,10 +19,9 @@ struct AddPlaceView: View {
     @State private var radius: Double = 150
     @State private var center: CLLocationCoordinate2D?
     @State private var resolving = false
-    /// Where the map started. If it's still there when a fresh GPS fix arrives, we move to the fix.
-    @State private var startCenter: CLLocationCoordinate2D?
-    // A fixed starting region, not `.userLocation`: following the user re-centers the map on every
-    // redraw, and with the camera-change handler below that became an endless redraw loop.
+    /// A new place opens on where you are (iOS's last known location); editing opens on the place.
+    /// Always a fixed region we set, never `.userLocation`: MapKit writes a following camera back
+    /// into this binding, and that re-ran `body` forever (100% CPU, the sheet never appeared).
     @State private var camera: MapCameraPosition
 
     init(slot: String? = nil, editing: Place? = nil) {
@@ -31,11 +30,14 @@ struct AddPlaceView: View {
         _name = State(initialValue: editing?.name ?? slot ?? "")
         _address = State(initialValue: editing?.address)
         _radius = State(initialValue: editing?.radius ?? 150)
-        let start = editing?.coordinate ?? CLLocationManager().location?.coordinate
+        let start = editing?.coordinate ?? Self.whereYouAre
         _center = State(initialValue: start)
-        _startCenter = State(initialValue: start)
         _camera = State(initialValue: start.map(Self.region) ?? .automatic)
     }
+
+    /// iOS keeps the phone's latest location for every app, so this is instant. Nil only if the
+    /// phone has never had a location fix.
+    private static var whereYouAre: CLLocationCoordinate2D? { CLLocationManager().location?.coordinate }
 
     private var title: String {
         if editing != nil { return "Edit place" }
@@ -63,24 +65,8 @@ struct AddPlaceView: View {
             }
             .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
-            .onAppear {
-                // No auto-focus: on a phone the keyboard would open over the map before you've seen it.
-                if let center { search.bias(around: center) }
-            }
-            .task {
-                // iOS's cached location can be hours old (e.g. the last airport you were at), so get a
-                // fresh fix and move there, unless the user has already moved the map or picked a result.
-                guard editing == nil, let here = try? await model.location.currentLocation(maxAccuracy: 1000)
-                else { return }
-                search.bias(around: here.coordinate)
-                let untouched = center == nil || startCenter.map { start in
-                    center.map { abs($0.latitude - start.latitude) < 1e-4 && abs($0.longitude - start.longitude) < 1e-4 } ?? true
-                } ?? false
-                guard untouched else { return }
-                center = here.coordinate
-                startCenter = here.coordinate
-                camera = Self.region(here.coordinate)
-            }
+            // No auto-focus on search: on a phone the keyboard would open over the map before you've seen it.
+            .onAppear { if let center { search.bias(around: center) } }
             // Swiping down grabbed slider and map drags and closed the sheet without saving.
             // Cancel and Save are the only ways out.
             .interactiveDismissDisabled()
@@ -155,19 +141,40 @@ struct AddPlaceView: View {
                 UserAnnotation()
                 if let center {
                     MapCircle(center: center, radius: radius)
-                        .foregroundStyle(Color.accentColor.opacity(0.2))
-                        .stroke(Color.accentColor, lineWidth: 2)
+                        .foregroundStyle(Color(uiColor: Brand.accent).opacity(0.2))
+                        .stroke(Color(uiColor: Brand.accent), lineWidth: 2)
                 }
             }
+            // The usual blue "you are here" dot (it takes the map's tint; sage blended into the pin).
+            .tint(.blue)
             .simultaneousGesture(TapGesture().onEnded { dismissKeyboard() })
             // .onEnd, not .continuous: update the circle once the drag settles.
             .onMapCameraChange(frequency: .onEnd) { context in
                 center = context.region.center
+                search.bias(around: context.region.center)
             }
             Image(systemName: "mappin")
                 .font(.title).foregroundStyle(.tint)
                 .offset(y: -14)
                 .allowsHitTesting(false)
+        }
+        .overlay(alignment: .bottomTrailing) {
+            // Back to where you are. Not MapKit's MapUserLocationButton: it switches the camera to
+            // `.userLocation`, which loops (see `camera`).
+            Button {
+                guard let here = Self.whereYouAre else { return }
+                center = here
+                camera = Self.region(here)
+            } label: {
+                Image(systemName: "location.fill")
+                    .font(.body.weight(.semibold))
+                    .frame(width: 40, height: 40)
+                    .background(.regularMaterial, in: Circle())
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(.tint)
+            .padding(10)
+            .accessibilityLabel("Go to my location")
         }
     }
 
