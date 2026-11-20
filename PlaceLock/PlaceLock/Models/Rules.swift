@@ -36,7 +36,7 @@ enum LockRules {
     static func decide(_ input: Input) -> (action: Action, paused: Set<UUID>) {
         // Without Always, iOS can't wake us when you leave, so nothing may stay unlocked.
         guard input.hasAlways else {
-            return (input.session == nil ? .stayLocked : .lock(reason: "Location is no longer set to Always. Apps locked."),
+            return (input.session == nil ? .stayLocked : .lock(reason: "Location is no longer set to Always. Apps blocked."),
                     input.paused)
         }
 
@@ -50,12 +50,12 @@ enum LockRules {
             return (unlockable.map { .unlock(at: $0.id) } ?? .stayLocked, paused)
         }
         guard let place = input.places.first(where: { $0.id == session.placeID }) else {
-            return (.lock(reason: "That place was deleted. Apps locked."), paused)
+            return (.lock(reason: "That place was deleted. Apps blocked."), paused)
         }
         // Only a definite "outside" ends the session. Unknown readings are ignored.
         if input.presence[place.id] == .outside {
             if let next = unlockable { return (.move(from: place.id, to: next.id), paused) }
-            return (.lock(reason: "Left \(place.name), apps locked."), paused)
+            return (.lock(reason: "Left \(place.name), apps blocked."), paused)
         }
         return (.stayUnlocked, paused)
     }
@@ -144,6 +144,15 @@ private extension Place {
 
 enum BlockRules {
     static let removalDelay: TimeInterval = 24 * 60 * 60
+
+    /// iOS shields at most 50 apps, 50 categories and 50 websites. Developers report that above
+    /// that it silently blocks nothing, so picks past 50 of a kind are dropped.
+    static let maxPerKind = 50
+
+    /// `set` with at most `maxPerKind` items. Which ones are kept is arbitrary: tokens have no order.
+    static func capped<T: Hashable>(_ set: Set<T>) -> Set<T> {
+        set.count <= maxPerKind ? set : Set(set.prefix(maxPerKind))
+    }
 
     /// Called with the block list before and after an edit (swipe, picker). While `delayed`,
     /// anything removed stays blocked and gets a removal date 24 h out instead. Additions are

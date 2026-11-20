@@ -97,14 +97,14 @@ struct OnboardingView: View {
     private var locationStep: some View {
         StepPage(symbol: "location.fill",
                  title: "Apps unblock where you choose",
-                 text: "PlaceLock keeps distracting apps blocked everywhere except the places you pick, like the gym or home.\n\nTo notice when you arrive and leave, even with the app closed, it needs your location set to **Always**. Your location stays on this phone.") {
+                 text: "Spots keeps distracting apps blocked everywhere except the places you pick, like the gym or home.\n\nTo notice when you arrive and leave, even with the app closed, it needs your location set to **Always**. Your location stays on this phone.") {
             if location.canWatchPlaces {
                 Done("Location is set to Always")
             } else if location.needsPrecise {
-                Text("Turn on **Precise Location** in Settings › PlaceLock › Location. Without it, iOS can't tell when you arrive.")
+                Text("Turn on **Precise Location** in Settings › Spots › Location. Without it, iOS can't tell when you arrive.")
                     .font(.footnote).foregroundStyle(.secondary).multilineTextAlignment(.center)
             } else if location.authorization == .authorizedWhenInUse {
-                Text("Location is set to While Using. Choose **Always** in Settings › PlaceLock › Location.")
+                Text("Location is set to While Using. Choose **Always** in Settings › Spots › Location.")
                     .font(.footnote).foregroundStyle(.secondary).multilineTextAlignment(.center)
             }
         } actions: {
@@ -125,7 +125,7 @@ struct OnboardingView: View {
     private var screenTimeStep: some View {
         StepPage(symbol: "hourglass",
                  title: "Allow Screen Time access",
-                 text: "PlaceLock blocks apps through Screen Time, the same way iOS's own limits work. Apple asks you to confirm with Face ID or your passcode.") {
+                 text: "Spots blocks apps through Screen Time, the same way iOS's own limits work. Apple asks you to confirm with Face ID or your passcode.") {
             if model.screenTimeAccess == .approved {
                 Done("Screen Time access is on")
             } else if let screenTimeError {
@@ -154,7 +154,9 @@ struct OnboardingView: View {
     private var appsStep: some View {
         StepPage(symbol: "apps.iphone",
                  title: "Pick apps to block",
-                 text: "Choose the apps that distract you. They stay blocked until you're at one of your places.\n\nFor your first 24 hours you can change this freely. After that, removing an app takes 24 hours, so you can't unblock one on a whim.") {
+                 text: LocalizedStringKey("Choose the apps that distract you. They stay blocked until you're at one of your places."
+                     + (ShieldManager.isSimulated ? "" : " \(Brand.websiteTip)")
+                     + "\n\nFor your first 24 hours you can change this freely. After that, removing an app takes 24 hours, so you can't unblock one on a whim.")) {
             if !model.blockList.isEmpty {
                 Done("Blocking \(model.blockList.summary)")
             }

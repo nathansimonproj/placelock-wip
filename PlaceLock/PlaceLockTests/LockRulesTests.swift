@@ -80,7 +80,7 @@ struct LockRulesTests {
 
     @Test func leavingLocks() {
         let action = decide(session: session(at: gym), presence: [gym.id: .outside]).0
-        #expect(action == .lock(reason: "Left Gym, apps locked."))
+        #expect(action == .lock(reason: "Left Gym, apps blocked."))
     }
 
     @Test func leavingIntoAnotherPlaceMovesTheSession() {
@@ -91,17 +91,17 @@ struct LockRulesTests {
     @Test func leavingIntoAPausedPlaceLocks() {
         let action = decide(session: session(at: gym), paused: [home.id],
                             presence: [gym.id: .outside, home.id: .inside]).0
-        #expect(action == .lock(reason: "Left Gym, apps locked."))
+        #expect(action == .lock(reason: "Left Gym, apps blocked."))
     }
 
     @Test func deletedPlaceLocks() {
         let action = decide(session: session(at: gym), presence: [:], places: [home]).0
-        #expect(action == .lock(reason: "That place was deleted. Apps locked."))
+        #expect(action == .lock(reason: "That place was deleted. Apps blocked."))
     }
 
     @Test func losingAlwaysLocationLocks() {
         let action = decide(session: session(at: gym), presence: [gym.id: .inside], hasAlways: false).0
-        #expect(action == .lock(reason: "Location is no longer set to Always. Apps locked."))
+        #expect(action == .lock(reason: "Location is no longer set to Always. Apps blocked."))
     }
 
     /// No time limit: a long stay stays unlocked until iOS reports you've left.

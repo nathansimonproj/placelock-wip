@@ -182,6 +182,12 @@ struct BlockRulesTests {
         #expect(Set(pending.keys) == [2, 3])
     }
 
+    @Test func pickerSelectionsAreCappedAtFifty() {
+        #expect(BlockRules.capped(Set(1...63)).count == 50) // iOS blocks nothing past 50
+        #expect(BlockRules.capped(Set(1...50)) == Set(1...50))
+        #expect(BlockRules.capped(Set(1...63)).isSubset(of: Set(1...63)))
+    }
+
     @Test func paidBuildDropsLeftoverStandInApps() {
         let leftover = list(["Instagram", "TikTok"], pending: ["Instagram": now])
         let cleaned = leftover.droppingSimulatedApps()

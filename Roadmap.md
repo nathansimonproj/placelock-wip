@@ -41,7 +41,7 @@ Until the paid account, these can't be done: real shields, Apple's app picker, t
 ### Phase 0: Start Apple's clocks (about an hour)
 - [x] Join the Apple Developer Program ($99/yr) (done by 2026-11-19; team `R6W24T35J6` in `project-paid.yml`).
 - [x] Request the Family Controls distribution entitlement (submitted 2026-11-19). Apple reportedly approves per team, covering the app and both extensions. No confirmation email comes: check each App ID in Certificates, Identifiers & Profiles for "Family Controls (Distribution)". Waits of weeks are common.
-- [ ] Check that the name "PlaceLock" is available in App Store Connect.
+- [ ] Check that the name "Spots" is available in App Store Connect (renamed from PlaceLock 2026-11-19).
 
 ### Phase 1: Real blocking (code done 2026-11-12, waiting on the paid team to test)
 All of this is written and compiles in the paid build (`CODE_SIGNING_ALLOWED=NO`). None of it has run on a phone yet.
@@ -83,7 +83,14 @@ All of this is written and compiles in the paid build (`CODE_SIGNING_ALLOWED=NO`
   - Tried and dropped: a custom tab bar (iOS's bar showed through under it on Rules), and a light unlocked look.
 - [x] **Block screen "Estimated @" (2026-11-19).** "Instagram is locked / Estimated @ Suzzallo Library · 2 min ago / Opens at Gym, Field or Home." The app saves its last guess in `SharedStore.estimate` after each reconcile (at most once a minute, right away when the lock state changes), since the block screen can't read location. Name order: the saved place you're inside, Apple Maps' name for the spot (`CLGeocoder`, sends the location to Apple), then "400 m from Gym". Hidden after a day. Logic in `Location/Estimate.swift`, tests in `EstimateTests`. Check on the iPhone that background wakes get a fix in time.
 - [x] **Precise Location check (2026-11-19).** With Precise Location off, iOS won't watch places at all, so nothing unlocks. `LocationService.canWatchPlaces` needs Always and Precise. Without Precise the app locks like losing Always, Home's banner says "Precise Location is off", and onboarding asks for it.
-- [ ] App icon, final tab name for "Rules", notification wording to match ("Left Gym, apps blocked"), dark mode and large text checks.
+- [x] **Tab name, notification wording, picker limits (2026-11-19).**
+  - The second tab is **Spots** (still `RulesView` in code, and `-tab rules` to open on it).
+  - Notifications: "At Gym, apps unblocked." and "Left Gym, apps blocked." Every lock message now says "blocked".
+  - Picking a category blocks its websites too (`shield.webDomainCategories`), not just its apps.
+  - iOS shields at most 50 apps, 50 categories and 50 websites, and reportedly blocks nothing past that. `AppModel.setSelection` keeps 50 of each and says so (`BlockRules.capped`).
+- [x] **Renamed to Spots (2026-11-19).** The home screen name, permission prompts, notifications, onboarding and block screen say Spots. Bundle IDs (`com.nsimon.PlaceLock`), the App Group, the CLMonitor name (`PlaceLockMonitor`), code and folders keep PlaceLock: changing them would make iOS treat it as a new app, drop its watched places, and not match the Family Controls request. Check that "Spots" is free in App Store Connect; the App Store name can differ from the home screen name if not.
+- [x] App icon (2026-11-19): sage green, the two breathing rings and a white lock (`Assets.xcassets/AppIcon.appiconset/AppIcon.png`, 1024 px, no alpha).
+- [ ] Large-text check of Home and Spots.
 - [ ] Rewrite Plan.md to match the automatic-unlock design. It still describes tap-and-scan.
 
 ### Backend: Supabase sync (started 2026-11-11)
@@ -240,7 +247,7 @@ Tried and dropped. It needed a Shortcuts "App Is Opened" automation for each app
 - [x] App's own log lines (`com.nsimon.PlaceLock`) for debugging. See `App/Log.swift`.
 
 ## Known issues (to fix)
-- **The app picker is crowded with websites (seen 2026-11-19, first paid build on the iPhone).** Apple's `FamilyActivityPicker` lists many websites next to the apps, which makes it hard to pick just the few things you want. Blocking sites matters (youtube.com is the obvious way around a blocked YouTube app), but how many should we block, and how?
+- **The app picker is crowded with websites (seen 2026-11-19, first paid build on the iPhone).** Partly settled 2026-11-19: categories now block their websites too, and selections are capped at 50 of each kind (see Phase 3). Still open: pairing an app with its website. Apple's `FamilyActivityPicker` lists many websites next to the apps, which makes it hard to pick just the few things you want. Blocking sites matters (youtube.com is the obvious way around a blocked YouTube app), but how many should we block, and how?
   - **What the code does now:** `SharedStore.shield` blocks the apps, app categories and individual websites you pick. Picking a category blocks its apps only. Its websites stay open, because `shield.webDomainCategories` isn't set.
   - **Questions to settle:**
     1. Should picking an app also block its main website (YouTube → youtube.com)? Tokens don't carry names, so we can't pair them automatically. The user would have to pick both, or we'd prompt them to.

@@ -33,7 +33,7 @@ struct RootView: View {
                 .tabItem { Label("Home", systemImage: "house.fill") }
                 .tag(Tab.home)
             RulesView(placeSheet: $placeSheet, showPicker: $showPicker)
-                .tabItem { Label("Rules", systemImage: "slider.horizontal.3") }
+                .tabItem { Label("Spots", systemImage: "slider.horizontal.3") }
                 .tag(Tab.rules)
         }
         .sheet(item: $placeSheet) { sheet in
@@ -62,7 +62,7 @@ extension View {
         #if SCREEN_TIME
         familyActivityPicker(isPresented: isPresented,
                              selection: Binding(get: { model.blockList.selection },
-                                                set: { model.blockList.selection = $0 }))
+                                                set: { model.setSelection($0) }))
         #else
         sheet(isPresented: isPresented) { SimulatedAppPicker().environmentObject(model) }
         #endif

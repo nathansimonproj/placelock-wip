@@ -12,12 +12,16 @@ enum Brand {
             : UIColor(red: 0x3E / 255, green: 0x5F / 255, blue: 0x51 / 255, alpha: 1)
     }
 
+    /// Picking an app doesn't block its website, and iOS doesn't say which site goes with which
+    /// app, so the app picker steps suggest picking it too.
+    static let websiteTip = "Also pick each app's website (like youtube.com), so the browser isn't a way around."
+
     /// The block screen's button.
     static let shieldButton = "Back to focus"
 
     /// "Opens at Library, Gym or Home."
     static func opensAt(_ places: [String]) -> String {
-        places.isEmpty ? "Add a place in PlaceLock to open it there." : "Opens at \(list(places))."
+        places.isEmpty ? "Add a place in Spots to open it there." : "Opens at \(list(places))."
     }
 
     /// The block screen's subtitle, two lines:

@@ -1,10 +1,12 @@
-# PlaceLock
+# Spots
+
+*Formerly PlaceLock. The app is called Spots; the code, Xcode project, bundle IDs (`com.nsimon.PlaceLock`) and App Group still say PlaceLock, because changing them would make iOS treat it as a new app.*
 
 An iPhone app that keeps distracting apps blocked everywhere except the places you choose.
 
 Pick the apps that distract you and the places where they're allowed, like the gym or home. The apps stay blocked by default. When you arrive at one of your places they unblock on their own, and when you leave they block again. There's no unlock button.
 
-> **Work in progress.** PlaceLock isn't on the App Store. The default build only *simulates* blocking. Real blocking uses Apple's Screen Time API, which needs a paid Apple Developer account. That code is written and compiles but hasn't run on a phone yet. See [Roadmap.md](Roadmap.md) for what works and what's next.
+> **Work in progress.** Spots isn't on the App Store. The default build only *simulates* blocking. Real blocking uses Apple's Screen Time API, which needs a paid Apple Developer account. That code is written and compiles but hasn't run on a phone yet. See [Roadmap.md](Roadmap.md) for what works and what's next.
 
 ## How it works
 
@@ -47,7 +49,7 @@ Put your paid team ID in `project-paid.yml` first. Run plain `xcodegen generate`
 
 | Argument | Effect |
 | --- | --- |
-| `-tab rules` | Open on the Rules tab |
+| `-tab rules` | Open on the Spots tab |
 | `-sheet add` | Open Add place |
 | `-onboardingStep apps` | Open first-run setup on a step (`location`, `screenTime`, `apps`, `places`, `notifications`) |
 | `-demoHistory YES` | Fill today with two sample visits, for screenshots |
@@ -83,7 +85,7 @@ PlaceLock/
     Blocking/              The block list and ShieldManager (Screen Time, or simulated)
     Sync/                  Supabase backup: engine, merge rules, records, server calls
     Shared/                Code shared with the extensions: brand colors and text, SharedStore
-    Views/                 SwiftUI screens: Home, Rules, Add place, first-run setup, Backup, Debug
+    Views/                 SwiftUI screens: Home, Spots (`RulesView`), Add place, first-run setup, Backup, Debug
   Extensions/
     Shield/                The block screen shown over a blocked app
   PlaceLockTests/          Unit tests
@@ -99,7 +101,7 @@ Decisions live in pure functions (`LockRules`, `PlaceRules`, `BlockRules`, `Sync
 - Your location stays on the phone. The server stores your saved places (with coordinates), your unlock history and your setup window, under an anonymous account.
 - The Supabase URL and publishable key are in `project.yml` on purpose: publishable keys are meant to ship inside apps. Row-level security protects the data, so each account can only read and write its own rows.
 - Remove `SupabaseURL` and `SupabaseKey` from `project.yml` to turn sync off.
-- Rules › Backup › **Delete account** removes every row on the server. Places and blocking keep working on the phone.
+- Spots › Backup › **Delete account** removes every row on the server. Places and blocking keep working on the phone.
 - To name your location on the block screen, the app looks up its coordinates with Apple Maps (`CLGeocoder`).
 
 ## Docs

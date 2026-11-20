@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>PlaceLock</string>
+	<string>Spots</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -21,9 +21,9 @@
 	<key>CFBundleVersion</key>
 	<string>1</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>PlaceLock needs Always access so it can lock your apps again when you leave an allowed place, even if the app is closed.</string>
+	<string>Spots needs Always access so it can lock your apps again when you leave an allowed place, even if the app is closed.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>PlaceLock checks that you're at one of your allowed places before unblocking apps.</string>
+	<string>Spots checks that you're at one of your allowed places before unblocking apps.</string>
 	<key>SupabaseKey</key>
 	<string>sb_publishable_i-zjtTV_7B-8THYGmG2agA_9XXez0BI</string>
 	<key>SupabaseURL</key>

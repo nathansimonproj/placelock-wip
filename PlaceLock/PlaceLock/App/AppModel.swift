@@ -1,4 +1,5 @@
 import CoreLocation
+import FamilyControls
 import Foundation
 import ManagedSettings
 import UIKit
@@ -348,7 +349,7 @@ final class AppModel: ObservableObject {
         session = started
         SyncEngine.shared.sessionStarted(started)
         message = nil
-        notify("Arrived at \(place.name), apps unblocked.")
+        notify("At \(place.name), apps unblocked.")
     }
 
     // MARK: Screen Time access
@@ -366,7 +367,7 @@ final class AppModel: ObservableObject {
         guard access != screenTimeAccess else { return }
         if access == .turnedOff {
             Log.app.error("Screen Time access was turned off")
-            notify("Screen Time access is off, so PlaceLock can't block apps. Open PlaceLock to turn it back on.")
+            notify("Screen Time access is off, so Spots can't block apps. Open Spots to turn it back on.")
         } else {
             Log.app.info("Screen Time access: \(access.rawValue, privacy: .public)")
         }
@@ -439,6 +440,21 @@ final class AppModel: ObservableObject {
     }
 
     /// "Keep blocked": cancel a pending removal. Pass the item whose removal to cancel.
+    /// What Apple's app picker returns, capped at iOS's limit of 50 of each kind.
+    func setSelection(_ picked: FamilyActivitySelection) {
+        var selection = picked
+        selection.applicationTokens = BlockRules.capped(picked.applicationTokens)
+        selection.categoryTokens = BlockRules.capped(picked.categoryTokens)
+        selection.webDomainTokens = BlockRules.capped(picked.webDomainTokens)
+        let trimmed = picked.applicationTokens.count + picked.categoryTokens.count + picked.webDomainTokens.count
+            - selection.applicationTokens.count - selection.categoryTokens.count - selection.webDomainTokens.count
+        if trimmed > 0 {
+            Log.app.info("Picker selection over the limit: dropped \(trimmed)")
+            message = "Kept 50 of each. iOS can't block more than that."
+        }
+        blockList.selection = selection
+    }
+
     func keepBlocked(app name: String) { blockList.pendingRemovals.simulated[name] = nil }
     func keepBlocked(token: ApplicationToken) { blockList.pendingRemovals.apps[token] = nil }
     func keepBlocked(category: ActivityCategoryToken) { blockList.pendingRemovals.categories[category] = nil }
@@ -506,7 +522,7 @@ final class AppModel: ObservableObject {
 
     private func notify(_ text: String) {
         let content = UNMutableNotificationContent()
-        content.title = "PlaceLock"
+        content.title = "Spots"
         content.body = text
         let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil)
         UNUserNotificationCenter.current().add(request)
@@ -519,7 +535,7 @@ final class AppModel: ObservableObject {
     /// A heads-up when a waiting place or change turns on.
     private func scheduleActivationNotice(id: UUID, at date: Date, text: String, change: Bool = false) {
         let content = UNMutableNotificationContent()
-        content.title = "PlaceLock"
+        content.title = "Spots"
         content.body = text
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: max(1, date.timeIntervalSinceNow), repeats: false)
         UNUserNotificationCenter.current().add(

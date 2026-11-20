@@ -42,10 +42,12 @@ enum SharedStore {
         set { defaults.set(newValue, forKey: Keys.allowedPlaces) }
     }
 
-    /// Turns on shields for `selection`. The app and the extensions share the default store.
+    /// Turns on shields for `selection`: its apps, its categories' apps and websites, and its websites. The app and the extensions share the default store.
     static func shield(_ selection: FamilyActivitySelection, in store: ManagedSettingsStore = ManagedSettingsStore()) {
         store.shield.applications = selection.applicationTokens.isEmpty ? nil : selection.applicationTokens
         store.shield.applicationCategories = selection.categoryTokens.isEmpty ? nil : .specific(selection.categoryTokens)
+        // A picked category blocks its websites too, so the browser isn't an easy way around it.
+        store.shield.webDomainCategories = selection.categoryTokens.isEmpty ? nil : .specific(selection.categoryTokens)
         store.shield.webDomains = selection.webDomainTokens.isEmpty ? nil : selection.webDomainTokens
     }
 }

@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// Developer tools, kept off Home: pretend to be somewhere (debug builds) and try the
-/// simulated block screen (free developer account). Reached from Rules › Settings.
+/// simulated block screen (free developer account). Reached from Spots › Settings.
 struct DebugView: View {
     @EnvironmentObject private var model: AppModel
     @State private var shieldPreviewApp: String?

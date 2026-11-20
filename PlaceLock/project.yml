@@ -24,15 +24,15 @@ targets:
     info:
       path: PlaceLock/Info.plist
       properties:
-        CFBundleDisplayName: PlaceLock
+        CFBundleDisplayName: Spots
         UILaunchScreen: {}
         UIBackgroundModes: [location]
         # Backup and sync (Sync/SyncEngine.swift). The publishable key is meant to ship in apps:
         # row-level security, not the key, protects the data. Remove both to turn sync off.
         SupabaseURL: https://bdbyvdfugetapjysoiml.supabase.co
         SupabaseKey: sb_publishable_i-zjtTV_7B-8THYGmG2agA_9XXez0BI
-        NSLocationWhenInUseUsageDescription: PlaceLock checks that you're at one of your allowed places before unblocking apps.
-        NSLocationAlwaysAndWhenInUseUsageDescription: PlaceLock needs Always access so it can lock your apps again when you leave an allowed place, even if the app is closed.
+        NSLocationWhenInUseUsageDescription: Spots checks that you're at one of your allowed places before unblocking apps.
+        NSLocationAlwaysAndWhenInUseUsageDescription: Spots needs Always access so it can lock your apps again when you leave an allowed place, even if the app is closed.
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.nsimon.PlaceLock

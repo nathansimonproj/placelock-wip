@@ -18,7 +18,7 @@ struct RulesView: View {
                 if sync.isAvailable || DebugView.isAvailable { settings }
             }
             .calmList()
-            .navigationTitle("Rules")
+            .navigationTitle("Spots")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("How the 24-hour wait works", systemImage: "info.circle") { showInfo = true }
@@ -92,7 +92,9 @@ struct RulesView: View {
         } header: {
             Text("Blocked apps")
         } footer: {
-            Text("Blocked everywhere except your places. Swipe left to remove one.")
+            Text(ShieldManager.isSimulated
+                 ? "Blocked everywhere except your places. Swipe left to remove one."
+                 : "Blocked everywhere except your places. Swipe left to remove one.\n\(Brand.websiteTip)")
         }
         .calmRows()
     }

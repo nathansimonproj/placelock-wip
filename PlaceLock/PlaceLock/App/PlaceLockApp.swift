@@ -11,7 +11,7 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         return true
     }
 
-    // Show the "unlocked" / "apps locked" banners even if the app is open.
+    // Show the "apps unblocked" / "apps blocked" banners even if the app is open.
     func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification)
         async -> UNNotificationPresentationOptions {
         [.banner, .sound]
