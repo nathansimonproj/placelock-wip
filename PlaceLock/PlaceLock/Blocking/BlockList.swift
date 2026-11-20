@@ -32,6 +32,17 @@ struct BlockList: Codable {
                 && selection.webDomainTokens.isEmpty
     }
 
+    /// The list without stand-in names (and their pending removals), or nil if it had none.
+    /// The paid build drops them on load: they come over from the free build's saved data,
+    /// block nothing there, and would still be listed in Rules and on Home.
+    func droppingSimulatedApps() -> BlockList? {
+        guard !simulatedApps.isEmpty || !pendingRemovals.simulated.isEmpty else { return nil }
+        var list = self
+        list.simulatedApps = []
+        list.pendingRemovals.simulated = [:]
+        return list
+    }
+
     /// e.g. "3 apps, 1 category" or "Instagram, TikTok".
     var summary: String {
         if ShieldManager.isSimulated { return simulatedApps.joined(separator: ", ") }

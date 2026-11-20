@@ -1,6 +1,7 @@
 import CoreLocation
 import Foundation
 import ManagedSettings
+import UIKit
 import UserNotifications
 
 /// App state + the lock/unlock rules. One shared instance so background relaunches see the same state.
@@ -57,6 +58,8 @@ final class AppModel: ObservableObject {
     /// The block screen's "Estimated @" (`refreshEstimate` in Location/Estimate.swift).
     var estimateTask: Task<Void, Never>?
     var lastEstimateAttempt = Date.distantPast
+    /// The location from the latest significant-change wake (`watchMovement`).
+    var lastMove: CLLocation?
     /// Finished unlock visits from the last two weeks, oldest first. On this phone only.
     @Published private(set) var visits: [Visit] = [] { didSet { save(visits, key: Keys.visits) } }
     /// Places you're at but chose to stay locked at ("Lock until I leave").
@@ -129,6 +132,10 @@ final class AppModel: ObservableObject {
         // and `blockList` blocked apps because `session` wasn't loaded yet.
         _places = Published(initialValue: load([Place].self, key: Keys.places) ?? [])
         _blockList = Published(initialValue: load(BlockList.self, key: Keys.blockList) ?? BlockList())
+        if !ShieldManager.isSimulated, let cleaned = blockList.droppingSimulatedApps() {
+            _blockList = Published(initialValue: cleaned)
+            save(cleaned, key: Keys.blockList)
+        }
         _session = Published(initialValue: load(UnlockSession.self, key: Keys.session))
         _visits = Published(initialValue: load([Visit].self, key: Keys.visits) ?? [])
         #if DEBUG
@@ -240,8 +247,30 @@ final class AppModel: ObservableObject {
     }
 
     private func startWatchingPlaces() async {
-        await GeofenceMonitor.shared.start { await AppModel.shared.reconcile() }
+        await GeofenceMonitor.shared.start { await AppModel.shared.reconcileWhileAwake() }
         await GeofenceMonitor.shared.sync(places)
+        startWatchingMovement()
+    }
+
+    /// Backstop for the geofences: iOS wakes the app every time you move about 500 m, even if it
+    /// was force-quit, and the app re-checks every place (and refreshes the block screen's
+    /// "Estimated @"). The geofences still decide; this makes sure the app is awake to act on them.
+    private func startWatchingMovement() {
+        location.watchMovement { [weak self] here in
+            guard let self else { return }
+            Log.app.info("Moved (significant change, ±\(Int(here.horizontalAccuracy)) m)")
+            self.lastMove = here
+            self.lastEstimateAttempt = .distantPast // estimate again right away
+            Task { await self.reconcileWhileAwake() }
+        }
+    }
+
+    /// For wakes iOS gives the app in the background (a geofence or movement event): asks for a
+    /// few extra seconds so the unlock or lock finishes before iOS suspends the app again.
+    func reconcileWhileAwake() async {
+        let task = UIApplication.shared.beginBackgroundTask(withName: "reconcile")
+        await reconcile()
+        if task != .invalid { UIApplication.shared.endBackgroundTask(task) }
     }
 
     // MARK: Lock state

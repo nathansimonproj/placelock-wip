@@ -51,8 +51,11 @@ extension AppModel {
         case nil: break
         }
         if let activePlace { return activePlace.name } // unlocked: iOS already says where you are
-        // 200 m is enough to name a building or street, and comes quickly from Wi-Fi.
-        guard let here = try? await location.currentLocation(maxAccuracy: 200, timeout: 10) else { return nil }
+        // 200 m is enough to name a building or street, and comes quickly from Wi-Fi. A background
+        // wake is short, so after 5 s fall back to where a recent move woke the app.
+        let fresh = try? await location.currentLocation(maxAccuracy: 200, timeout: 5)
+        let recentMove = lastMove.flatMap { -$0.timestamp.timeIntervalSinceNow < 300 ? $0 : nil }
+        guard let here = fresh ?? recentMove else { return nil }
         let mapName = try? await CLGeocoder().reverseGeocodeLocation(here).first?.name
         return EstimateRules.label(at: here, places: places, mapName: mapName)
     }

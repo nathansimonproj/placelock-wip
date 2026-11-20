@@ -68,6 +68,7 @@ All of this is written and compiles in the paid build (`CODE_SIGNING_ALLOWED=NO`
 - [x] 24 h delay on removing blocked apps (2026-11-11).
 - [x] Unit tests: 41 tests in `PlaceLockTests/` for `LockRules`, `PlaceRules` and `BlockRules` (2026-11-11). Run with ⌘U or `xcodebuild test`.
 - [ ] A few days of real use: arrival and departure timing, after a restart, battery, radius sizes.
+- [x] **Arriving didn't unblock until the app was opened (seen 2026-11-19 on the iPhone, fix untested).** Apple's docs: Core Location treats `CLMonitor` events as When In Use unless the app holds a `CLServiceSession` asking for Always, which must be recreated right away on every launch, including background relaunches. `LocationService` now holds one (iOS 18+) and logs its diagnostics if iOS still limits it. Background wakes also ask for extra time (`AppModel.reconcileWhileAwake`), and significant-change updates (about every 500 m, even after a force-quit) re-check every place and refresh "Estimated @". **Test:** close the app, walk home, and check that apps unblock without opening PlaceLock.
 - [ ] Fix the place-search spinner (Known issues). The spinner now stops when the "slow connection" message shows (2026-11-12). The cause is still unconfirmed.
 
 ### Phase 3: Make it shippable to strangers (about 3–4 days)
@@ -239,6 +240,13 @@ Tried and dropped. It needed a Shortcuts "App Is Opened" automation for each app
 - [x] App's own log lines (`com.nsimon.PlaceLock`) for debugging. See `App/Log.swift`.
 
 ## Known issues (to fix)
+- **The app picker is crowded with websites (seen 2026-11-19, first paid build on the iPhone).** Apple's `FamilyActivityPicker` lists many websites next to the apps, which makes it hard to pick just the few things you want. Blocking sites matters (youtube.com is the obvious way around a blocked YouTube app), but how many should we block, and how?
+  - **What the code does now:** `SharedStore.shield` blocks the apps, app categories and individual websites you pick. Picking a category blocks its apps only. Its websites stay open, because `shield.webDomainCategories` isn't set.
+  - **Questions to settle:**
+    1. Should picking an app also block its main website (YouTube → youtube.com)? Tokens don't carry names, so we can't pair them automatically. The user would have to pick both, or we'd prompt them to.
+    2. Should picking a category also block that category's websites (`shield.webDomainCategories`)? That's broader and catches more ways around the block, but could also block sites people need.
+    3. Is there a cap on how many websites a shield can hold? Check Apple's `ShieldSettings` docs, then test on the phone with a big selection.
+    4. Can onboarding steer people to a short list? For example: "pick your 3–5 worst apps and their websites."
 - **Leaving with the app killed didn't lock in the Simulator (2026-11-19).** After `simctl terminate`, iOS didn't relaunch the app for the exit within 2 minutes; opening the app caught up and locked. Likely a Simulator limit, so test force-quit + walk out on the iPhone.
 - **Place search loads forever (seen 2026-11-10, Simulator, on plane Wi-Fi).** Typing in Add place shows "Searching…" and never shows results.
   - Logs show the 8 s "slow connection" message firing. About 50 s later Apple's completer failed with `MKErrorDomain error 1` (`MKError.unknown`).

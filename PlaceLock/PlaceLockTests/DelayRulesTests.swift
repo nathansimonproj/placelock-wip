@@ -182,6 +182,14 @@ struct BlockRulesTests {
         #expect(Set(pending.keys) == [2, 3])
     }
 
+    @Test func paidBuildDropsLeftoverStandInApps() {
+        let leftover = list(["Instagram", "TikTok"], pending: ["Instagram": now])
+        let cleaned = leftover.droppingSimulatedApps()
+        #expect(cleaned?.simulatedApps.isEmpty == true)
+        #expect(cleaned?.pendingRemovals.isEmpty == true)
+        #expect(list([]).droppingSimulatedApps() == nil) // nothing to drop: no extra save
+    }
+
     @Test func oldSaveWithoutPendingRemovalsStillLoads() throws {
         // Block lists saved before pendingRemovals existed must not reset to empty.
         struct OldBlockList: Encodable {
