@@ -186,12 +186,4 @@ struct SyncRulesTests {
         #expect(session.placeID == gym.id)
         #expect(session.visitStartedAt == now)
     }
-
-    @Test func recheckKeepsTheSameVisit() {
-        let session = UnlockSession(placeID: gym.id, startedAt: now)
-        let rechecked = session.rechecked(at: later(8 * 3600))
-        #expect(rechecked.id == session.id)
-        #expect(rechecked.visitStartedAt == now)
-        #expect(rechecked.startedAt == later(8 * 3600))
-    }
 }

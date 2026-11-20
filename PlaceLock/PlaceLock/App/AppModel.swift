@@ -40,7 +40,6 @@ final class AppModel: ObservableObject {
                 return
             }
             save(blockList, key: Keys.blockList)
-            SharedStore.blockedSelection = blockList.selection
             scheduleNextActivation()
             if session == nil { ShieldManager.lock(blockList) } // newly picked apps get blocked right away
         }
@@ -163,7 +162,6 @@ final class AppModel: ObservableObject {
         seedDefaultPlacesOnce()
         // The loads above skip the observers, so share what the extensions need explicitly.
         shareAllowedPlaces()
-        SharedStore.blockedSelection = blockList.selection
     }
 
     /// The block screen lists where apps unblock. Only places that work right now count.
@@ -230,6 +228,7 @@ final class AppModel: ObservableObject {
     /// Runs on every launch, including background relaunches for geofence events.
     func startUp() async {
         Log.app.info("Launch: \(self.places.count) places, session=\(self.activePlace?.name ?? "none", privacy: .public)")
+        ShieldManager.stopLegacySessionCap()
         if location.authorization == .notDetermined {
             // Watching places makes iOS show the location prompt right away. On a new install,
             // wait until first-run setup has explained why and the user has answered it.
@@ -308,7 +307,7 @@ final class AppModel: ObservableObject {
         }
         let (action, paused) = LockRules.decide(.init(
             places: places, session: session, paused: pausedPlaceIDs, presence: presence,
-            hasAlways: hasAlways, now: .now, checkSessionCap: simulatedSpot == nil))
+            hasAlways: hasAlways, now: .now))
         if paused != pausedPlaceIDs { pausedPlaceIDs = paused }
 
         switch action {
@@ -323,14 +322,11 @@ final class AppModel: ObservableObject {
             let moved = UnlockSession(placeID: to, startedAt: .now)
             session = moved
             SyncEngine.shared.sessionStarted(moved)
-            startSessionCap()
             Log.app.info("Moved session from \(from.uuidString, privacy: .public) to \(to.uuidString, privacy: .public)")
         case .lock(let reason):
             // LockRules locks a running session for one of three reasons; name it for history.
             let end: SessionEnd = !hasAlways ? .lostAlways : (activePlace == nil ? .placeDeleted : .left)
             lockNow(reason: reason, end: end)
-        case .recheck(let id):
-            if let place = places.first(where: { $0.id == id }) { await recheck(place) }
         }
     }
 
@@ -351,32 +347,8 @@ final class AppModel: ObservableObject {
         let started = UnlockSession(placeID: place.id, startedAt: .now)
         session = started
         SyncEngine.shared.sessionStarted(started)
-        startSessionCap()
         message = nil
         notify("Arrived at \(place.name), apps unblocked.")
-    }
-
-    /// Safety net for a missed exit event: after `maxSession`, confirm with a fresh GPS fix.
-    private func recheck(_ place: Place) async {
-        if let here = try? await location.currentLocation(),
-           place.distanceOutside(here) <= here.horizontalAccuracy {
-            Log.app.info("8 h recheck: still at \(place.name, privacy: .public)")
-            session = session?.rechecked(at: .now) ?? UnlockSession(placeID: place.id, startedAt: .now)
-            // The SessionCap extension may already have blocked apps again if this ran late.
-            ShieldManager.unlock()
-            startSessionCap()
-        } else {
-            pausedPlaceIDs.insert(place.id) // don't flip straight back to unlocked from a stale reading
-            lockNow(reason: "Couldn't confirm you're still at \(place.name). Apps locked until you leave and come back.",
-                    end: .recheckFailed)
-        }
-    }
-
-    /// Backstop for the 8 h recheck when the app isn't running: the SessionCap extension
-    /// blocks the apps again if the app hasn't confirmed you're still there in time.
-    private func startSessionCap() {
-        guard let session, let place = activePlace else { return }
-        ShieldManager.startSessionCap(from: session.startedAt, maxSession: LockRules.maxSession, placeName: place.name)
     }
 
     // MARK: Screen Time access
@@ -414,7 +386,6 @@ final class AppModel: ObservableObject {
         let wasUnlocked = session != nil
         Log.app.info("Lock (was unlocked: \(wasUnlocked)): \(reason ?? "manual", privacy: .public)")
         ShieldManager.lock(blockList)
-        ShieldManager.stopSessionCap()
         if let session { SyncEngine.shared.sessionEnded(session, reason: end) }
         session = nil
         if let reason {
@@ -479,10 +450,8 @@ final class AppModel: ObservableObject {
         activationTimer?.cancel()
         // Overdue items count too (wait 0 s): otherwise rescheduling just after something came due
         // would skip it until the next launch.
-        // The 8 h recheck counts too, so an app left open does it on time.
-        let recheckDue = session.map { $0.startedAt.addingTimeInterval(LockRules.maxSession) }
         let next = (places.flatMap { [$0.activeAfter, $0.pendingChange?.appliesAt] }
-                    + [blockList.pendingRemovals.next, recheckDue])
+                    + [blockList.pendingRemovals.next])
             .compactMap { $0 }.min()
         guard let next else { return }
         activationTimer = Task { [weak self] in

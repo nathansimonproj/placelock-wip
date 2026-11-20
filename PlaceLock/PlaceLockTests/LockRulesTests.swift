@@ -9,11 +9,9 @@ struct LockRulesTests {
     let home = Place(name: "Home", latitude: 47.6634, longitude: -122.3139, radius: 150)
 
     func decide(session: UnlockSession? = nil, paused: Set<UUID> = [], presence: [UUID: Presence] = [:],
-                hasAlways: Bool = true, places: [Place]? = nil, checkCap: Bool = true,
-                at time: Date? = nil) -> (LockRules.Action, Set<UUID>) {
+                hasAlways: Bool = true, places: [Place]? = nil, at time: Date? = nil) -> (LockRules.Action, Set<UUID>) {
         let result = LockRules.decide(.init(places: places ?? [gym, home], session: session, paused: paused,
-                                            presence: presence, hasAlways: hasAlways, now: time ?? now,
-                                            checkSessionCap: checkCap))
+                                            presence: presence, hasAlways: hasAlways, now: time ?? now))
         return (result.action, result.paused)
     }
 
@@ -106,21 +104,9 @@ struct LockRulesTests {
         #expect(action == .lock(reason: "Location is no longer set to Always. Apps locked."))
     }
 
-    // MARK: 8 h cap
-
-    @Test func longSessionsGetRechecked() {
-        let start = now.addingTimeInterval(-LockRules.maxSession - 1)
-        #expect(decide(session: session(at: gym, startedAt: start), presence: [gym.id: .inside]).0 == .recheck(gym.id))
-    }
-
-    @Test func noRecheckBeforeTheCap() {
-        let start = now.addingTimeInterval(-LockRules.maxSession + 60)
+    /// No time limit: a long stay stays unlocked until iOS reports you've left.
+    @Test func longStaysStayUnlocked() {
+        let start = now.addingTimeInterval(-20 * 3600)
         #expect(decide(session: session(at: gym, startedAt: start), presence: [gym.id: .inside]).0 == .stayUnlocked)
-    }
-
-    @Test func noRecheckWhileSimulating() {
-        let start = now.addingTimeInterval(-LockRules.maxSession - 1)
-        let action = decide(session: session(at: gym, startedAt: start), presence: [gym.id: .inside], checkCap: false).0
-        #expect(action == .stayUnlocked)
     }
 }

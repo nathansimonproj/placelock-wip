@@ -12,9 +12,6 @@ enum Presence: Equatable {
 // MARK: - Lock / unlock
 
 enum LockRules {
-    /// Unlocks end after this long unless a fresh GPS fix confirms you're still there.
-    static let maxSession: TimeInterval = 8 * 60 * 60
-
     struct Input {
         var places: [Place]
         var session: UnlockSession?
@@ -22,8 +19,6 @@ enum LockRules {
         var presence: [UUID: Presence]
         var hasAlways: Bool
         var now: Date
-        /// False while simulating, so the 8 h recheck doesn't ask real GPS.
-        var checkSessionCap = true
     }
 
     enum Action: Equatable {
@@ -34,8 +29,6 @@ enum LockRules {
         /// Left the session's place while inside another allowed place: keep apps open there.
         case move(from: UUID, to: UUID)
         case lock(reason: String)
-        /// Unlocked longer than `maxSession`: confirm with a fresh GPS fix.
-        case recheck(UUID)
     }
 
     /// Apps are blocked by default and unblock while you're inside an active, non-paused place.
@@ -63,9 +56,6 @@ enum LockRules {
         if input.presence[place.id] == .outside {
             if let next = unlockable { return (.move(from: place.id, to: next.id), paused) }
             return (.lock(reason: "Left \(place.name), apps locked."), paused)
-        }
-        if input.checkSessionCap, input.now.timeIntervalSince(session.startedAt) > maxSession {
-            return (.recheck(place.id), paused)
         }
         return (.stayUnlocked, paused)
     }

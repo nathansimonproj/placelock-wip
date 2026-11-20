@@ -39,8 +39,8 @@ Until the paid account, these can't be done: real shields, Apple's app picker, t
 **When to pay:** once step 2 shows location unlocking is reliable. Don't wait for steps 3–6 to finish. Apple's distribution approval only starts after joining, and steps 3–6 (about 2 weeks) fill that wait.
 
 ### Phase 0: Start Apple's clocks (about an hour)
-- [ ] Join the Apple Developer Program ($99/yr). Check whether UW covers it first.
-- [ ] Request the Family Controls distribution entitlement for the app and every extension.
+- [x] Join the Apple Developer Program ($99/yr) (done by 2026-11-19; team `R6W24T35J6` in `project-paid.yml`).
+- [x] Request the Family Controls distribution entitlement (submitted 2026-11-19). Apple reportedly approves per team, covering the app and both extensions. No confirmation email comes: check each App ID in Certificates, Identifiers & Profiles for "Family Controls (Distribution)". Waits of weeks are common.
 - [ ] Check that the name "PlaceLock" is available in App Store Connect.
 
 ### Phase 1: Real blocking (code done 2026-11-12, waiting on the paid team to test)
@@ -51,7 +51,7 @@ All of this is written and compiles in the paid build (`CODE_SIGNING_ALLOWED=NO`
   - Free builds keep using `UserDefaults.standard`, since the free team has no App Group.
   - The app shares the active place names and the block selection for the extensions.
 - [x] **Block screen** (`Extensions/Shield`): "Instagram is blocked" with "Unblocks at Gym, Soccer Field or Home."
-- [x] **8 h safety cap** (`Extensions/SessionCap`, a Device Activity monitor).
+- [x] ~~**8 h safety cap** (`Extensions/SessionCap`, a Device Activity monitor).~~ **Removed 2026-11-19**, along with the 8 h GPS recheck: at home overnight the recheck could fail indoors and lock you out until you left and came back. Missed exits are covered by significant-change wakes now. The app clears any leftover cap schedule at launch (`ShieldManager.stopLegacySessionCap`). What it did:
   - Every unlock starts a one-off schedule ending 8 h 5 min later. Locking stops it, and moving to another place or passing the 8 h recheck restarts it.
   - If it runs out, the app never got to recheck. The extension blocks the apps again and sends "Open PlaceLock if you're still there". Opening the app runs the overdue recheck.
   - The app now also wakes itself for the 8 h recheck while it's running, so the extension is only a backstop.
@@ -60,7 +60,6 @@ All of this is written and compiles in the paid build (`CODE_SIGNING_ALLOWED=NO`
   - "Add or remove apps" is disabled until access is back.
 - [ ] Test real blocking on the iPhone. Check:
   - the block screen text
-  - that the cap fires (temporarily set `LockRules.maxSession` to 15 min, the shortest Device Activity schedule)
   - that turning off access in Settings › Screen Time shows the warning
   - that existing places survive the switch to the paid build
 
@@ -169,13 +168,13 @@ The fix is the paid Apple Developer Program ($99/yr). UW may cover it through Ap
 | Opening a blocked app | "Try opening a blocked app" shows a mock block screen (`MockShieldView`) | The system block screen |
 | Screen Time permission | Skipped | "Allow Screen Time access" setup step |
 
-Everything else is real in both versions: places, GPS unlock, lock on leaving, the 8 h cap and notifications.
+Everything else is real in both versions: places, GPS unlock, lock on leaving and notifications.
 
 All the switching happens in `PlaceLock/PlaceLock/Blocking/ShieldManager.swift` (`#if SCREEN_TIME`) and the picker modifier in `Views/RootView.swift`. Storage switches in `Shared/SharedStore.swift`.
 
 ### Switching to real blocking (once on the paid program)
 1. In `PlaceLock/project-paid.yml`, replace `PAID_TEAM_ID` with the paid team ID (developer.apple.com › Membership details).
-2. Run `xcodegen generate --spec project-paid.yml` in `PlaceLock/`, then build to the iPhone. Automatic signing registers the App Group and the two extension bundle IDs (`com.nsimon.PlaceLock.Shield`, `com.nsimon.PlaceLock.SessionCap`).
+2. Run `xcodegen generate --spec project-paid.yml` in `PlaceLock/`, then build to the iPhone. Automatic signing registers the App Group and the extension's bundle ID (`com.nsimon.PlaceLock.Shield`). A `com.nsimon.PlaceLock.SessionCap` App ID may exist from before 2026-11-19; it's unused now.
 3. On the phone: Home › "Allow Screen Time access", then pick apps in Rules.
 4. To go back to the free build, run plain `xcodegen generate`. Commit the free project, not the paid one, until the paid team is the default.
 5. Delete the "Test mode" stand-ins if you like: `SimulatedBlockingViews.swift` and `SimulatedApps`. They're unused in the paid version.
@@ -237,7 +236,7 @@ Tried and dropped. It needed a Shortcuts "App Is Opened" automation for each app
   - removal holds, cancels and due removals
   - loading old saves
 - [x] Locks if the place is deleted or location drops below Always.
-- [x] **After 8 h unlocked**, a fresh GPS fix checks you're still there. If it can't confirm, the apps lock until you leave and come back.
+- [x] ~~**After 8 h unlocked**, a fresh GPS fix checks you're still there.~~ Removed 2026-11-19 (see the 8 h cap in Phase 1).
 - [x] App's own log lines (`com.nsimon.PlaceLock`) for debugging. See `App/Log.swift`.
 
 ## Known issues (to fix)

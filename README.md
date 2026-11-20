@@ -12,7 +12,7 @@ Pick the apps that distract you and the places where they're allowed, like the g
 - **Automatic unlock and lock.** iOS watches each saved place (`CLMonitor` geofences, up to 20). It wakes the app when you arrive or leave, even if the app is closed. Leaving can take a few minutes and 100–200 m to register. Places can be 50–500 m across, and Add place warns below 100 m, where indoor location fuzz can miss you arriving.
 - **Lock until I leave.** Locks now, and doesn't unlock at this place again until you've left it.
 - **No quick loopholes.** After the first 24 hours, a new place takes 24 h to start working, and so does moving or enlarging one. Removing an app from the block list also takes 24 h. Changes that only make things stricter apply right away.
-- **Safety net.** After 8 h unlocked, a fresh GPS fix checks that you're still there. A Screen Time extension re-blocks the apps if the app can't run that check. Losing Always or Precise Location access locks right away.
+- **Safety net.** iOS also wakes the app every time you move about 500 m, even after a force-quit, and the app re-checks every place. Losing Always or Precise Location access locks right away. There's no time limit: you stay unlocked until iOS reports you've left.
 - **Block screen.** Opening a blocked app shows where the app last estimated you were and where the app opens: "Estimated @ Suzzallo Library · 2 min ago" and "Opens at Gym or Home."
 - **Backup.** Places and unlock history sync to Supabase under an anonymous account, so a reinstall can restore them. Blocking decisions are made on the phone and never wait on the network.
 
@@ -41,7 +41,7 @@ cd PlaceLock
 xcodegen generate --spec project-paid.yml   # adds SCREEN_TIME, entitlements, App Group, both extensions
 ```
 
-Put your paid team ID in `project-paid.yml` first. Run plain `xcodegen generate` to switch back. The block screen and the 8 h cap only work on a real device.
+Put your paid team ID in `project-paid.yml` first. Run plain `xcodegen generate` to switch back. The block screen only works on a real device.
 
 **Debug launch arguments** (Debug builds):
 
@@ -86,7 +86,6 @@ PlaceLock/
     Views/                 SwiftUI screens: Home, Rules, Add place, first-run setup, Backup, Debug
   Extensions/
     Shield/                The block screen shown over a blocked app
-    SessionCap/            Device Activity monitor behind the 8 h cap
   PlaceLockTests/          Unit tests
   supabase/
     migrations/            Schema, row-level security, newest-edit-wins trigger, account deletion

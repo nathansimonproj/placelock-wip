@@ -20,7 +20,6 @@ targets:
         com.apple.security.application-groups: [group.com.nsimon.PlaceLock] # SharedStore.appGroup
     dependencies:
       - target: PlaceLockShield
-      - target: PlaceLockSessionCap
     settings:
       base:
         SWIFT_ACTIVE_COMPILATION_CONDITIONS: "$(inherited) SCREEN_TIME"
@@ -48,25 +47,3 @@ targets:
         SWIFT_ACTIVE_COMPILATION_CONDITIONS: "$(inherited) SCREEN_TIME"
         TARGETED_DEVICE_FAMILY: "1"
         GENERATE_INFOPLIST_FILE: NO
-
-  # The 8 h safety cap: blocks apps again if the app hasn't rechecked in time.
-  PlaceLockSessionCap:
-    type: app-extension
-    platform: iOS
-    sources:
-      - Extensions/SessionCap
-      - PlaceLock/Shared
-    entitlements:
-      path: Extensions/SessionCap/SessionCap.entitlements
-      properties: *screenTimeEntitlements
-    info:
-      path: Extensions/SessionCap/Info.plist
-      properties:
-        CFBundleDisplayName: PlaceLock Session Cap
-        NSExtension:
-          NSExtensionPointIdentifier: com.apple.deviceactivity.monitor-extension
-          NSExtensionPrincipalClass: $(PRODUCT_MODULE_NAME).SessionCapMonitor
-    settings:
-      base:
-        <<: *extensionSettings
-        PRODUCT_BUNDLE_IDENTIFIER: com.nsimon.PlaceLock.SessionCap

@@ -94,7 +94,7 @@ enum SessionEnd: String, Codable {
     case lockUntilLeave = "lock_until_leave"
     case placeDeleted = "place_deleted"
     case lostAlways = "lost_always"
-    case recheckFailed = "recheck_failed"
+    case recheckFailed = "recheck_failed" // no longer recorded (8 h recheck removed); older history has it
     case manual
     case launchCheck = "launch_check"
 }

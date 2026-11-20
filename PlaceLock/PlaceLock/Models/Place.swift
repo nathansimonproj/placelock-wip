@@ -77,11 +77,11 @@ extension Date {
 /// An active unlock: the apps stay unblocked until the user leaves `placeID`.
 struct UnlockSession: Codable {
     var placeID: UUID
-    /// When the 8 h cap started counting. A successful recheck resets it.
+    /// When this unlock started. (It also restarted on the 8 h recheck, removed 2026-11-19.)
     var startedAt: Date
-    /// This visit in the synced history (`sessions.id`). Kept across 8 h rechecks.
+    /// This visit in the synced history (`sessions.id`).
     var id: UUID
-    /// When the visit began. Kept across 8 h rechecks.
+    /// When the visit began.
     var visitStartedAt: Date
 
     init(placeID: UUID, startedAt: Date, id: UUID = UUID(), visitStartedAt: Date? = nil) {
@@ -89,11 +89,6 @@ struct UnlockSession: Codable {
         self.startedAt = startedAt
         self.id = id
         self.visitStartedAt = visitStartedAt ?? startedAt
-    }
-
-    /// The same visit with the 8 h cap restarted.
-    func rechecked(at date: Date) -> UnlockSession {
-        UnlockSession(placeID: placeID, startedAt: date, id: id, visitStartedAt: visitStartedAt)
     }
 }
 

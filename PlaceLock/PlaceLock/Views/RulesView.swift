@@ -206,11 +206,11 @@ private struct PlaceRow: View {
             }
             Spacer()
             if let starts = place.activeAfter, !place.isActive() {
-                Countdown(text: "Starts in \(starts.shortTimeLeft)")
+                Countdown(meaning: "Starts in", until: starts)
             } else if isHere {
                 Text("Here").font(.footnote).foregroundStyle(.secondary)
             } else if let change = place.pendingChange {
-                Countdown(text: "New area in \(change.appliesAt.shortTimeLeft)")
+                Countdown(meaning: "New area in", until: change.appliesAt)
             }
             Image(systemName: "chevron.right").font(.footnote.weight(.semibold)).foregroundStyle(.tertiary)
         }
@@ -229,7 +229,7 @@ private struct BlockedRow<Content: View>: View {
             content
             Spacer()
             if let removeAt {
-                Countdown(text: "Unblocks in \(removeAt.shortTimeLeft)")
+                Countdown(meaning: "Unblocks in", until: removeAt)
             }
         }
         .swipeActions(edge: .trailing) {
@@ -245,14 +245,24 @@ private struct BlockedRow<Content: View>: View {
 }
 
 /// A 24 h wait. The only orange in the app.
+/// A 24 h wait in a row: a clock and the time left ("23 h"). VoiceOver reads the full phrase.
+/// Plain views, not a `Label`: inside a List row iOS restyled the Label as a row label of its
+/// own, dropping the text and padding the row to about 2.5 times its height.
 private struct Countdown: View {
-    let text: String
+    /// "Starts in", "New area in", "Unblocks in".
+    let meaning: String
+    let until: Date
 
     var body: some View {
-        Label(text, systemImage: "clock")
-            .font(.caption.weight(.semibold))
-            .foregroundStyle(Theme.waiting)
-            .fixedSize()
+        HStack(spacing: 3) {
+            Image(systemName: "clock")
+            Text(until.shortTimeLeft)
+        }
+        .font(.caption.weight(.semibold))
+        .foregroundStyle(Theme.waiting)
+        .fixedSize()
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(meaning) \(until.shortTimeLeft)")
     }
 }
 
