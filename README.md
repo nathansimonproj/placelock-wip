@@ -9,7 +9,7 @@ Pick the apps that distract you and the places where they're allowed, like the g
 ## How it works
 
 - **Blocked by default.** Your chosen apps are blocked unless you're inside one of your saved places.
-- **Automatic unlock and lock.** iOS watches each saved place (`CLMonitor` geofences, up to 20). It wakes the app when you arrive or leave, even if the app is closed. Leaving can take a few minutes and 100–200 m to register, so places have a 100 m minimum radius.
+- **Automatic unlock and lock.** iOS watches each saved place (`CLMonitor` geofences, up to 20). It wakes the app when you arrive or leave, even if the app is closed. Leaving can take a few minutes and 100–200 m to register. Places can be 50–500 m across, and Add place warns below 100 m, where indoor location fuzz can miss you arriving.
 - **Lock until I leave.** Locks now, and doesn't unlock at this place again until you've left it.
 - **No quick loopholes.** After the first 24 hours, a new place takes 24 h to start working, and so does moving or enlarging one. Removing an app from the block list also takes 24 h. Changes that only make things stricter apply right away.
 - **Safety net.** After 8 h unlocked, a fresh GPS fix checks that you're still there. A Screen Time extension re-blocks the apps if the app can't run that check. Losing Always or Precise Location access locks right away.

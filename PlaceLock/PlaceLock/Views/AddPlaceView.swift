@@ -201,12 +201,17 @@ struct AddPlaceView: View {
             Section {
                 VStack(alignment: .leading) {
                     Text("Radius: \(Int(radius)) m")
-                    Slider(value: $radius, in: 100...500, step: 25) { editing in
+                    Slider(value: $radius, in: 50...500, step: 25) { editing in
                         if editing { dismissKeyboard() }
                     }
                 }
             } footer: {
                 VStack(alignment: .leading, spacing: 6) {
+                    if radius < 100 {
+                        Label("Small circles can miss you arriving, especially indoors.",
+                              systemImage: "exclamationmark.triangle")
+                            .foregroundStyle(.orange)
+                    }
                     if let delayNote {
                         Label(delayNote, systemImage: "clock")
                             .foregroundStyle(.orange)

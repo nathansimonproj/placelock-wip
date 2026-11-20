@@ -54,7 +54,7 @@ struct PlaceRecord: Codable, Equatable {
 
 extension PlaceRecord {
     /// The server's limits (see the table's check constraints).
-    static let maxName = 60, maxAddress = 200, radiusRange = 100.0...500.0
+    static let maxName = 60, maxAddress = 200, radiusRange = 50.0...500.0
 
     init(_ place: Place, updatedAt: Date, deletedAt: Date? = nil) {
         let name = String(place.name.trimmingCharacters(in: .whitespacesAndNewlines).prefix(Self.maxName))

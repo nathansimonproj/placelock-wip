@@ -98,6 +98,7 @@ Design is in Plan.md under "Backend". In short: the phone decides blocking, the 
   - logged-out access is denied
   - account deletion cascades to every row
 - [x] Supabase project `bdbyvdfugetapjysoiml` created, migration applied, anonymous sign-ins on (2026-11-11).
+- [x] **50 m minimum radius (2026-11-19).** `20261119000000_min_radius_50.sql` relaxes both radius checks to 50–500 m. Applied to the live project through the Supabase MCP server, and checked. Supabase's migration history lists only this one: the first migration was run by hand in the SQL editor, so record it (`supabase migration repair`) before ever using `supabase db push`.
 - [ ] Rate-limit anonymous sign-ins before TestFlight. This is a dashboard setting, not code: Supabase › Authentication › Rate Limits › anonymous sign-ins per hour (per IP). Something like 10 is plenty. CAPTCHA (Authentication › Attack Protection) would also need the app to send a captcha token with `signInAnonymously`, so leave it off unless abuse shows up.
 - [x] **Phone side (2026-11-11).** `PlaceLock/Sync/`, using supabase-swift 2.55.6, pinned to 2.x.
   - `SyncEngine` signs in anonymously on first launch. Each pass pulls places, merges them, syncs the setup-window end (earliest wins), then flushes the outbox.
@@ -191,7 +192,7 @@ Tried and dropped. It needed a Shortcuts "App Is Opened" automation for each app
 
 ## MVP (built)
 - [x] Choose apps to block (stand-in list for now).
-- [x] Save allowed places: search by name with Apple Maps suggestions as you type (`Location/PlaceSearch.swift`), or drag the map to drop a pin. Radius 100–500 m.
+- [x] Save allowed places: search by name with Apple Maps suggestions as you type (`Location/PlaceSearch.swift`), or drag the map to drop a pin. Radius 50–500 m (100 m minimum until 2026-11-19; below 100 m Add place warns that small circles can miss arrivals indoors).
   - Apple search is free and needs no API key. It missed "Gates Center" in a quick test (found one in New York). If campus buildings keep missing, swap in Google Places inside `PlaceSearch`. That needs a Google Cloud project with billing turned on and an API key.
 - [x] **Blocked by default, automatic unlock at allowed places (2026-11-10).** There's no Unlock button. `CLMonitor` watches every saved place (20 at most). When iOS sees you arrive, apps unlock and you get an "Unlocked at X" notification. When you leave, they lock again with an "apps locked" notification. All of this happens in the background, even when the app is closed.
   - One function, `AppModel.reconcile()`, decides the lock state from iOS's reading for each place. It runs after every geofence event, on launch, when the app comes to the front, and when places change.

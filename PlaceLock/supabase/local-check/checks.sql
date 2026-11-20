@@ -68,7 +68,9 @@ do $$ begin assert (select deleted_at from public.places) is not null, 'tombston
 
 -- Constraints.
 select checks.expect_error($q$insert into public.places (id, name, latitude, longitude, radius_m, updated_at)
-  values (gen_random_uuid(), 'Tiny', 47, -122, 50, now())$q$, 'places_radius_m_check');
+  values (gen_random_uuid(), 'Tiny', 47, -122, 40, now())$q$, 'places_radius_m_check');
+select checks.expect_error($q$insert into public.places (id, name, latitude, longitude, radius_m, pending_latitude, pending_longitude, pending_radius_m, pending_applies_at, updated_at)
+  values (gen_random_uuid(), 'Tiny later', 47, -122, 150, 47, -122, 40, now(), now())$q$, 'places_pending_radius_m_check');
 select checks.expect_error($q$insert into public.places (id, name, latitude, longitude, radius_m, pending_radius_m, updated_at)
   values (gen_random_uuid(), 'Half', 47, -122, 150, 200, now())$q$, 'pending_change_complete');
 select checks.expect_error($q$update public.profiles set username = 'Bad Name!', updated_at = now()$q$, 'username_check');

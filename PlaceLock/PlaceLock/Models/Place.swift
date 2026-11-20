@@ -9,7 +9,8 @@ struct Place: Identifiable, Codable, Hashable {
     var address: String?
     var latitude: Double
     var longitude: Double
-    /// Meters. iOS geofence exits are coarse, so keep this >= 100.
+    /// Meters, 50–500. Below 100 m iOS's coarse background fixes can miss you arriving,
+    /// so Add place warns below that.
     var radius: Double
     /// A new place only unblocks apps from this time on (24 h after it was added).
     /// Nil means active. Places added during the setup window are active right away.

@@ -40,7 +40,7 @@ struct SyncRulesTests {
         let record = PlaceRecord(long, updatedAt: now)
         #expect(record.name.count == PlaceRecord.maxName)
         #expect(record.address?.count == PlaceRecord.maxAddress)
-        #expect(record.radiusM == 100)
+        #expect(record.radiusM == 50) // the server minimum
     }
 
     @Test func recordRoundTripsPendingChange() {
