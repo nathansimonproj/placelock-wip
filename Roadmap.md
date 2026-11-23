@@ -212,14 +212,16 @@ Design is in Plan.md under "Backend". In short: the phone decides blocking, the 
   - Privacy label: **no longer "Data Not Collected"** once sync ships. Declare as linked to the user and not used for tracking:
     - Precise location: saved places.
     - User ID: the account.
-    - Usage history: sessions.
+    - Product interaction: sessions (App Store Connect's name for it; this said "usage history" before 2026-11-23).
     - Other user content: place names and addresses (added 2026-11-23 with the privacy manifests).
 
     Update the privacy policy to match.
   - ~~Encryption question: none (`ITSAppUsesNonExemptEncryption = NO`).~~ Set in both Info.plists 2026-11-23.
+  - Drafted 2026-11-23, ready to paste: `docs/app-store/listing.md` (name, subtitle "Apps unblock where you choose", promotional text, description, keywords, all within Apple's limits), `docs/app-store/app-privacy.md` (the four data types above, each App Functionality, linked, not tracking) and `docs/app-store/age-rating.md` (everything No or None, so 4+, including the Shared Location question Apple added 2026-11-16). Left for you: the support, marketing and privacy policy URLs, the copyright name, whether Supabase's logs keep IP addresses long enough to declare, and the "Health or Wellness Topics" answer. Not entered in App Store Connect.
 - [ ] Review notes:
   - Explain why the app needs "Always" location, with a short screen recording.
   - Explain that a place added in the first 24 h (the setup window) works right away, so the reviewer can test where they are.
+  - Drafted 2026-11-23 in `docs/app-store/review-notes.md`: why Spots needs Always, steps to try it at a desk in the setup window (add a place where you are, see apps unblock, delete the place to see them block again and the block screen), that the block screen needs a real iPhone, and a 13-step script for the screen recording. Left for you: contact details and the recording. None of the steps has been tried on the iPhone yet.
 - [ ] Submit once the distribution entitlement is approved.
 
 | Week | Goal |
@@ -318,6 +320,7 @@ Tried and dropped. It needed a Shortcuts "App Is Opened" automation for each app
 - [x] App's own log lines (`com.nsimon.PlaceLock`) for debugging. See `App/Log.swift`.
 
 ## Known issues (to fix)
+- **"Blocking 1 apps" (seen 2026-11-23, reading the code).** With one app, category or website picked, setup's apps step says "Blocking 1 apps" ("1 categories", "1 websites"): `BlockList.summary` always uses the plural. Fix before the App Store screenshots and the review recording; the review notes pick two apps to avoid it for now.
 - **`-sheet add` doesn't open Add place (seen 2026-11-23).** In the Simulator, launching with `-onboarded YES -sheet add` shows Home without the sheet, so `verify.sh --screens` saves Home as `add-place.png`. It happens on the commit before the VoiceOver labels too, so it's older than them. Not looked into yet.
 - **An unreadable app list starts empty (2026-11-23).** If the saved Screen Time selection can't be read (for example after an iOS update changes its format), Spots can't get the apps back: nothing is blocked from the next check of where you are (at launch), Spots shows no blocked apps and Home asks you to choose apps again. The original is kept as `unreadable.blockList`. Spots doesn't say why the list is empty; a message saying so is an open question.
 - **Turning off location while unlocked keeps apps unblocked (accepted for now, 2026-11-22).** With Location set to Never or While Using, or Precise Location off, iOS stops waking Spots. If you're unlocked at the time and Spots isn't open, nothing locks until you open it. The removed 8 h cap was the backstop for this. A Device Activity backstop could bring it back; the decision is open.
