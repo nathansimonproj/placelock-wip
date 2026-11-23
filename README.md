@@ -39,7 +39,7 @@ In the free build, blocking is a stand-in: you pick from a list of app names, an
 
 ```sh
 cd PlaceLock
-xcodegen generate --spec project-paid.yml   # adds SCREEN_TIME, entitlements, App Group, both extensions
+xcodegen generate --spec project-paid.yml   # adds SCREEN_TIME, entitlements, App Group, the Shield extension
 ```
 
 Put your paid team ID in `project-paid.yml` first. Run plain `xcodegen generate` to switch back. The block screen only works on a real device.
@@ -77,6 +77,7 @@ PlaceLock/scripts/archive.sh --check    # archive without signing and check what
 | `-demoHistory YES` | Fill today with two sample visits, for screenshots |
 | `-preciseOff YES` | Read Precise Location as off, which `simctl privacy` can't set |
 | `-notificationsOff YES` | Read notifications as turned off in Settings, which `simctl privacy` can't set |
+| `-scenario <name>` | Scenario mode (free build only): its own settings store and no backup. `geofence-scenario.py` uses it |
 
 Debug builds also have a **Debug** screen under Spots › Settings. Its **Pretend I'm at** list feeds fake inside and outside readings through the same logic the real geofences use, and **Skip 24 h wait** applies waiting changes at once. `-onboarded YES` is different: it sets the real saved setting.
 
@@ -90,7 +91,23 @@ xcodebuild -project PlaceLock.xcodeproj -scheme PlaceLock \
   -destination 'platform=iOS Simulator,name=iPhone 17' test
 ```
 
-Or press ⌘U in Xcode. The tests use Swift Testing, so look for "Test run with N tests". xcodebuild's XCTest summary line always says "Executed 0 tests". They cover the lock rules, the 24 h delays, sync merging, the sync engine (against an in-memory fake server) and the block screen text.
+Or press ⌘U in Xcode. The tests use Swift Testing, so look for "Test run with N tests". xcodebuild's XCTest summary line always says "Executed 0 tests". They cover the lock rules, the 24 h delays, which places iOS watches, permissions, place search, loading damaged saved data, sync merging, the sync engine (against an in-memory fake server), the block screen text, the About links and what VoiceOver reads.
+
+To check a change end to end, run `verify.sh`. It runs the unit tests, compiles the paid build, runs the migration checks when `supabase/` changed, and puts back whichever project was generated before. Logs and screenshots go to `PlaceLock/build/verify/`.
+
+```sh
+PlaceLock/scripts/verify.sh               # tests, paid build, migrations if changed
+PlaceLock/scripts/verify.sh --release     # also the paid Release build, checked for Debug-only code
+PlaceLock/scripts/verify.sh --screens     # also screenshots of the main screens in the Simulator
+PlaceLock/scripts/verify.sh --large-text  # --screens, plus the largest accessibility text size
+```
+
+`geofence-scenario.py` walks the Simulator in and out of saved places and checks that apps unlock and lock. The walks are in `PlaceLock/scripts/scenarios/`, and the app runs in scenario mode, so your own places and the backup are left alone. It can't show real exit timing, a force-quit relaunch or the real block screen.
+
+```sh
+PlaceLock/scripts/geofence-scenario.py --all --build   # build the free app, then run every walk
+PlaceLock/scripts/geofence-scenario.py arrive-leave    # one walk
+```
 
 The database migration has its own checks, run against a throwaway local Postgres (needs `postgresql@16` from Homebrew):
 
@@ -103,24 +120,28 @@ PlaceLock/supabase/local-check/run.sh
 ```
 PlaceLock/
   project.yml              Free build (XcodeGen)
-  project-paid.yml         Paid build: adds Screen Time, the App Group and the extensions
+  project-paid.yml         Paid build: adds Screen Time, the App Group and the Shield extension
   PlaceLock/
-    App/                   AppModel (state and the reconcile loop), app entry, storage, logging
-    Models/                Place, Visit, and the decision rules as pure functions (Rules.swift)
+    App/                   AppModel (state and the reconcile loop), app entry, storage, logging, scenario mode
+    Models/                Place, Visit, saved data loading, and the decision rules as pure functions (Rules.swift and the *Rules files)
     Location/              Permissions, geofences, place search, the block screen estimate
     Blocking/              The block list and ShieldManager (Screen Time, or simulated)
     Sync/                  Supabase backup: engine, merge rules, records, server calls
-    Shared/                Code shared with the extensions: brand colors and text, SharedStore
-    Views/                 SwiftUI screens: Home, Spots (`RulesView`), Add place, first-run setup, Backup, Debug
+    Shared/                Code shared with the Shield extension: brand colors and text, SharedStore
+    Views/                 SwiftUI screens: Home, Spots (`RulesView`), Add place, first-run setup, Backup, Debug, the free build's stand-in block screen
   Extensions/
     Shield/                The block screen shown over a blocked app
   PlaceLockTests/          Unit tests
+  scripts/                 verify.sh, geofence-scenario.py (walks in scenarios/), bump-build.sh, archive.sh, night.sh (overnight task runner)
   supabase/
-    migrations/            Schema, row-level security, newest-edit-wins trigger, account deletion
+    migrations/            Schema, row-level security, newest-edit-wins trigger, account deletion, 50 m minimum radius
     local-check/           Migration checks against a local Postgres
+docs/
+  app-store/               App Store listing, privacy answers, review notes, data inventory and the launch checklist
+  privacy/                 The privacy policy as a static page
 ```
 
-Decisions live in pure functions (`LockRules`, `PlaceRules`, `BlockRules`, `SyncRules`) with unit tests. `AppModel` only gathers their inputs and applies the results.
+Decisions live in pure functions (`LockRules`, `PlaceRules`, `BlockRules`, `SyncRules` and the other `*Rules` types) with unit tests. `AppModel` only gathers their inputs and applies the results.
 
 ## Backup and privacy
 
@@ -135,4 +156,5 @@ Decisions live in pure functions (`LockRules`, `PlaceRules`, `BlockRules`, `Sync
 ## Docs
 
 - [Roadmap.md](Roadmap.md): the ship plan, what's built, known issues and next steps. Most up to date.
+- [docs/app-store/launch-checklist.md](docs/app-store/launch-checklist.md): the steps before launch that only you can do (Apple account, App Store Connect, the iPhone).
 - [Plan.md](Plan.md): the original design. Parts are out of date: it describes unlocking by tapping and scanning the room with the camera, but unlocking is now automatic and the camera check is on hold.
