@@ -13,8 +13,10 @@ enum SharedStore {
     static let defaults: UserDefaults = {
         #if SCREEN_TIME
         UserDefaults(suiteName: appGroup) ?? .standard
+        #elseif DEBUG
+        Scenario.defaults ?? .standard // a separate store while running a geofence scenario
         #else
-        Scenario.defaults ?? .standard // a separate store while running a geofence scenario (Debug)
+        .standard
         #endif
     }()
 

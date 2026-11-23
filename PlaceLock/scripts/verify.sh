@@ -122,6 +122,22 @@ if [[ $release == 1 ]]; then
        -destination 'generic/platform=iOS' -derivedDataPath build/release \
        CODE_SIGNING_ALLOWED=NO build >"$out/release.log" 2>&1; then
     pass "Paid Release build compiles"
+    # Debug-only code (#if DEBUG) and the free build's stand-ins (#if !SCREEN_TIME) must not ship.
+    # Swift names its types and members in the symbol table, so look for them there.
+    bin=build/release/Build/Products/Release-iphoneos/PlaceLock.app/PlaceLock
+    debug_only='DebugView|MockShieldView|SimulatedAppPicker|SimulatedApps|SimulatedSpot|simulatedSpot|skipDelays|Scenario'
+    syms="$out/release-symbols.txt"
+    if [[ ! -f "$bin" ]]; then
+      fail "Release binary missing: $bin"
+    elif ! nm -U "$bin" | xcrun swift-demangle >"$syms"; then
+      fail "Debug-only check: couldn't list the symbols in $bin"
+    elif leaked="$(grep 'PlaceLock\.' "$syms" | grep -oE "\b($debug_only)\b" | sort -u | tr '\n' ' ')"; [[ -n "$leaked" ]]; then
+      fail "Debug-only code in the paid Release build: $leaked(see $syms)"
+    elif ! grep -q 'PlaceLock\.AppModel' "$syms"; then
+      fail "Debug-only check: no Swift symbols found in $bin, so it can't tell"
+    else
+      pass "No debug-only code in the paid Release build"
+    fi
   else
     show_errors "$out/release.log"
     fail "Paid Release build (see $out/release.log)"

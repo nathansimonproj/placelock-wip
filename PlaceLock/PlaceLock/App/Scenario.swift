@@ -7,8 +7,9 @@ import Foundation
 /// Simulator are left alone, and backup is off (`SyncEngine.shared` gets no backend).
 /// `-scenarioPlaces <base64 JSON>` on a run's first launch wipes that store and loads the places
 /// (an array in `Place`'s Codable form). Launches without it keep the store as the run left it.
+/// Debug, free build only: Release and the paid build don't have it at all.
+#if DEBUG && !SCREEN_TIME
 enum Scenario {
-    #if DEBUG && !SCREEN_TIME
     static let name = UserDefaults.standard.string(forKey: "scenario")
     static var isActive: Bool { name != nil }
 
@@ -33,8 +34,5 @@ enum Scenario {
         }
         return store
     }()
-    #else
-    static let isActive = false
-    static let defaults: UserDefaults? = nil
-    #endif
 }
+#endif

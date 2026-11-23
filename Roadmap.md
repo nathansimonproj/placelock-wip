@@ -173,6 +173,7 @@ Design is in Plan.md under "Backend". In short: the phone decides blocking, the 
 
 ### Phase 4: TestFlight, then the App Store (about 1–2 weeks of calendar time)
 - [ ] TestFlight with a few friends walking around campus.
+- [x] Debug-only code stays out of Release (2026-11-23). Behind `#if DEBUG`: the launch arguments `-tab`, `-sheet`, `-onboardingStep`, `-demoHistory` and `-scenario`, the Debug screen and its link in Spots › Settings, Pretend I'm at, Skip 24 h wait, sample visits, scenario mode and the check for running under unit tests. The free build's stand-ins (the stand-in app list and picker, the simulated block screen) aren't compiled into the paid build at all. `-onboarded` stays: it's the real saved setting. `verify.sh --release` now fails if any of these show up in the paid Release binary's symbols. Debug builds behave as before; free Release builds no longer have the Debug screen. Not tried on the iPhone: a Release build there.
 - [ ] App Store Connect listing:
   - Screenshots, description, Productivity category, support URL.
   - Privacy policy URL.

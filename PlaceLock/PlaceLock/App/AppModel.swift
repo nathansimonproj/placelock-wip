@@ -83,8 +83,9 @@ final class AppModel: ObservableObject {
     private var activationTimer: Task<Void, Never>?
     private var bypassRemovalHold = false
 
-    /// Dev tool: pretend you're at a place (or nowhere) instead of using real geofences.
-    /// nil means real location. Kept in memory only, so a relaunch goes back to real.
+    #if DEBUG
+    /// Dev tool (Debug builds): pretend you're at a place (or nowhere) instead of using real
+    /// geofences. nil means real location. Kept in memory only, so a relaunch goes back to real.
     @Published var simulatedSpot: SimulatedSpot? {
         didSet {
             guard simulatedSpot != oldValue else { return }
@@ -97,6 +98,7 @@ final class AppModel: ObservableObject {
         case place(UUID)
         case elsewhere
     }
+    #endif
 
     let location = LocationService()
 
@@ -355,8 +357,10 @@ final class AppModel: ObservableObject {
         }
     }
 
-    /// What the geofences would report if you stood at `simulatedSpot`. Nil when not simulating.
+    /// What the geofences would report if you stood at `simulatedSpot`. Nil when not simulating,
+    /// and always nil in Release, where only real geofences count.
     private func simulatedPresence() -> [UUID: Presence]? {
+        #if DEBUG
         guard let simulatedSpot else { return nil }
         var here: CLLocation?
         if case .place(let id) = simulatedSpot { here = places.first { $0.id == id }?.location }
@@ -364,6 +368,9 @@ final class AppModel: ObservableObject {
             let inside = here.map { place.distanceOutside($0) <= 0 } ?? false
             return (place.id, inside ? .inside : .outside)
         })
+        #else
+        return nil
+        #endif
     }
 
     private func unlock(at place: Place) {

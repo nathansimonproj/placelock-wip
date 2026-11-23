@@ -15,7 +15,7 @@ struct RulesView: View {
                 if model.inSetupWindow { setupWindow }
                 blockedApps
                 places
-                if sync.isAvailable || DebugView.isAvailable { settings }
+                if sync.isAvailable || Self.hasDebug { settings }
             }
             .calmList()
             .navigationTitle("Spots")
@@ -64,8 +64,9 @@ struct RulesView: View {
             if model.blockList.isEmpty {
                 Text("No apps blocked yet.").foregroundStyle(.secondary)
             }
-            // Simulated build: names from the stand-in list.
             let pending = model.blockList.pendingRemovals
+            #if !SCREEN_TIME
+            // Simulated build: names from the stand-in list.
             ForEach(model.blockList.simulatedApps, id: \.self) { name in
                 BlockedRow(removeAt: pending.simulated[name],
                            remove: { model.blockList.simulatedApps.removeAll { $0 == name } },
@@ -73,6 +74,7 @@ struct RulesView: View {
                     Label(name, systemImage: SimulatedApps.symbol(for: name))
                 }
             }
+            #endif
 
             // Real Screen Time build: opaque tokens. `Label(token)` draws the real icon and name.
             ForEach(Array(model.blockList.selection.applicationTokens), id: \.self) { token in
@@ -159,13 +161,22 @@ struct RulesView: View {
                     }
                 }
             }
-            if DebugView.isAvailable {
-                NavigationLink { DebugView() } label: {
-                    Label("Debug", systemImage: "ladybug")
-                }
+            #if DEBUG
+            NavigationLink { DebugView() } label: {
+                Label("Debug", systemImage: "ladybug")
             }
+            #endif
         }
         .calmRows()
+    }
+
+    /// The Debug screen exists only in Debug builds.
+    private static var hasDebug: Bool {
+        #if DEBUG
+        true
+        #else
+        false
+        #endif
     }
 }
 

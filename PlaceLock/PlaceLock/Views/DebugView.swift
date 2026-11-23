@@ -1,31 +1,25 @@
 import SwiftUI
 
-/// Developer tools, kept off Home: pretend to be somewhere (debug builds) and try the
-/// simulated block screen (free developer account). Reached from Spots › Settings.
+#if DEBUG
+/// Developer tools (Debug builds only, so never in the App Store build), kept off Home: pretend
+/// to be somewhere, skip the 24 h waits, and try the simulated block screen (free developer
+/// account). Reached from Spots › Settings.
 struct DebugView: View {
     @EnvironmentObject private var model: AppModel
     @State private var shieldPreviewApp: String?
     @State private var openedWhileUnlocked: String?
 
-    /// True when this screen has anything to show in this build.
-    static var isAvailable: Bool {
-        #if DEBUG
-        true
-        #else
-        ShieldManager.isSimulated
-        #endif
-    }
-
     var body: some View {
         List {
-            #if DEBUG
             simulate
+            #if !SCREEN_TIME
+            testMode
             #endif
-            if ShieldManager.isSimulated { testMode }
         }
         .calmList()
         .navigationTitle("Debug")
         .navigationBarTitleDisplayMode(.inline)
+        #if !SCREEN_TIME
         .sheet(item: $shieldPreviewApp) { MockShieldView(appName: $0) }
         .alert("\(openedWhileUnlocked ?? "") would open normally",
                isPresented: .init(get: { openedWhileUnlocked != nil }, set: { if !$0 { openedWhileUnlocked = nil } })) {
@@ -33,11 +27,11 @@ struct DebugView: View {
         } message: {
             Text("You're unlocked at \(model.activePlace?.name ?? "an allowed place").")
         }
+        #endif
     }
 
     // MARK: Simulate location
 
-    #if DEBUG
     private var simulate: some View {
         Section {
             spotRow("Real location", symbol: "location", spot: nil)
@@ -68,10 +62,10 @@ struct DebugView: View {
             }
         }
     }
-    #endif
 
-    // MARK: Test mode
+    // MARK: Test mode (simulated blocking, free build)
 
+    #if !SCREEN_TIME
     private var testMode: some View {
         Section {
             if model.blockList.isEmpty {
@@ -91,4 +85,6 @@ struct DebugView: View {
         }
         .calmRows()
     }
+    #endif
 }
+#endif

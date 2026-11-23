@@ -48,11 +48,13 @@ extension AppModel {
     }
 
     private func currentEstimateLabel() async -> String? {
+        #if DEBUG
         switch simulatedSpot { // Debug's "Pretend I'm at…"
         case .place(let id): return places.first { $0.id == id }?.name
         case .elsewhere: return "somewhere else (pretend)"
         case nil: break
         }
+        #endif
         if let activePlace { return activePlace.name } // unlocked: iOS already says where you are
         // 200 m is enough to name a building or street. Battery: if the move that woke the app is
         // already that good, use it instead of turning on GPS; in Low Power Mode never turn it on.

@@ -103,9 +103,11 @@ struct HomeView: View {
         if !model.blockList.isEmpty {
             VStack(spacing: 10) {
                 HStack(spacing: -6) {
+                    #if !SCREEN_TIME
                     ForEach(model.blockList.simulatedApps.prefix(6), id: \.self) { name in
                         AppBubble { Image(systemName: SimulatedApps.symbol(for: name)) }
                     }
+                    #endif
                     ForEach(Array(model.blockList.selection.applicationTokens.prefix(6)), id: \.self) { token in
                         AppBubble { Label(token).labelStyle(.iconOnly) }
                     }

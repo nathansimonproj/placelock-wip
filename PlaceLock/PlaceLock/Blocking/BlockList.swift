@@ -68,7 +68,8 @@ extension BlockList {
     }
 }
 
-/// Stand-in for Apple's app picker while blocking is simulated.
+#if !SCREEN_TIME
+/// Stand-in for Apple's app picker while blocking is simulated. Not in the paid build.
 enum SimulatedApps {
     static let all: [(name: String, symbol: String)] = [
         ("Instagram", "camera"), ("TikTok", "music.note"), ("YouTube", "play.rectangle"),
@@ -82,3 +83,4 @@ enum SimulatedApps {
         all.first { $0.name == name }?.symbol ?? "app"
     }
 }
+#endif

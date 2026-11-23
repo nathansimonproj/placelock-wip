@@ -6,14 +6,17 @@ import Foundation
 enum Storage {
     static let defaults: UserDefaults = {
         let shared = SharedStore.defaults
-        migrate(into: shared)
+        #if SCREEN_TIME
+        migrate(into: shared) // free builds use `.standard` (or a geofence scenario's own store)
+        #endif
         return shared
     }()
 
+    #if SCREEN_TIME
     private static let migratedKey = "movedToAppGroup"
 
     private static func migrate(into shared: UserDefaults) {
-        guard shared !== UserDefaults.standard, !Scenario.isActive, !shared.bool(forKey: migratedKey),
+        guard shared !== UserDefaults.standard, !shared.bool(forKey: migratedKey),
               let bundleID = Bundle.main.bundleIdentifier,
               let old = UserDefaults.standard.persistentDomain(forName: bundleID) else { return }
         // Keys already in the group win: never overwrite newer data with older.
@@ -24,4 +27,5 @@ enum Storage {
         // The old copy stays in place, so going back to a free build still finds it.
         Log.app.info("Copied \(old.count) saved values into the App Group")
     }
+    #endif
 }

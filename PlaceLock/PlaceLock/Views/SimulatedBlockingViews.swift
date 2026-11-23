@@ -1,5 +1,7 @@
 import SwiftUI
 
+// The free build's stand-ins for Screen Time. Not compiled into the paid build.
+#if !SCREEN_TIME
 /// Stand-in for Apple's FamilyActivityPicker while blocking is simulated (free developer account).
 struct SimulatedAppPicker: View {
     @EnvironmentObject private var model: AppModel
@@ -68,3 +70,4 @@ struct MockShieldView: View {
         .padding(32)
     }
 }
+#endif

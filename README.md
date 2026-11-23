@@ -53,7 +53,9 @@ Put your paid team ID in `project-paid.yml` first. Run plain `xcodegen generate`
 | `-onboardingStep apps` | Open first-run setup on a step (`location`, `screenTime`, `apps`, `places`, `notifications`) |
 | `-demoHistory YES` | Fill today with two sample visits, for screenshots |
 
-Home also has a **Pretend I'm at…** card in Debug builds. It feeds fake inside and outside readings through the same logic the real geofences use.
+Debug builds also have a **Debug** screen under Spots › Settings. Its **Pretend I'm at** list feeds fake inside and outside readings through the same logic the real geofences use, and **Skip 24 h wait** applies waiting changes at once. `-onboarded YES` is different: it sets the real saved setting.
+
+None of this is in Release builds: the launch arguments, the Debug screen, sample visits and scenario mode (`-scenario`) are behind `#if DEBUG`, and the free build's stand-ins for Screen Time aren't compiled into the paid build. `scripts/verify.sh --release` checks the paid Release build for them.
 
 ## Tests
 

@@ -25,12 +25,19 @@ extension AppModel: SyncLocal {}
 @MainActor
 final class SyncEngine: ObservableObject {
     static let shared = SyncEngine(
-        backend: isUnderTests || Scenario.isActive ? nil : SupabaseBackend(info: Bundle.main.infoDictionary ?? [:]),
+        backend: isUnderTestsOrScenario ? nil : SupabaseBackend(info: Bundle.main.infoDictionary ?? [:]),
         local: { AppModel.shared }, // resolved late: AppModel and SyncEngine refer to each other
         defaults: Storage.defaults)
 
-    private static var isUnderTests: Bool {
-        ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
+    /// No backup while unit tests or a geofence scenario run. Both use the Debug build only.
+    private static var isUnderTestsOrScenario: Bool {
+        #if DEBUG
+        if ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil { return true }
+        #endif
+        #if DEBUG && !SCREEN_TIME
+        if Scenario.isActive { return true }
+        #endif
+        return false
     }
 
     enum Status: Equatable {

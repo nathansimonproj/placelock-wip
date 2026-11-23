@@ -22,8 +22,14 @@ struct RootView: View {
     enum Tab: String { case home, rules }
 
     @EnvironmentObject private var model: AppModel
-    // Launch with `-tab rules` to open on Rules (handy for screenshots).
-    @State private var tab: Tab = Tab(rawValue: UserDefaults.standard.string(forKey: "tab") ?? "") ?? .home
+    // Debug builds: launch with `-tab rules` to open on Rules (handy for screenshots).
+    @State private var tab: Tab = {
+        #if DEBUG
+        Tab(rawValue: UserDefaults.standard.string(forKey: "tab") ?? "") ?? .home
+        #else
+        .home
+        #endif
+    }()
     @State private var placeSheet: PlaceSheet?
     @State private var showPicker = false
 
