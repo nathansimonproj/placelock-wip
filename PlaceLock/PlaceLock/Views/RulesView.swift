@@ -31,14 +31,19 @@ struct RulesView: View {
     // MARK: Setup window
 
     @State private var confirmFinish = false
+    @Environment(\.dynamicTypeSize) private var typeSize
 
-    /// One slim row while the first 24 h are open.
+    /// One slim row while the first 24 h are open. With accessibility text sizes, Finish goes
+    /// under the label.
     private var setupWindow: some View {
         Section {
-            HStack {
+            let layout = typeSize.isAccessibilitySize
+                ? AnyLayout(VStackLayout(alignment: .leading, spacing: 8))
+                : AnyLayout(HStackLayout())
+            layout {
                 Label("Setup · \(model.setupEndsAt.shortTimeLeft) left", systemImage: "hourglass")
                     .foregroundStyle(.secondary)
-                Spacer()
+                if !typeSize.isAccessibilitySize { Spacer() }
                 Button("Finish") { confirmFinish = true }
                     .confirmationDialog("Finish setup?", isPresented: $confirmFinish, titleVisibility: .visible) {
                         Button("Finish setup") { model.finishSetup() }
@@ -197,23 +202,33 @@ private struct WaitInfoSheet: View {
 private struct PlaceRow: View {
     let place: Place
     let isHere: Bool
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     var body: some View {
         HStack(spacing: 12) {
             PlaceIcon(symbol: place.symbol)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(place.name).foregroundStyle(.primary)
-                Text([place.address, "\(Int(place.radius)) m"].compactMap { $0 }.joined(separator: " · "))
-                    .font(.footnote).foregroundStyle(.secondary).lineLimit(1)
+            // With accessibility text sizes the status goes under the name, so the name keeps
+            // the row's width instead of breaking inside words.
+            let layout = typeSize.isAccessibilitySize
+                ? AnyLayout(VStackLayout(alignment: .leading, spacing: 4))
+                : AnyLayout(HStackLayout(spacing: 12))
+            layout {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(place.name).foregroundStyle(.primary)
+                    Text([place.address, "\(Int(place.radius)) m"].compactMap { $0 }.joined(separator: " · "))
+                        .font(.footnote).foregroundStyle(.secondary)
+                        .lineLimit(typeSize.isAccessibilitySize ? 2 : 1)
+                }
+                if !typeSize.isAccessibilitySize { Spacer(minLength: 0) }
+                if let starts = place.activeAfter, !place.isActive() {
+                    Countdown(meaning: "Starts in", until: starts)
+                } else if isHere {
+                    Text("Here").font(.footnote).foregroundStyle(.secondary)
+                } else if let change = place.pendingChange {
+                    Countdown(meaning: "New area in", until: change.appliesAt)
+                }
             }
-            Spacer()
-            if let starts = place.activeAfter, !place.isActive() {
-                Countdown(meaning: "Starts in", until: starts)
-            } else if isHere {
-                Text("Here").font(.footnote).foregroundStyle(.secondary)
-            } else if let change = place.pendingChange {
-                Countdown(meaning: "New area in", until: change.appliesAt)
-            }
+            Spacer(minLength: 0)
             Image(systemName: "chevron.right").font(.footnote.weight(.semibold)).foregroundStyle(.tertiary)
         }
     }

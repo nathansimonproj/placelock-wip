@@ -173,6 +173,8 @@ struct AddPlaceView: View {
             }
             .buttonStyle(.plain)
             .foregroundStyle(.tint)
+            // The circle is a fixed 40 pt, so the arrow stops growing before it spills out.
+            .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
             .padding(10)
             .accessibilityLabel("Go to my location")
         }

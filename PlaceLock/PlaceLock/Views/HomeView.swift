@@ -13,6 +13,10 @@ struct HomeView: View {
 
     private var unlocked: Bool { model.activePlace != nil }
 
+    /// Place cards grow with the text size, so names wrap between words, not inside them.
+    @ScaledMetric(relativeTo: .subheadline) private var scaledCardWidth: CGFloat = 112
+    private var cardWidth: CGFloat { min(scaledCardWidth, 240) }
+
     var body: some View {
         // Inside a NavigationStack like Rules, with its bar hidden, so iOS's tab bar looks and
         // behaves the same on both tabs. Without it the tab bar's glass came out pale on Home.
@@ -23,23 +27,32 @@ struct HomeView: View {
 
     private var content: some View {
         TimelineView(.periodic(from: .now, by: 60)) { context in
-            VStack(spacing: 0) {
-                if needsFix { FixBanner().padding(.horizontal, Theme.medium).padding(.top, Theme.small) }
-                Spacer(minLength: Theme.medium)
-                BreathingLock(unlocked: unlocked)
-                status(now: context.date)
-                    .padding(.top, Theme.large)
-                Spacer(minLength: Theme.medium)
-                resting
-                    .padding(.bottom, 20)
-                places
-                    .padding(.bottom, Theme.medium)
+            // Fills the screen when it fits. With large accessibility text it doesn't, so the
+            // same layout scrolls instead of squeezing and cutting off the words.
+            ViewThatFits(in: .vertical) {
+                layout(now: context.date)
+                ScrollView { layout(now: context.date) }
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .overlay(alignment: .bottom) { Toast().padding(.bottom, 150) }
         // Locked is dark whatever the system setting, so text and glass read on the gradient.
         .calmBackground()
+    }
+
+    private func layout(now: Date) -> some View {
+        VStack(spacing: 0) {
+            if needsFix { FixBanner().padding(.horizontal, Theme.medium).padding(.top, Theme.small) }
+            Spacer(minLength: Theme.medium)
+            BreathingLock(unlocked: unlocked)
+            status(now: now)
+                .padding(.top, Theme.large)
+            Spacer(minLength: Theme.medium)
+            resting
+                .padding(.bottom, 20)
+            places
+                .padding(.bottom, Theme.medium)
+        }
     }
 
     private var needsFix: Bool { !location.canWatchPlaces || model.screenTimeAccess != .approved }
@@ -131,7 +144,7 @@ struct HomeView: View {
                             }
                         }
                         .foregroundStyle(.primary)
-                        .frame(width: 112, alignment: .leading)
+                        .frame(width: cardWidth, alignment: .leading)
                         .padding(14)
                         .background {
                             RoundedRectangle(cornerRadius: 20)
@@ -149,7 +162,7 @@ struct HomeView: View {
                                 Text("Set location").font(.caption).foregroundStyle(.secondary)
                             }
                         }
-                        .frame(width: 112, alignment: .leading)
+                        .frame(width: cardWidth, alignment: .leading)
                         .padding(14)
                         .overlay(RoundedRectangle(cornerRadius: 20).strokeBorder(.secondary, style: StrokeStyle(lineWidth: 1, dash: [4, 3])))
                     }
@@ -179,19 +192,23 @@ private struct BreathingLock: View {
     let unlocked: Bool
     @State private var inhale = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.dynamicTypeSize) private var typeSize
+
+    /// Smaller with accessibility text sizes, to leave room for the words.
+    private var scale: CGFloat { typeSize.isAccessibilitySize ? 0.6 : 1 }
 
     var body: some View {
         ZStack {
             Circle()
                 .fill(.white.opacity(0.05))
-                .frame(width: 250, height: 250)
+                .frame(width: 250 * scale, height: 250 * scale)
                 .scaleEffect(inhale ? 1 : 0.82)
             Circle()
                 .fill(.white.opacity(0.08))
-                .frame(width: 180, height: 180)
+                .frame(width: 180 * scale, height: 180 * scale)
                 .scaleEffect(inhale ? 1 : 0.88)
             Image(systemName: unlocked ? "lock.open.fill" : "lock.fill")
-                .font(.system(size: 54, weight: .medium))
+                .font(.system(size: 54 * scale, weight: .medium))
                 .foregroundStyle(.white)
                 .contentTransition(.symbolEffect(.replace))
         }

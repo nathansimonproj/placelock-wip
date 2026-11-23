@@ -254,7 +254,14 @@ private struct StepPage<Extra: View, Actions: View>: View {
                 .padding(.horizontal, 24)
                 .frame(maxWidth: .infinity)
             }
+            // With large text the explanation runs past the buttons: flash the scroll bar so it's
+            // clear there's more.
+            .scrollIndicatorsFlash(onAppear: true)
+            .scrollBounceBehavior(.basedOnSize)
+            // The buttons stay pinned, so they stop growing at the second accessibility size and
+            // leave most of the screen to the text above.
             VStack(spacing: 8) { actions }
+                .dynamicTypeSize(...DynamicTypeSize.accessibility2)
                 .padding(.horizontal, 24)
                 .padding(.bottom, 12)
                 .padding(.top, 8)

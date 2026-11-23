@@ -16,7 +16,7 @@ Until the paid account, these can't be done: real shields, Apple's app picker, t
    - The `sessions` rows in Supabase (Backend).
    - The place-search spinner (Known issues).
 3. **Shippable to strangers (Phase 3).**
-   - Build the "Allow Screen Time access" setup step now, behind `#if SCREEN_TIME`. Done 2026-11-12, along with first-run setup and Release-only starter places. Still to do: app icon, Rules tab name, notification wording, dark mode and large text, and the Plan.md rewrite.
+   - Build the "Allow Screen Time access" setup step now, behind `#if SCREEN_TIME`. Done 2026-11-12, along with first-run setup and Release-only starter places. Still to do: app icon, Rules tab name, notification wording, dark mode and large text (large text checked 2026-11-22), and the Plan.md rewrite.
    - Any new UI that shows blocked apps goes through one small view: names in the free build, `Label(token)` in the paid build. Real tokens have no names.
 4. **Backend leftovers.**
    - "Delete account". Done 2026-11-12, along with the `SyncEngine` tests. The rate limit is a dashboard setting (see Backend).
@@ -111,7 +111,14 @@ All of this is written and compiles in the paid build (`CODE_SIGNING_ALLOWED=NO`
   - iOS shields at most 50 apps, 50 categories and 50 websites, and reportedly blocks nothing past that. `AppModel.setSelection` keeps 50 of each and says so (`BlockRules.capped`).
 - [x] **Renamed to Spots (2026-11-19).** The home screen name, permission prompts, notifications, onboarding and block screen say Spots. Bundle IDs (`com.nsimon.PlaceLock`), the App Group, the CLMonitor name (`PlaceLockMonitor`), code and folders keep PlaceLock: changing them would make iOS treat it as a new app, drop its watched places, and not match the Family Controls request. Check that "Spots" is free in App Store Connect; the App Store name can differ from the home screen name if not.
 - [x] App icon (2026-11-19): sage green, the two breathing rings and a white lock (`Assets.xcassets/AppIcon.appiconset/AppIcon.png`, 1024 px, no alpha).
-- [ ] Large-text check of Home and Spots.
+- [x] **Large-text check (2026-11-22).** Home, Spots, Add place and first-run setup, checked in the Simulator at the largest accessibility text size. Layout fixes only; at normal sizes the screens look the same.
+  - Home scrolls when it doesn't fit, instead of squeezing. "Choose apps to block" was cut to "Choose apps…".
+  - The lock and its rings are smaller at accessibility sizes, to leave room for the words.
+  - Place cards on Home grow with the text (up to 240 pt wide), so names wrap between words. Before, they broke inside them ("Soc-cer", "Open-s here").
+  - On Spots, a place's countdown or "Here" goes under its name at accessibility sizes, and the address gets two lines. The setup row puts Finish under its label.
+  - First-run setup: the buttons stop growing at the second accessibility size, so the explanation keeps most of the screen. The scroll bar flashes when a step opens, to show there's more text below.
+  - Add place: the "go to my location" arrow no longer spills out of its circle.
+  - Not checked on the iPhone, and not checked: the block screen, the Backup and Debug screens, the 24-hour info sheet, and Home while unlocked.
 - [ ] Rewrite Plan.md to match the automatic-unlock design. It still describes tap-and-scan.
 
 ### Backend: Supabase sync (started 2026-11-11)
