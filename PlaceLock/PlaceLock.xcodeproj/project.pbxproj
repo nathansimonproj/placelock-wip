@@ -19,6 +19,7 @@
 		4494D80114B79E5C84F6E600 /* DebugView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DD45A2814AEBAE89221F599 /* DebugView.swift */; };
 		452F6F94C0576382A5D6B892 /* SyncBackend.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84BCCF8FECCE10B619F2CF08 /* SyncBackend.swift */; };
 		470E9AB205C5B4249FA8074D /* Storage.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC2205ACC9F22D561AD5A326 /* Storage.swift */; };
+		4CA77F9EA2BBA04921FE748D /* PlaceSearchRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F18F275B9964CBB2175AF14 /* PlaceSearchRules.swift */; };
 		512408B8CB61E58B9C00A8D7 /* BackupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1447AA6F99DAA8460135F25D /* BackupView.swift */; };
 		57FA6591067C1823DFAD7E29 /* SharedStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A0EC14E6AAEC6D1B2FFE5FA /* SharedStore.swift */; };
 		5B1F1F193149268B33D1580D /* PermissionRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01A3A522B467A14626E0CCF3 /* PermissionRules.swift */; };
@@ -45,6 +46,7 @@
 		DD84FD2F62712B8FD8AEB923 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12295D516F9E3307ED4AE8E1 /* RootView.swift */; };
 		DED0AC8EAFD6B366E66DC39B /* ShieldManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24DA55A1FDD739A0BDE9E0DE /* ShieldManager.swift */; };
 		DFCDB9F40228EBA722EC36AF /* Place.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E62CA27720DE486B022456D /* Place.swift */; };
+		E3F5AF7DE8E25551FBD85F42 /* PlaceSearchRulesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB733067CFB69085810F8572 /* PlaceSearchRulesTests.swift */; };
 		E7A98364A46DBBF562638394 /* Brand.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3BBFAE4F3564799986DC02F /* Brand.swift */; };
 		EAA880B4DA66678CDC067A0C /* SyncEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CAF9493EEA45E820E20FF7B /* SyncEngine.swift */; };
 		EB6D13B6BDD7ABF35540D06C /* AboutRulesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D35BF2AAE8A8F45C1BDDC8A /* AboutRulesTests.swift */; };
@@ -88,6 +90,7 @@
 		53614D80BE59F5D4E4D38663 /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
 		54519AA1DD4CAF17DF32BF3B /* BlockList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockList.swift; sourceTree = "<group>"; };
 		5AE15B9E6666283175C24DE0 /* Rules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Rules.swift; sourceTree = "<group>"; };
+		5F18F275B9964CBB2175AF14 /* PlaceSearchRules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaceSearchRules.swift; sourceTree = "<group>"; };
 		66C4D3934EB0622241E048E9 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		6E62CA27720DE486B022456D /* Place.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Place.swift; sourceTree = "<group>"; };
 		79A33188D87631FAFE8F0BB4 /* RulesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RulesView.swift; sourceTree = "<group>"; };
@@ -107,6 +110,7 @@
 		BEF0A66881420B56B9639C1F /* PlaceLockTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = PlaceLockTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C3BBFAE4F3564799986DC02F /* Brand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Brand.swift; sourceTree = "<group>"; };
 		CC2205ACC9F22D561AD5A326 /* Storage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Storage.swift; sourceTree = "<group>"; };
+		DB733067CFB69085810F8572 /* PlaceSearchRulesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaceSearchRulesTests.swift; sourceTree = "<group>"; };
 		DDECA7D442F8F28BBA5DDA38 /* PermissionRulesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionRulesTests.swift; sourceTree = "<group>"; };
 		E1779E7DF2B48787081442EA /* GeofenceMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeofenceMonitor.swift; sourceTree = "<group>"; };
 		EF53E2F264303957289C9D30 /* SavedData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedData.swift; sourceTree = "<group>"; };
@@ -165,6 +169,7 @@
 				23D9164E8462A6B598013E6F /* GeofenceKeysTests.swift */,
 				95AFE7CF7EC4F0FF88828540 /* LockRulesTests.swift */,
 				DDECA7D442F8F28BBA5DDA38 /* PermissionRulesTests.swift */,
+				DB733067CFB69085810F8572 /* PlaceSearchRulesTests.swift */,
 				3EE8AB985B0354D54E5DE322 /* SavedDataTests.swift */,
 				02D01B76D7B72477A1CB4908 /* SyncEngineTests.swift */,
 				AF41772D465AFA76B4DD0F62 /* SyncRulesTests.swift */,
@@ -188,6 +193,7 @@
 				B8ACE3FF9981C077600B49CB /* DefaultPlaces.swift */,
 				01A3A522B467A14626E0CCF3 /* PermissionRules.swift */,
 				6E62CA27720DE486B022456D /* Place.swift */,
+				5F18F275B9964CBB2175AF14 /* PlaceSearchRules.swift */,
 				5AE15B9E6666283175C24DE0 /* Rules.swift */,
 				EF53E2F264303957289C9D30 /* SavedData.swift */,
 				3136504583AA8525FE077B62 /* Visit.swift */,
@@ -379,6 +385,7 @@
 				DFCDB9F40228EBA722EC36AF /* Place.swift in Sources */,
 				1FF550F0C17DC28A7D1CD4D9 /* PlaceLockApp.swift in Sources */,
 				30C4CE2396B31968E925BB68 /* PlaceSearch.swift in Sources */,
+				4CA77F9EA2BBA04921FE748D /* PlaceSearchRules.swift in Sources */,
 				DD84FD2F62712B8FD8AEB923 /* RootView.swift in Sources */,
 				D3249AD1A8B44E765485A9E9 /* Rules.swift in Sources */,
 				88FF662A430BDF12D22A8574 /* RulesView.swift in Sources */,
@@ -407,6 +414,7 @@
 				0F554471DD25FFB93BCD67B0 /* GeofenceKeysTests.swift in Sources */,
 				5C41A912A70BB6409E7BE0CB /* LockRulesTests.swift in Sources */,
 				ABCED47A3AAD75F2D0C479B3 /* PermissionRulesTests.swift in Sources */,
+				E3F5AF7DE8E25551FBD85F42 /* PlaceSearchRulesTests.swift in Sources */,
 				81C0A6D6F2C077A9BC9AA710 /* SavedDataTests.swift in Sources */,
 				443AFBC3553E2DA5961B5B35 /* SyncEngineTests.swift in Sources */,
 				D903CB3682F9B462AF4763B9 /* SyncRulesTests.swift in Sources */,

@@ -93,7 +93,7 @@ struct AddPlaceView: View {
                     .focused($searchFocused)
                     .submitLabel(.search)
                     .autocorrectionDisabled()
-                    .onSubmit { if let first = search.suggestions.first { pick(first) } }
+                    .onSubmit(submitSearch)
                 if resolving {
                     ProgressView()
                 } else if !search.query.isEmpty {
@@ -246,26 +246,49 @@ struct AddPlaceView: View {
 
     private var trimmedName: String { name.trimmingCharacters(in: .whitespaces) }
 
+    /// The keyboard's Search key. Takes the top suggestion, or searches directly when Apple's
+    /// type-ahead hasn't answered for this text (it can stall on a slow network).
+    private func submitSearch() {
+        switch PlaceSearchRules.onSubmit(query: search.query, suggestionsQuery: search.suggestionsQuery,
+                                         suggestionCount: search.suggestions.count, busy: resolving) {
+        case .nothing:
+            break
+        case .pickFirstSuggestion:
+            if let first = search.suggestions.first { pick(first) }
+        case .searchDirectly(let text):
+            searchFocused = false
+            resolving = true
+            Task {
+                defer { resolving = false }
+                if let result = await search.searchDirectly(text) { use(result) }
+            }
+        }
+    }
+
     private func pick(_ suggestion: PlaceSuggestion) {
         searchFocused = false
         resolving = true
         Task {
             defer { resolving = false }
             do {
-                let result = try await search.resolve(suggestion)
-                center = result.coordinate
-                camera = Self.region(result.coordinate)
-                address = result.address
-                if trimmedName.isEmpty || name == nameFromSearch {
-                    name = result.name
-                    nameFromSearch = result.name
-                }
-                search.query = ""
-                Log.app.info("Search picked \(result.name, privacy: .private) at \(result.coordinate.latitude, privacy: .private), \(result.coordinate.longitude, privacy: .private)")
+                use(try await search.resolve(suggestion))
             } catch {
                 Log.app.error("Search resolve failed: \(error.localizedDescription, privacy: .public)")
             }
         }
+    }
+
+    /// Moves the pin to a search result and fills in the name unless you've typed your own.
+    private func use(_ result: PlaceResult) {
+        center = result.coordinate
+        camera = Self.region(result.coordinate)
+        address = result.address
+        if trimmedName.isEmpty || name == nameFromSearch {
+            name = result.name
+            nameFromSearch = result.name
+        }
+        search.query = ""
+        Log.app.info("Search picked \(result.name, privacy: .private) at \(result.coordinate.latitude, privacy: .private), \(result.coordinate.longitude, privacy: .private)")
     }
 
     private func save() {

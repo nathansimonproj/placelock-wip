@@ -316,7 +316,11 @@ Tried and dropped. It needed a Shortcuts "App Is Opened" automation for each app
   - **Cause not confirmed.** It's probably the plane network: the Simulator's maps service (`geod`) requests stalled until they timed out. It could also be specific to the Simulator or to `MKLocalSearchCompleter`.
   - **Next steps:**
     1. Retest on normal Wi-Fi, both in the Simulator and on the iPhone.
-    2. If it still fails, log the completer's lifecycle and try a plain `MKLocalSearch` request when the user submits.
+    2. ~~If it still fails, log the completer's lifecycle and try a plain `MKLocalSearch` request when the user submits.~~ Done 2026-11-23, without waiting for step 1.
+       - Pressing Search on the keyboard now takes the top suggestion only if it's for exactly what's typed. If Apple's type-ahead hasn't answered yet, found nothing or failed, it runs one plain search for the text instead and moves the pin to the top match. If that fails too, the message under the field says why. The choice is in `PlaceSearchRules` (`Models/PlaceSearchRules.swift`, with tests).
+       - A plain search that comes back after you've changed or cleared the text is ignored, and typing cancels it.
+       - The log now shows each step with timings: "Search asked", "Search results: N after 1.2s", "Search failed after 50.3s: MKErrorDomain 1: …", "Search slow", "Search cleared while waiting" and "Search direct: …". The text stays private.
+       - Untested on plane Wi-Fi or any slow network, so it's not known yet whether the plain search gets through when the type-ahead stalls. Not tried on the iPhone. Next time it happens, press Search and send the log.
     3. ~~Either way, stop the spinner once the slow message shows, so the screen doesn't look stuck.~~ Done 2026-11-12. Results that arrive late still show.
     4. If Apple search stays unreliable, consider Google Places (see above).
 

@@ -45,7 +45,7 @@ The account's session token is saved on the phone in the Keychain by the Supabas
 
 ### Apple Maps: place search (`MKLocalSearchCompleter`, `MKLocalSearch`)
 
-- **What:** the text typed in Add place's search field, as it's typed, and a 20 km region around the phone's location to rank nearby results first. Picking a result sends that result back to Apple to get its coordinates.
+- **What:** the text typed in Add place's search field, as it's typed, and a 20 km region around the phone's location to rank nearby results first. Picking a result sends that result back to Apple to get its coordinates. Pressing Search before any suggestions have come back sends the typed text once more as a plain search (added 2026-11-23). Search log lines ("Search asked", "Search results", "Search direct") keep the text private; timings and Apple's error codes are public.
 - **Why:** to find a place by name.
 - **Linked to the user:** Apple's service; no account ID.
 
