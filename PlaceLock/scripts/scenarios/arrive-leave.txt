@@ -1,0 +1,13 @@
+# The basic promise: arriving unblocks, leaving blocks again.
+place Gym 37.7694 -122.4862 100
+
+at Gym +400              # start well outside
+launch
+expect-no unlock Gym for 10
+expect locked
+at Gym                   # arrive
+expect unlock Gym
+expect unlocked Gym
+at Gym +300              # leave
+expect lock "Left Gym"
+expect locked

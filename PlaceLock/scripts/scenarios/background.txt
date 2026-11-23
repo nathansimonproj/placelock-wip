@@ -1,0 +1,15 @@
+# Arriving and leaving with the app in the background (not killed): iOS delivers the
+# geofence events and the app acts on them without being opened.
+place Gym 37.7694 -122.4862 100
+
+at Gym +400
+launch
+expect locked
+background
+wait 3
+at Gym
+expect unlock Gym
+at Gym +300
+expect lock "Left Gym"
+foreground
+expect locked

@@ -12,3 +12,6 @@ xcuserdata/
 
 # macOS
 .DS_Store
+
+# Overnight runs (PlaceLock/scripts/night.sh): queue, questions, logs
+.night/

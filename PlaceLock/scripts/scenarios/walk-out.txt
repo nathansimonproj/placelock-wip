@@ -1,0 +1,10 @@
+# Walk (jog, to keep it short) out of a place to see how far past the edge the Simulator
+# reports leaving. The iPhone takes longer: 100–200 m and a few minutes.
+place Gym 37.7694 -122.4862 100
+
+at Gym +400
+launch
+at Gym
+expect unlock Gym
+walk Gym +300 speed 4    # 400 m, about 100 s
+expect lock "Left Gym" within 180

@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "deny": [
+      "Bash(git push:*)",
+      "Bash(git merge:*)",
+      "Bash(git rebase:*)",
+      "Bash(git checkout:*)",
+      "Bash(git switch:*)",
+      "Bash(git reset --hard:*)",
+      "Bash(git branch -D:*)",
+      "Bash(git worktree:*)",
+      "Bash(gh:*)",
+      "Bash(supabase db push:*)",
+      "Bash(supabase link:*)",
+      "Bash(supabase migration repair:*)",
+      "Bash(supabase functions deploy:*)",
+      "Bash(supabase secrets:*)",
+      "AskUserQuestion",
+      "EnterPlanMode",
+      "ExitPlanMode",
+      "Artifact",
+      "CronCreate",
+      "RemoteTrigger",
+      "ScheduleWakeup",
+      "SendToProject"
+    ]
+  }
+}

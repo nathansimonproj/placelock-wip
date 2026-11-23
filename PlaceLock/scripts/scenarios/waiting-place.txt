@@ -1,0 +1,10 @@
+# A place still waiting out its 24 h must not unblock anything, even while you stand in it.
+place NewSpot 37.7694 -122.4862 100 inactive
+
+at NewSpot +400
+launch
+expect locked
+at NewSpot
+expect log /Geofence .*rawValue: 1/ within 60     # iOS says we're inside...
+expect-no unlock NewSpot for 20                   # ...and the app still doesn't unlock
+expect locked

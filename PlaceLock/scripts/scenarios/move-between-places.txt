@@ -1,0 +1,20 @@
+# Two overlapping places: walking from one into the other keeps apps open (LockRules .move),
+# instead of locking on the way out of the first.
+#
+# iOS only reports leaving a place some way past its edge (on 2026-11-22 in the Simulator, 50 m
+# past wasn't enough and 300 m was). So Quad is big and its center is 300 m past Library's edge.
+place Library 37.7694 -122.4760 100
+place Quad 37.77299 -122.4760 350      # 400 m north; the circles overlap by 50 m
+
+at Library +400
+launch
+expect locked
+at Library
+expect unlock Library
+at Quad                  # 300 m outside Library, inside Quad
+expect move
+expect unlocked Quad
+expect-no lock for 10
+at Quad +300             # leave both
+expect lock "Left Quad"
+expect locked

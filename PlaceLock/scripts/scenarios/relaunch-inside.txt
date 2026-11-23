@@ -1,0 +1,14 @@
+# Quitting and reopening the app while at a place keeps apps open: no lock and no second
+# unlock on launch.
+place Home 37.7705 -122.4660 100
+
+at Home +400
+launch
+expect locked
+at Home
+expect unlock Home
+relaunch
+expect log /^Launch: 1 places, session=Home$/ within 20
+expect-no lock for 15
+expect-no unlock Home for 1        # still the same visit, not a new one
+expect unlocked Home
