@@ -57,14 +57,19 @@ struct BlockList: Codable {
 
 // Hand-written so block lists saved before `pendingRemovals` existed still load
 // (synthesized decoding would fail on the missing key and reset the list to empty).
+// Each part is read on its own, so damage in one doesn't empty the list:
+// - `selection` (the picked apps) must read, or the whole list fails (`SavedData` reports it).
+// - `pendingRemovals` falls back to none, which is stricter: apps waiting out their 24 h are
+//   still in `selection`, so they stay blocked until removed again.
+// - `simulatedApps` (free build only, blocks nothing real) falls back to none.
 extension BlockList {
     private enum CodingKeys: String, CodingKey { case selection, simulatedApps, pendingRemovals }
 
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         selection = try c.decodeIfPresent(FamilyActivitySelection.self, forKey: .selection) ?? FamilyActivitySelection()
-        simulatedApps = try c.decodeIfPresent([String].self, forKey: .simulatedApps) ?? []
-        pendingRemovals = try c.decodeIfPresent(PendingRemovals.self, forKey: .pendingRemovals) ?? PendingRemovals()
+        simulatedApps = (try? c.decodeIfPresent([String].self, forKey: .simulatedApps)) ?? []
+        pendingRemovals = (try? c.decodeIfPresent(PendingRemovals.self, forKey: .pendingRemovals)) ?? PendingRemovals()
     }
 }
 

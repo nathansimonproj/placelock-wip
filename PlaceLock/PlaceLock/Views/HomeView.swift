@@ -275,7 +275,7 @@ struct FixBanner: View {
         } else if location.authorization == .notDetermined {
             location.requestPermission()
         } else {
-            UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!)
+            if let url = URL(string: UIApplication.openSettingsURLString) { UIApplication.shared.open(url) }
         }
     }
 }

@@ -115,7 +115,7 @@ struct OnboardingView: View {
                 SkipButton(action: next)
             } else {
                 PrimaryButton("Open Settings") {
-                    UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!)
+                    if let url = URL(string: UIApplication.openSettingsURLString) { UIApplication.shared.open(url) }
                 }
                 SkipButton(action: next)
             }

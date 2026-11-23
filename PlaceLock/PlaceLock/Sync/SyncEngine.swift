@@ -89,8 +89,8 @@ final class SyncEngine: ObservableObject {
         self.backend = backend
         self.localProvider = local
         self.defaults = defaults
-        state = defaults.data(forKey: Self.stateKey)
-            .flatMap { try? JSONDecoder().decode(State.self, from: $0) } ?? State()
+        // Unreadable state is logged and set aside; starting fresh pulls everything once.
+        state = Storage.load(Self.stateKey, in: defaults) { SavedData.decode(State.self, from: $0) }.value ?? State()
         status = backend == nil ? .off : state.turnedOffAt != nil ? .turnedOff : .idle
         pendingCount = state.outbox.count
     }

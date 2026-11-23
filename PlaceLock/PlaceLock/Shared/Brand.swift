@@ -49,7 +49,7 @@ enum Brand {
         switch names.count {
         case 0: return ""
         case 1: return names[0]
-        default: return "\(names.dropLast().joined(separator: ", ")) or \(names.last!)"
+        default: return "\(names.dropLast().joined(separator: ", ")) or \(names[names.count - 1])"
         }
     }
 }

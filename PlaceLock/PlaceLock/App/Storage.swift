@@ -12,6 +12,24 @@ enum Storage {
         return shared
     }()
 
+    /// Reads `key` with `decode` (a `SavedData` function). If some of it can't be read, logs that
+    /// and copies the original under "unreadable.<key>" before the app saves over it, so what
+    /// was lost can still be recovered. Only the first damaged copy is kept.
+    static func load<T>(_ key: String, in defaults: UserDefaults = Storage.defaults,
+                        _ decode: (Any?) -> SavedData.Outcome<T>) -> SavedData.Outcome<T> {
+        let stored = defaults.object(forKey: key)
+        let outcome = decode(stored)
+        guard outcome.lostSomething, let stored else { return outcome }
+        if case .partial(_, let dropped) = outcome {
+            Log.app.error("Saved \(key, privacy: .public): \(dropped) item(s) couldn't be read and were set aside")
+        } else {
+            Log.app.error("Saved \(key, privacy: .public) couldn't be read and was set aside")
+        }
+        let backupKey = "unreadable.\(key)"
+        if defaults.object(forKey: backupKey) == nil { defaults.set(stored, forKey: backupKey) }
+        return outcome
+    }
+
     #if SCREEN_TIME
     private static let migratedKey = "movedToAppGroup"
 

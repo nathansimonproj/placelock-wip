@@ -131,14 +131,20 @@ final class AppModel: ObservableObject {
         // didSet even here in init (it does for property wrappers), and those observers treat a
         // load as an edit: `places` queued every place for upload as "edited now" on each launch,
         // and `blockList` blocked apps because `session` wasn't loaded yet.
-        _places = Published(initialValue: load([Place].self, key: Keys.places) ?? [])
+        // A save that can't be read (all or part) is logged and set aside by `Storage.load`, and
+        // the app goes on with whatever did read (see `SavedData`). Nothing here can crash.
+        _places = Published(initialValue: loadList(Place.self, key: Keys.places))
+        // An unreadable block list has lost its Screen Time tokens, so it starts empty and Home
+        // asks for apps again. Removals waiting their 24 h and the free build's names are read
+        // separately (`BlockList.init(from:)`), so damage there can't cost the picked apps.
         _blockList = Published(initialValue: load(BlockList.self, key: Keys.blockList) ?? BlockList())
         if !ShieldManager.isSimulated, let cleaned = blockList.droppingSimulatedApps() {
             _blockList = Published(initialValue: cleaned)
             save(cleaned, key: Keys.blockList)
         }
+        // No session (or an unreadable one) means locked; reconcile unlocks again if you're at a place.
         _session = Published(initialValue: load(UnlockSession.self, key: Keys.session))
-        _visits = Published(initialValue: load([Visit].self, key: Keys.visits) ?? [])
+        _visits = Published(initialValue: loadList(Visit.self, key: Keys.visits))
         #if DEBUG
         // Launch with `-demoHistory YES` to fill today with two sample visits (for screenshots).
         if UserDefaults.standard.bool(forKey: "demoHistory"), visits.isEmpty, places.count >= 2 {
@@ -150,13 +156,11 @@ final class AppModel: ObservableObject {
         }
         #endif
         Storage.defaults.removeObject(forKey: Keys.paused) // "Lock until I leave" removed 2026-11-22
-        _placeSlots = Published(initialValue: load([String].self, key: Keys.slots) ?? [])
-        if let saved = load(Date.self, key: Keys.setupEnds) {
-            _setupEndsAt = Published(initialValue: saved)
-        } else {
-            _setupEndsAt = Published(initialValue: .now.addingTimeInterval(PlaceRules.changeDelay)) // first launch (or first with this feature)
-            save(setupEndsAt, key: Keys.setupEnds)
-        }
+        _placeSlots = Published(initialValue: loadList(String.self, key: Keys.slots))
+        // First launch (or first with this feature): 24 h from now. Unreadable: setup is over.
+        let savedSetupEnd = Storage.load(Keys.setupEnds) { SavedData.decode(Date.self, from: $0) }
+        _setupEndsAt = Published(initialValue: SavedData.setupEnd(savedSetupEnd, now: .now))
+        if savedSetupEnd.value == nil { save(setupEndsAt, key: Keys.setupEnds) }
         // A saved "approved" that no longer holds is left for `refreshScreenTimeAccess` to catch,
         // so it can warn that access was turned off.
         let savedAccess = Storage.defaults.string(forKey: Keys.screenTime).flatMap(ScreenTimeAccess.init)
@@ -598,11 +602,21 @@ final class AppModel: ObservableObject {
 
     private func save<T: Encodable>(_ value: T?, key: String) {
         guard let value else { Storage.defaults.removeObject(forKey: key); return }
-        Storage.defaults.set(try? JSONEncoder().encode(value), forKey: key)
+        do {
+            Storage.defaults.set(try JSONEncoder().encode(value), forKey: key)
+        } catch {
+            // Keep the last good save rather than erasing it (setting nil would remove the key).
+            Log.app.error("Couldn't save \(key, privacy: .public): \(error.localizedDescription, privacy: .public)")
+        }
     }
 
+    /// The saved value, or nil if there is none or it can't be read (see `Storage.load`).
     private func load<T: Decodable>(_ type: T.Type, key: String) -> T? {
-        guard let data = Storage.defaults.data(forKey: key) else { return nil }
-        return try? JSONDecoder().decode(type, from: data)
+        Storage.load(key) { SavedData.decode(type, from: $0) }.value
+    }
+
+    /// The saved list, keeping every item that can still be read (see `Storage.load`).
+    private func loadList<T: Decodable>(_ type: T.Type, key: String) -> [T] {
+        Storage.load(key) { SavedData.decodeList(of: type, from: $0) }.value ?? []
     }
 }
