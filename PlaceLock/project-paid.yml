@@ -29,8 +29,11 @@ targets:
     type: app-extension
     platform: iOS
     sources:
-      - Extensions/Shield
+      - path: Extensions/Shield
+        excludes: [PrivacyInfo.xcprivacy] # listed below, so it's always a resource
       - PlaceLock/Shared
+      - path: Extensions/Shield/PrivacyInfo.xcprivacy # the extension's own privacy manifest
+        buildPhase: resources
     entitlements:
       path: Extensions/Shield/Shield.entitlements
       properties: *screenTimeEntitlements

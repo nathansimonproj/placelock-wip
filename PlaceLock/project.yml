@@ -21,7 +21,13 @@ targets:
   PlaceLock:
     type: application
     platform: iOS
-    sources: [PlaceLock]
+    sources:
+      - path: PlaceLock
+        excludes: [PrivacyInfo.xcprivacy] # listed below, so it's always a resource
+      # Privacy manifest: tracking, collected data and required-reason APIs. Keep it matching
+      # docs/app-store/data-inventory.md. The Shield extension has its own (project-paid.yml).
+      - path: PlaceLock/PrivacyInfo.xcprivacy
+        buildPhase: resources
     dependencies:
       - package: Supabase
         product: Supabase

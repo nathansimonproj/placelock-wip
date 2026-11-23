@@ -30,6 +30,7 @@
 		88FF662A430BDF12D22A8574 /* RulesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79A33188D87631FAFE8F0BB4 /* RulesView.swift */; };
 		A7E918B024542DA7E905CDE6 /* Log.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1A758279946CD369E3E785D /* Log.swift */; };
 		A99140E7BA3244546725BE50 /* LocationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BB4FF5F9AC07525CD9DB78A /* LocationService.swift */; };
+		ABB57E998D3642FF343F184E /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 66C4D3934EB0622241E048E9 /* PrivacyInfo.xcprivacy */; };
 		B5E10F455E1D80A4E460152F /* Scenario.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE408562C2FAB86FCA99E90B /* Scenario.swift */; };
 		B9F91CB9ACC3BC0BA4ADC886 /* SimulatedBlockingViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DD0D67532EF61C7B10B8B1C /* SimulatedBlockingViews.swift */; };
 		C94FFF64641E41B3A2806058 /* SavedData.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF53E2F264303957289C9D30 /* SavedData.swift */; };
@@ -81,6 +82,7 @@
 		53614D80BE59F5D4E4D38663 /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
 		54519AA1DD4CAF17DF32BF3B /* BlockList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockList.swift; sourceTree = "<group>"; };
 		5AE15B9E6666283175C24DE0 /* Rules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Rules.swift; sourceTree = "<group>"; };
+		66C4D3934EB0622241E048E9 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		6E62CA27720DE486B022456D /* Place.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Place.swift; sourceTree = "<group>"; };
 		79A33188D87631FAFE8F0BB4 /* RulesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RulesView.swift; sourceTree = "<group>"; };
 		7CAF9493EEA45E820E20FF7B /* SyncEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncEngine.swift; sourceTree = "<group>"; };
@@ -207,6 +209,7 @@
 				51CB9DA06496E711A2C1C2A6 /* Assets.xcassets */,
 				514A2077DA23307ED1ECE1D4 /* Info.plist */,
 				4C430FC85FEF0424C384B097 /* PlaceLock.entitlements */,
+				66C4D3934EB0622241E048E9 /* PrivacyInfo.xcprivacy */,
 				E8EA5220A505222A7502D912 /* App */,
 				644844ADC290FAD7544429B1 /* Blocking */,
 				CA53F7E30C1174E566FB8B39 /* Location */,
@@ -335,6 +338,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				8114ECBB039570774E1AAF87 /* Assets.xcassets in Resources */,
+				ABB57E998D3642FF343F184E /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

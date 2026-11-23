@@ -104,13 +104,48 @@ From Apple's "Describing use of required reason API" and `NSPrivacyAccessedAPITy
 
 So the app's manifest needs `CA92.1` (free and paid) and `1C8F.1` (paid), and the Shield extension's needs `1C8F.1`.
 
+The Shield extension reads the App Group through `SharedStore.defaults`. Its fallback to `UserDefaults.standard` only runs if iOS refuses the suite name, which it doesn't for a valid group name, so the extension's manifest lists `1C8F.1` only.
+
 Packages (Supabase 2.55.6 and what it pulls in: swift-crypto, swift-asn1, swift-clocks, swift-concurrency-extras, swift-http-types, xctest-dynamic-overlay), searched in `build/free/SourcePackages/checkouts`:
 
 - None of them calls a boot-time, disk-space or file-timestamp API, or `UserDefaults`. The only near miss is Supabase Storage's `MultipartFormData`, which reads a file's size with `FileManager.attributesOfItem` for uploads. That method isn't on Apple's list, and Spots never uploads files.
 - swift-crypto ships its own `PrivacyInfo.xcprivacy` (empty: no tracking, no data, no APIs), and it ends up in the app as `swift-crypto_Crypto.bundle`. supabase-swift ships none. That fits what it does: it collects nothing for itself, and what it sends is the app's data, declared in the app's manifest.
 
+## Privacy manifests
+
+Added 2026-11-23. Both are listed in the specs as resources, so they're in every build:
+
+- App: `PlaceLock/PlaceLock/PrivacyInfo.xcprivacy` (in `project.yml`).
+- Shield extension: `PlaceLock/Extensions/Shield/PrivacyInfo.xcprivacy` (in `project-paid.yml`).
+
+| | App | Shield extension |
+| --- | --- | --- |
+| Tracking (`NSPrivacyTracking`) | No | No |
+| Tracking domains | None | None |
+| Collected data | See below | None |
+| Required-reason APIs | User defaults: `CA92.1`, `1C8F.1` | User defaults: `1C8F.1` |
+
+The app's collected data is what the backup sends to Supabase (the tables above). Each type is linked to the user, not used for tracking, and used only for app functionality (`NSPrivacyCollectedDataTypePurposeAppFunctionality`):
+
+| Data type | What it covers |
+| --- | --- |
+| `NSPrivacyCollectedDataTypePreciseLocation` | `places`: latitude, longitude and radius, and pending moves (stored with full precision) |
+| `NSPrivacyCollectedDataTypeUserID` | The anonymous account ID that owns every row |
+| `NSPrivacyCollectedDataTypeOtherUserContent` | `places`: the name the user typed or picked, and its address |
+| `NSPrivacyCollectedDataTypeProductInteraction` | `sessions`: when apps unblocked at each place, when they blocked again and why; `profiles.setup_ends_at` |
+
+The app's manifest has one file for both builds, so it lists `1C8F.1` in the free build too, which doesn't use the App Group. The free build can't go on the App Store, so that only matters for the paid build, where both reasons are true.
+
+Apple's own services (the geocoder, place search, map tiles) aren't declared: Spots sends them nothing tied to the account, and Apple handles that data under its own terms. The App Privacy answers should list the same four types, so the label and the manifest agree.
+
+Packages: supabase-swift 2.55.6 ships no privacy manifest (none in its checkout, none in the built app). swift-crypto ships empty ones; one ends up in the app as `swift-crypto_Crypto.bundle/PrivacyInfo.xcprivacy`. Checked in the paid Release build (`build/release/Build/Products/Release-iphoneos/PlaceLock.app`): `PrivacyInfo.xcprivacy` in the app, in `PlugIns/PlaceLockShield.appex`, and in the swift-crypto bundle. The free Simulator build has the app's.
+
+Sources (fetched 2026-11-23): Apple's "Describing data use in privacy manifests" and the `NSPrivacyCollectedDataType` and `NSPrivacyCollectedDataTypePurposes` reference pages (the data type names and their definitions), TN3184 "Adding data collection details to your privacy manifest" (the four keys in each entry), and the required-reason pages listed above.
+
 ## Not checked
 
 - What Supabase keeps on its side: the IP address and user agent in its API and Auth logs, and how long. Look in the Supabase dashboard (Logs, and the project's region) before writing the privacy policy. Listed in the launch checklist.
 - Whether Apple counts the MapKit and geocoder requests as data the app "collects" for App Privacy. Most apps don't declare Apple's own services; decide in the App Privacy task.
+- Xcode's privacy report for a signed archive (Organizer › right-click the archive › Generate Privacy Report). It merges the app's, the extension's and the packages' manifests the way App Store Connect will. Needs a signed archive; listed in the launch checklist.
+- Whether App Review agrees that unlock history is product interaction rather than only location. It's declared both ways (sessions name a place and a time), which is the safer side.
 - Logs on the iPhone: that the private values really show as `<private>` in Console with no debugger attached. Simulator and Xcode show them in full.
