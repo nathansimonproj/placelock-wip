@@ -231,20 +231,34 @@ class Runner:
                     entry["activeAfter"] = now_ref + 24 * 3600
                 fixture.append(entry)
             args += ["-scenarioPlaces", base64.b64encode(json.dumps(fixture).encode()).decode()]
-        start = time.monotonic()
         # iOS may have relaunched the app in the background for a geofence event (a leftover
         # scenario place, say), without launch arguments and so on your real places. Launching
         # without --terminate-running-process would only bring that copy to the front.
         restart = ["--terminate-running-process"] if first or self.restart_next else []
         self.restart_next = False
+        start = time.monotonic()
         simctl("launch", *restart, self.udid, BUNDLE, *args)
         self.launched = True
-        if first:  # never carry on unless the app is really running on the scenario's places
-            want = rf"^Launch: {len(self.places)} places, session=none$"
-            if not self.wait_for(re.compile(want), start, 20):
-                lines = "\n".join(f"    {m}" for _, m in self.log.since(start)[:8])
-                raise ScenarioError(f"The app didn't start in scenario mode with {len(self.places)} places. "
-                                    f"Is the installed build older than App/Scenario.swift? Log:\n{lines}")
+        if not first:
+            return
+        # Never carry on unless the app is really running on the scenario's places.
+        want = re.compile(rf"^Launch: {len(self.places)} places, session=none$")
+        if self.wait_for(want, start, 20):
+            return
+        # A background relaunch can race the first launch: in an --all run, the previous
+        # scenario's circles fire an exit when this one jumps away, and that copy (no launch
+        # arguments) can win. Stop it and launch once more before giving up.
+        first_try = "\n".join(f"    {m}" for _, m in self.log.since(start)[:8])
+        print("    The app didn't start in scenario mode; stopping it and launching again", flush=True)
+        simctl("terminate", self.udid, BUNDLE, check=False)
+        time.sleep(2)
+        start = time.monotonic()
+        simctl("launch", "--terminate-running-process", self.udid, BUNDLE, *args)
+        if not self.wait_for(want, start, 20):
+            lines = "\n".join(f"    {m}" for _, m in self.log.since(start)[:8])
+            raise ScenarioError(f"The app didn't start in scenario mode with {len(self.places)} places, "
+                                f"twice. Is the installed build older than App/Scenario.swift?\n"
+                                f"  First try's log:\n{first_try}\n  Second try's log:\n{lines}")
 
     def wait_for(self, pattern, since, seconds):
         deadline = time.monotonic() + seconds

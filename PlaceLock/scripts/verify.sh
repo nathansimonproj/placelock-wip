@@ -2,9 +2,10 @@
 # Checks a change end to end: unit tests (free build, Simulator), the paid build still compiles,
 # the database migrations (when supabase/ changed) and, optionally, Simulator screenshots.
 #
-# Usage: scripts/verify.sh [--quick] [--no-paid] [--db] [--screens] [--sim "iPhone 17"]
+# Usage: scripts/verify.sh [--quick] [--no-paid] [--release] [--db] [--screens] [--sim "iPhone 17"]
 #   --quick     unit tests only
 #   --no-paid   skip the paid (Screen Time) compile check
+#   --release   also compile the paid build in Release (what ships to the App Store)
 #   --db        run the migration checks even if supabase/ didn't change
 #   --screens   install the free build in the Simulator and screenshot the main screens
 #   --sim NAME  Simulator to use (default $VERIFY_SIM, else "iPhone 17")
@@ -15,15 +16,16 @@
 set -uo pipefail
 cd "$(dirname "$0")/.."   # PlaceLock/
 
-quick=0 paid=1 db=auto screens=0 sim="${VERIFY_SIM:-iPhone 17}"
+quick=0 paid=1 release=0 db=auto screens=0 sim="${VERIFY_SIM:-iPhone 17}"
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --quick) quick=1 paid=0 db=0 ;;
+    --quick) quick=1 paid=0 release=0 db=0 ;;
+    --release) release=1 ;;
     --no-paid) paid=0 ;;
     --db) db=1 ;;
     --screens) screens=1 ;;
     --sim) sim="$2"; shift ;;
-    -h|--help) sed -n 2,14p "$0"; exit 0 ;;
+    -h|--help) sed -n 2,15p "$0"; exit 0 ;;
     *) echo "Unknown option: $1" >&2; exit 2 ;;
   esac
   shift
@@ -69,9 +71,28 @@ if [[ -z "$udid" ]]; then echo "No available Simulator named \"$sim\"" >&2; exit
 # 1. Unit tests on the free build.
 echo "==> Unit tests (free build, $sim)"
 xcodegen generate --quiet
-if xcodebuild -project PlaceLock.xcodeproj -scheme PlaceLock \
-     -destination "id=$udid" -derivedDataPath build/free \
-     test >"$out/test.log" 2>&1; then
+run_tests() {
+  xcodebuild -project PlaceLock.xcodeproj -scheme PlaceLock \
+    -destination "id=$udid" -derivedDataPath build/free \
+    test >"$out/test.log" 2>&1
+}
+# The Simulator sometimes dies before the tests start (most often with several Simulators
+# running). That says nothing about the code, so restart this Simulator and try once more.
+sim_broke() {
+  grep -qE 'before establishing connection|IS NOT still alive|Unable to boot|Failed to install or launch the test runner|CoreSimulatorService connection (became invalid|interrupted)' "$out/test.log"
+}
+tests_ok=0
+if run_tests; then
+  tests_ok=1
+elif sim_broke; then
+  echo "    Simulator failed before the tests started; restarting it and trying again"
+  cp "$out/test.log" "$out/test-first-try.log"
+  xcrun simctl shutdown "$udid" 2>/dev/null
+  xcrun simctl boot "$udid" 2>/dev/null
+  xcrun simctl bootstatus "$udid" -b >/dev/null 2>&1
+  run_tests && tests_ok=1
+fi
+if [[ $tests_ok == 1 ]]; then
   summary="$(grep -E 'Test run with' "$out/test.log" | tail -1)"
   pass "Unit tests: ${summary:-passed (no Swift Testing summary found)}"
 else
@@ -90,6 +111,20 @@ if [[ $paid == 1 ]]; then
   else
     show_errors "$out/paid.log"
     fail "Paid build (see $out/paid.log)"
+  fi
+fi
+
+# 2b. The paid build in Release, which is what ships: catches code that only compiles with DEBUG.
+if [[ $release == 1 ]]; then
+  echo "==> Paid Release build compiles"
+  xcodegen generate --spec project-paid.yml --quiet
+  if xcodebuild -project PlaceLock.xcodeproj -scheme PlaceLock -configuration Release \
+       -destination 'generic/platform=iOS' -derivedDataPath build/release \
+       CODE_SIGNING_ALLOWED=NO build >"$out/release.log" 2>&1; then
+    pass "Paid Release build compiles"
+  else
+    show_errors "$out/release.log"
+    fail "Paid Release build (see $out/release.log)"
   fi
 fi
 

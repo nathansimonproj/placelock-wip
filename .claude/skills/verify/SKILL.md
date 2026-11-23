@@ -13,7 +13,7 @@ PlaceLock/scripts/verify.sh --screens  # also screenshot Home, Spots, Add place 
 PlaceLock/scripts/verify.sh --quick    # unit tests only, for fast checks while working
 ```
 
-Other flags: `--no-paid`, `--db` (always run the migration checks), `--sim "iPhone 17 Pro"`.
+Other flags: `--release` (also compile the paid build in Release, what ships; use it for anything touching the specs, Info.plist or `#if DEBUG` code), `--no-paid`, `--db` (always run the migration checks), `--sim "iPhone 17 Pro"` (or set `VERIFY_SIM`). If the Simulator dies before the tests start, the script restarts it and tries once more.
 
 Run it with a 10-minute Bash timeout. Don't run two at once in the same checkout: they share the project files and `PlaceLock/build/`. Separate git worktrees are fine.
 
