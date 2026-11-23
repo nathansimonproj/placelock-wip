@@ -9,7 +9,7 @@ Run the script from the repo root. It takes about 1–2 minutes and leaves the g
 
 ```sh
 PlaceLock/scripts/verify.sh            # tests + paid compile + migrations if supabase/ changed
-PlaceLock/scripts/verify.sh --screens  # also screenshot Home, Spots, Add place and first-run setup
+PlaceLock/scripts/verify.sh --screens  # also screenshot Home (locked and unlocked), Spots, About, the 24 h sheet, Backup, Add place and first-run setup
 PlaceLock/scripts/verify.sh --quick    # unit tests only, for fast checks while working
 ```
 

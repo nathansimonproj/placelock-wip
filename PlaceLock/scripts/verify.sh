@@ -171,10 +171,19 @@ if [[ $screens == 1 ]]; then
     xcrun simctl bootstatus "$udid" -b >/dev/null
     xcrun simctl install "$udid" "$app"
     xcrun simctl privacy "$udid" grant location-always com.nsimon.PlaceLock 2>/dev/null
+    # Home while unlocked needs a place to stand in. A geofence scenario's store (App/Scenario.swift)
+    # gets one without touching the Simulator's own places, and -pretendAt stands there.
+    fixture="$(python3 -c 'import base64, json; print(base64.b64encode(json.dumps([{
+      "id": "5C0F5E1A-0000-4000-8000-000000000001", "name": "Library",
+      "latitude": 37.7786, "longitude": -122.4159, "radius": 150}]).encode()).decode())')"
     # name | launch arguments. -onboarded YES skips first-run setup (it's read from UserDefaults).
     shots=(
       "home|-onboarded YES -demoHistory YES"
+      "home-unlocked|-scenario screens -scenarioPlaces $fixture -pretendAt Library"
       "rules|-onboarded YES -tab rules"
+      "about|-onboarded YES -tab rules -scrollTo about"
+      "wait-info|-onboarded YES -tab rules -sheet wait"
+      "backup|-onboarded YES -tab rules -push backup"
       "add-place|-onboarded YES -sheet add"
       "setup-apps|-onboarded NO -onboardingStep apps"
     )

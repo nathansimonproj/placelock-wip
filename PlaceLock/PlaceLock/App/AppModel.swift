@@ -239,6 +239,14 @@ final class AppModel: ObservableObject {
     func startUp() async {
         guard !didStart else { return }
         didStart = true
+        #if DEBUG
+        // Launch with `-pretendAt <place name>` to start as if Debug's "Pretend I'm at" had picked
+        // that place (for screenshots of Home while unlocked).
+        if let name = UserDefaults.standard.string(forKey: "pretendAt"),
+           let place = places.first(where: { $0.name == name }) {
+            simulatedSpot = .place(place.id)
+        }
+        #endif
         Log.app.notice("Launch: \(self.places.count) places, session=\(self.activePlace?.name ?? "none", privacy: .private)")
         ShieldManager.stopLegacySessionCap()
         if location.authorization == .notDetermined {

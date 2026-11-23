@@ -8,17 +8,26 @@ struct RulesView: View {
     @Binding var placeSheet: PlaceSheet?
     @Binding var showPicker: Bool
     @State private var showInfo = false
+    #if DEBUG
+    @State private var showBackup = false
+    @State private var openedForScreenshot = false
+    #endif
 
     var body: some View {
         NavigationStack {
-            List {
-                if model.inSetupWindow { setupWindow }
-                blockedApps
-                places
-                if sync.isAvailable || Self.hasDebug || model.notificationsOff { settings }
-                about
+            ScrollViewReader { scroller in
+                List {
+                    if model.inSetupWindow { setupWindow }
+                    blockedApps
+                    places
+                    if sync.isAvailable || Self.hasDebug || model.notificationsOff { settings }
+                    about
+                }
+                .calmList()
+                #if DEBUG
+                .onAppear { openForScreenshot(scroller) }
+                #endif
             }
-            .calmList()
             .navigationTitle("Spots")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -26,8 +35,33 @@ struct RulesView: View {
                 }
             }
             .sheet(isPresented: $showInfo) { WaitInfoSheet() }
+            #if DEBUG
+            .navigationDestination(isPresented: $showBackup) { BackupView() }
+            #endif
         }
     }
+
+    #if DEBUG
+    /// Debug builds, for screenshots (with `-tab rules`): `-sheet wait` opens the 24-hour wait
+    /// sheet, `-push backup` opens Backup (even when backup is off) and `-scrollTo about`
+    /// scrolls down to About.
+    private func openForScreenshot(_ scroller: ScrollViewProxy) {
+        guard !openedForScreenshot else { return } // only on launch, not every return to the tab
+        openedForScreenshot = true
+        let args = UserDefaults.standard
+        if args.string(forKey: "sheet") == "wait" { showInfo = true }
+        if args.string(forKey: "push") == "backup" { showBackup = true }
+        if args.string(forKey: "scrollTo") == "about" {
+            // The list lays out its rows after onAppear, so wait a moment before scrolling.
+            Task {
+                try? await Task.sleep(for: .milliseconds(300))
+                scroller.scrollTo(Self.aboutID, anchor: .top)
+            }
+        }
+    }
+    #endif
+
+    private static let aboutID = "about"
 
     // MARK: Setup window
 
@@ -208,6 +242,7 @@ struct RulesView: View {
                 Link(destination: url) { Label("Contact support", systemImage: "envelope") }
             }
         }
+        .id(Self.aboutID)
         .calmRows()
     }
 

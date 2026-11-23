@@ -68,6 +68,10 @@ PlaceLock/scripts/archive.sh --check    # archive without signing and check what
 | --- | --- |
 | `-tab rules` | Open on the Spots tab |
 | `-sheet add` | Open Add place |
+| `-tab rules -sheet wait` | Open the "How the 24-hour wait works" sheet |
+| `-tab rules -push backup` | Open Backup, even when backup is off |
+| `-tab rules -scrollTo about` | Scroll Spots down to About |
+| `-pretendAt Library` | Start as if Debug's Pretend I'm at had picked the place with that name |
 | `-onboardingStep apps` | Open first-run setup on a step (`location`, `screenTime`, `apps`, `places`, `notifications`) |
 | `-demoHistory YES` | Fill today with two sample visits, for screenshots |
 | `-preciseOff YES` | Read Precise Location as off, which `simctl privacy` can't set |
