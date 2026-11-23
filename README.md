@@ -53,6 +53,15 @@ PlaceLock/scripts/bump-build.sh --version 1.1.0    # -> 1.1.0 (3)
 
 It regenerates whichever project (free or paid) is open now.
 
+**App Store build.** `archive.sh` generates the paid project, archives the Release build and exports a signed `.ipa` for App Store Connect into `PlaceLock/build/archive/`. Then it regenerates whichever project was open before. It never uploads; it prints the upload commands at the end. Signing is automatic with the paid team, so Xcode must be signed in to it (Xcode › Settings › Accounts). Export settings are in `scripts/ExportOptions.plist`.
+
+```sh
+PlaceLock/scripts/archive.sh            # archive and export the .ipa
+PlaceLock/scripts/archive.sh --check    # archive without signing and check what's inside; needs no account
+```
+
+`--check` makes sure the archive is an app archive with the Shield extension inside, that both have the version and build from `project.yml`, and that both declare the encryption exemption.
+
 **Debug launch arguments** (Debug builds):
 
 | Argument | Effect |

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyLists-1.0.dtd">
+<!--
+  Export options for scripts/archive.sh (xcodebuild -exportArchive). Keys: `xcodebuild -help`.
+  - destination export: writes an .ipa to disk and never uploads. Uploading is a separate step.
+  - teamID must match DEVELOPMENT_TEAM in project-paid.yml; archive.sh checks this.
+  - manageAppVersionAndBuildNumber NO: the version and build come from project.yml
+    (scripts/bump-build.sh), so the app and the Shield extension always match.
+-->
+<plist version="1.0">
+<dict>
+	<key>method</key>
+	<string>app-store-connect</string>
+	<key>destination</key>
+	<string>export</string>
+	<key>teamID</key>
+	<string>R6W24T35J6</string>
+	<key>signingStyle</key>
+	<string>automatic</string>
+	<key>manageAppVersionAndBuildNumber</key>
+	<false/>
+	<key>uploadSymbols</key>
+	<true/>
+</dict>
+</plist>
