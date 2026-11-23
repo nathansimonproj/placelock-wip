@@ -82,6 +82,15 @@ All of this is written and compiles in the paid build (`CODE_SIGNING_ALLOWED=NO`
   - Renaming a place keeps its exact circle. The edit screen's map could move the center by a hair, which re-added the circle or started a 24 h change.
   - **One time after this update** every place reads "unknown" until iOS checks again, because each circle is re-added under its new identifier. An unlock already running stays on.
   - Considered and not built: using the ~500 m fix to override iOS's "inside". An indoor Wi-Fi fix can be kilometers off, which is why the 8 h recheck was removed. The new log line will show whether iOS ever misses an exit.
+  - **Simulator scenarios (2026-11-23): all 6 pass** (`geofence-scenario.py --all --build`, 96 unit tests passing). No app bugs found.
+    - `arrive-leave`: 6/6. Stays locked 400 m outside, unlocks on arriving at Gym, locks 300 m past the edge.
+    - `background`: 4/4. Unlocks and locks while Spots is in the background, and is still locked when brought back.
+    - `move-between-places`: 7/7. Walking Library to Quad moves the unlock to Quad after 33 s (about 232 m past Library's edge), with no lock in between. Locks on leaving Quad.
+    - `relaunch-inside`: 6/6. Relaunching inside Home keeps the unlock, with no lock and no second unlock.
+    - `waiting-place`: 4/4. A place still waiting out its 24 h sees the entry but doesn't unlock.
+    - `walk-out`: 2/2. Walking out of Gym at 4 m/s locks after 84 s, about 237 m past the edge.
+    - In `waiting-place` and `walk-out` the first launch didn't start in scenario mode and the runner relaunched once, as designed.
+    - The Simulator can't show real exit timing or distance, indoor GPS drift, iOS relaunching Spots after a force-quit, or the Screen Time block screen. Those are still untested on the iPhone.
   - **Test:** see "On-iPhone checks for the geofence fixes" below.
 - [ ] **On-iPhone checks for the geofence fixes (2026-11-22).**
   - A plain relaunch logs no "Geofence … added" or "removed" lines.
