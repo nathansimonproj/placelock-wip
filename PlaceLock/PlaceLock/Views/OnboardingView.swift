@@ -99,7 +99,7 @@ struct OnboardingView: View {
     private var locationStep: some View {
         StepPage(symbol: "location.fill",
                  title: "Apps unblock where you choose",
-                 text: "Spots keeps distracting apps blocked everywhere except the places you pick, like the gym or home.\n\nTo notice when you arrive and leave, even with the app closed, it needs your location set to **Always**. Your location stays on this phone.") {
+                 text: "Spots keeps distracting apps blocked everywhere except the places you pick, like the gym or home.\n\nTo notice when you arrive and leave, even with the app closed, it needs your location set to **Always**. Where you are is checked on this phone.\n\nYour saved places and unlock history are backed up under an anonymous account, with no sign-in. You can delete the backup anytime in Spots › Backup.") {
             if location.canWatchPlaces {
                 Done("Location is set to Always")
             } else if location.needsPrecise {

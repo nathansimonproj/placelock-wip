@@ -65,7 +65,7 @@ Can be changed at any time without a new build.
 
 1,790 characters (counting line breaks).
 
-The BACKUP paragraph describes backup as it works today (on from first launch). If you make backup opt-in (`.night/needs-you.md`, "Privacy audit…"), change its first sentence to "Turn on backup in Spots › Backup to keep your places and unlock history under an anonymous account, with no sign-in." `TODO(user)`: confirm after answering that question.
+The BACKUP paragraph describes backup as it works today: on from first launch, which was kept on 2026-11-23.
 
 ### Keywords (100)
 

@@ -35,8 +35,8 @@ Things only you can do, in order. One line each.
 
 Some of these change setup's wording, the privacy policy and the listing, so answer them before you finish those. All are in `.night/needs-you.md`. Nothing was parked tonight; these are follow-ups from tasks that finished.
 
-- **Backup on by default?** Keep it on and say so in setup (recommended), make it opt-in, or stop sending addresses. ("Privacy audit of logs and what leaves the phone")
-- **Setup's "Your location stays on this phone."** isn't quite true with backup on; pick the new sentence. Answer the backup question first. ("App Review guideline audit")
+- ~~**Backup on by default?**~~ Decided 2026-11-23: it stays on, and setup's first step now says so.
+- ~~**Setup's "Your location stays on this phone."**~~ Replaced 2026-11-23 with a sentence about backup and where to delete it.
 - **Unreadable Screen Time app list:** show a one-time "Choose them again" message on Home (recommended), or leave it. ("No crashes from bad saved data")
 - **Simulator demo data in the live Supabase project:** delete that account with Spots › Backup › Delete account in the "iPhone 17 Pro Max" Simulator (recommended). ("Draft App Store screenshots")
 

@@ -3,7 +3,7 @@
 > **DRAFT, not published.** Written 2026-11-23 from [data-inventory.md](data-inventory.md) (checked against the code at commit 4a52129). Before hosting it:
 >
 > - Fill in every `TODO(user)`: the effective date, the contact email, who runs Spots, and the Supabase region and log retention (Supabase dashboard; see [launch-checklist.md](launch-checklist.md)).
-> - It describes the app as it is today: **backup is on from first launch**. If the backup consent question in `.night/needs-you.md` changes that (opt-in backup, or no `address`), update "Backup" and "What we collect" here and in `docs/privacy/index.html`.
+> - It describes the app as it is today: **backup is on from first launch**, and setup's first step says so (decided 2026-11-23). If that ever changes (opt-in backup, or no `address`), update "Backup" and "What we collect" here and in `docs/privacy/index.html`.
 > - It's a plain-language draft, not legal advice. If you expect users in places with specific privacy laws (the EU, the UK, California), have it checked against those.
 > - The same text is in [`docs/privacy/index.html`](../privacy/index.html), ready to host. Keep the two in step.
 

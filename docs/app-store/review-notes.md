@@ -96,4 +96,4 @@ python3 -c "import re;t=open('docs/app-store/review-notes.md').read();n=re.searc
 
 - What the app says comes from the code on 2026-11-23: setup (`Views/OnboardingView.swift`), Home (`Views/HomeView.swift`), Add place's 150 m default and Save (`Views/AddPlaceView.swift`), deleting a place (`RulesView` › `.onDelete`, then `AppModel.deletePlaces`), the lock and unlock notifications (`App/AppModel.swift`), the block screen (`Extensions/Shield/ShieldConfigurationExtension.swift`, `Shared/Brand.swift`).
 - The 4,000-character limit on the notes field is from memory of App Store Connect, not checked against Apple's docs tonight.
-- The backup paragraph describes backup as it works today, on from first launch. If backup becomes opt-in (`.night/needs-you.md`), add "Backup is off until turned on in Spots > Backup." and change "are backed up" to "can be backed up".
+- The backup paragraph describes backup as it works today, on from first launch (kept on, 2026-11-23). Setup's first step tells people this before they save a place.

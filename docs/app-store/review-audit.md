@@ -19,12 +19,14 @@ Each item is marked:
 | 4.0 Design | OK (iPad: your call) |
 | 4.2 Minimum functionality | OK |
 | 4.10 Screen Time APIs not monetized | OK |
-| 5.1.1 Data collection and storage | Purpose strings fixed tonight. Your call: backup starts with no consent, the privacy policy link, and a setup screen sentence that isn't quite true |
-| 5.1.2 Data use and sharing | Your call: same backup consent question. Otherwise OK |
-| 5.1.5 Location services | Fixed tonight (purpose strings). Same backup consent question |
+| 5.1.1 Data collection and storage | Purpose strings fixed. Backup notice added to setup (2026-11-23). Your call: the privacy policy link |
+| 5.1.2 Data use and sharing | OK, with the setup notice (2026-11-23) |
+| 5.1.5 Location services | Fixed (purpose strings, and the setup notice on 2026-11-23) |
 | Family Controls (license agreement 3.3.3(P)) | OK |
 
 The biggest risk is backup. It starts on first launch and sends each place's exact coordinates, plus when you were at each one, to Supabase. No screen asks first, and setup says "Your location stays on this phone." Guidelines 5.1.1(ii), 5.1.2(i) and 5.1.5 all ask for consent before location data is sent. See the questions in `.night/needs-you.md` ("Privacy audit…" and "App Review guideline audit").
+
+**Decided 2026-11-23:** backup stays on by default. Setup's first step, before any place is saved, now says: "Where you are is checked on this phone. Your saved places and unlock history are backed up under an anonymous account, with no sign-in. You can delete the backup anytime in Spots › Backup." Setup never asks a yes or no question about backup, so a reviewer could still want an explicit choice. If App Review rejects it under 5.1.1(ii) or 5.1.5, the fallback is to make backup opt-in.
 
 ## 2.1 App completeness
 

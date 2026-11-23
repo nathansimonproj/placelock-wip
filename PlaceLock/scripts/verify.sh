@@ -198,6 +198,7 @@ if [[ $screens == 1 ]]; then
       "backup|-onboarded YES -tab rules -push backup"
       "debug|-onboarded YES -tab rules -push debug"
       "add-place|-onboarded YES -sheet add"
+      "setup-location|-onboarded NO -onboardingStep location"
       "setup-apps|-onboarded NO -onboardingStep apps"
     )
     empty=()
