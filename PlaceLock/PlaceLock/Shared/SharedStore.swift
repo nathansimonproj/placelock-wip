@@ -14,7 +14,7 @@ enum SharedStore {
         #if SCREEN_TIME
         UserDefaults(suiteName: appGroup) ?? .standard
         #else
-        .standard
+        Scenario.defaults ?? .standard // a separate store while running a geofence scenario (Debug)
         #endif
     }()
 

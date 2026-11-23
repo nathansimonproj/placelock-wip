@@ -29,6 +29,7 @@
 		88FF662A430BDF12D22A8574 /* RulesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79A33188D87631FAFE8F0BB4 /* RulesView.swift */; };
 		A7E918B024542DA7E905CDE6 /* Log.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1A758279946CD369E3E785D /* Log.swift */; };
 		A99140E7BA3244546725BE50 /* LocationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BB4FF5F9AC07525CD9DB78A /* LocationService.swift */; };
+		B5E10F455E1D80A4E460152F /* Scenario.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE408562C2FAB86FCA99E90B /* Scenario.swift */; };
 		B9F91CB9ACC3BC0BA4ADC886 /* SimulatedBlockingViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DD0D67532EF61C7B10B8B1C /* SimulatedBlockingViews.swift */; };
 		D2CB59667290A998CB3C9053 /* DelayRulesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AA40BCF7520E01816FF0D4C /* DelayRulesTests.swift */; };
 		D3249AD1A8B44E765485A9E9 /* Rules.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AE15B9E6666283175C24DE0 /* Rules.swift */; };
@@ -96,6 +97,7 @@
 		CC2205ACC9F22D561AD5A326 /* Storage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Storage.swift; sourceTree = "<group>"; };
 		E1779E7DF2B48787081442EA /* GeofenceMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeofenceMonitor.swift; sourceTree = "<group>"; };
 		F59A484B78A348C5262E7870 /* PlaceLockApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaceLockApp.swift; sourceTree = "<group>"; };
+		FE408562C2FAB86FCA99E90B /* Scenario.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Scenario.swift; sourceTree = "<group>"; };
 		FEB4DDDB5DF4005411BEC5D5 /* Estimate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Estimate.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -232,6 +234,7 @@
 				53614D80BE59F5D4E4D38663 /* AppModel.swift */,
 				A1A758279946CD369E3E785D /* Log.swift */,
 				F59A484B78A348C5262E7870 /* PlaceLockApp.swift */,
+				FE408562C2FAB86FCA99E90B /* Scenario.swift */,
 				CC2205ACC9F22D561AD5A326 /* Storage.swift */,
 			);
 			path = App;
@@ -355,6 +358,7 @@
 				DD84FD2F62712B8FD8AEB923 /* RootView.swift in Sources */,
 				D3249AD1A8B44E765485A9E9 /* Rules.swift in Sources */,
 				88FF662A430BDF12D22A8574 /* RulesView.swift in Sources */,
+				B5E10F455E1D80A4E460152F /* Scenario.swift in Sources */,
 				57FA6591067C1823DFAD7E29 /* SharedStore.swift in Sources */,
 				DED0AC8EAFD6B366E66DC39B /* ShieldManager.swift in Sources */,
 				B9F91CB9ACC3BC0BA4ADC886 /* SimulatedBlockingViews.swift in Sources */,

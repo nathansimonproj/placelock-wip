@@ -13,7 +13,7 @@ enum Storage {
     private static let migratedKey = "movedToAppGroup"
 
     private static func migrate(into shared: UserDefaults) {
-        guard shared !== UserDefaults.standard, !shared.bool(forKey: migratedKey),
+        guard shared !== UserDefaults.standard, !Scenario.isActive, !shared.bool(forKey: migratedKey),
               let bundleID = Bundle.main.bundleIdentifier,
               let old = UserDefaults.standard.persistentDomain(forName: bundleID) else { return }
         // Keys already in the group win: never overwrite newer data with older.

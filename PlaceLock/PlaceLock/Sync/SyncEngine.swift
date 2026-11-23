@@ -25,7 +25,7 @@ extension AppModel: SyncLocal {}
 @MainActor
 final class SyncEngine: ObservableObject {
     static let shared = SyncEngine(
-        backend: isUnderTests ? nil : SupabaseBackend(info: Bundle.main.infoDictionary ?? [:]),
+        backend: isUnderTests || Scenario.isActive ? nil : SupabaseBackend(info: Bundle.main.infoDictionary ?? [:]),
         local: { AppModel.shared }, // resolved late: AppModel and SyncEngine refer to each other
         defaults: Storage.defaults)
 

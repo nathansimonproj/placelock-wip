@@ -1,17 +1,19 @@
 #!/usr/bin/env python3
 """Play a scripted walk through saved places in the Simulator and check that apps lock and unlock.
 
-Usage: scripts/geofence-scenario.py SCENARIO... [--sim "iPhone 17"] [--build]
+Usage: scripts/geofence-scenario.py SCENARIO... [--build] [--sim NAME]
        scripts/geofence-scenario.py --all
 
   SCENARIO  a file, or a name in scripts/scenarios/ (".txt" optional)
   --all     run every scenario in scripts/scenarios/
   --build   build the free app first (scripts/verify.sh --quick), then install it
-  --sim     Simulator name; the newest iOS with that name is used (same choice as verify.sh)
+  --sim     Simulator to use (default "Spots Scenarios", created on first use as an iPhone 17
+            on the newest iOS). Keep it to itself: anything else that launches the app on it
+            (xcodebuild test, you in Xcode) restarts the app outside scenario mode mid-run.
 
 The app runs in scenario mode (`-scenario`, App/Scenario.swift): its own settings store loaded
-with the scenario's places, and backup off. Your Simulator places and history aren't touched.
-Output (app log, screenshots) goes to build/scenarios/<name>/.
+with the scenario's places, and backup off, so no Supabase traffic. Output (app log,
+screenshots) goes to build/scenarios/<name>/.
 
 Scenario file, one step per line (# starts a comment):
 
@@ -68,16 +70,26 @@ def simctl(*args, **kw):
     return run("xcrun", "simctl", *args, **kw)
 
 
+DEFAULT_SIM = "Spots Scenarios"
+
+
 def find_sim(name):
-    """The Simulator named `name` on the newest iOS (the one xcodebuild picks for name=…).
-    scripts/verify.sh chooses the same way, so tests, screenshots and scenarios share a device."""
+    """The Simulator named `name` on the newest iOS. The default one is created if missing."""
     devices = json.loads(simctl("list", "devices", "available", "-j"))["devices"]
     version = lambda rt: [int(x) for x in re.findall(r"\d+", rt.rsplit(".", 1)[-1])]
     for runtime in sorted(devices, key=version, reverse=True):
         for d in devices[runtime]:
             if d["name"] == name:
                 return d["udid"]
-    raise ScenarioError(f'No available Simulator named "{name}"')
+    if name != DEFAULT_SIM:
+        raise ScenarioError(f'No available Simulator named "{name}"')
+    runtimes = [r for r in json.loads(simctl("list", "runtimes", "available", "-j"))["runtimes"]
+                if r["platform"] == "iOS"]
+    if not runtimes:
+        raise ScenarioError("No iOS Simulator runtime installed")
+    newest = max(runtimes, key=lambda r: [int(x) for x in r["version"].split(".")])
+    print(f'Creating the "{name}" Simulator (iPhone 17, iOS {newest["version"]})')
+    return simctl("create", name, "iPhone 17", newest["identifier"]).strip()
 
 
 class LogWatcher:
@@ -91,11 +103,17 @@ class LogWatcher:
             ["xcrun", "simctl", "spawn", udid, "log", "stream", "--level", "info", "--style", "ndjson",
              "--predicate", f'subsystem == "{BUNDLE}"'],
             stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True)
+        self.attached = threading.Event()
         threading.Thread(target=self._read, daemon=True).start()
-        time.sleep(1.5)  # let the stream attach before anything happens
+        # `log stream` prints a "Filtering the log data…" line once it's listening. Until then
+        # app lines are lost, and on a freshly booted Simulator that takes several seconds.
+        if not self.attached.wait(30):
+            raise ScenarioError("The Simulator's log stream didn't start within 30 s")
+        time.sleep(0.5)
 
     def _read(self):
         for raw in self.proc.stdout:
+            self.attached.set()
             try:
                 msg = json.loads(raw).get("eventMessage")
             except json.JSONDecodeError:
@@ -139,7 +157,9 @@ def parse(path):
                 if len(args) not in (4, 5) or (len(args) == 5 and args[4] != "inactive"):
                     raise ScenarioError(f"{path}:{n}: place NAME LAT LON RADIUS [inactive]")
                 places[args[0]] = {
-                    "id": str(uuid.UUID(int=0x5C3E << 112 | len(places) + 1)).upper(),
+                    # New IDs every run: iOS keeps a geofence's last reading per ID, so reusing
+                    # one carries "inside" over from the previous scenario (seen 2026-11-22).
+                    "id": str(uuid.uuid4()).upper(),
                     "name": args[0], "latitude": float(args[1]), "longitude": float(args[2]),
                     "radius": float(args[3]), "inactive": len(args) == 5}
             else:
@@ -261,7 +281,9 @@ class Runner:
         f = min(1.0, speed * (t - start_t) / total) if total else 1.0
         pos = (a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f)
         edge = lambda p: distance(pos, (p["latitude"], p["longitude"])) - p["radius"]
-        named = [p for p in self.places.values() if p["name"] in message]
+        # The place the line names first ("Left Gym", or the place a session moved from).
+        named = sorted((p for p in self.places.values() if p["name"] in message or p["id"] in message),
+                       key=lambda p: min(i for i in (message.find(p["name"]), message.find(p["id"])) if i >= 0))
         p = named[0] if named else min(self.places.values(), key=edge)
         return f" (~{abs(edge(p)):.0f} m {'outside' if edge(p) > 0 else 'inside'} {p['name']}'s edge)"
 
@@ -397,7 +419,7 @@ def run_scenario(path, udid):
 
 
 def main(argv):
-    sim, build, names = "iPhone 17", False, []
+    sim, build, names = DEFAULT_SIM, False, []
     i = 0
     while i < len(argv):
         a = argv[i]
@@ -428,7 +450,7 @@ def main(argv):
 
     if build:
         print("==> Building (scripts/verify.sh --quick)")
-        if subprocess.run([os.path.join(HERE, "verify.sh"), "--quick", "--sim", sim]).returncode != 0:
+        if subprocess.run([os.path.join(HERE, "verify.sh"), "--quick"]).returncode != 0:
             return 1
     if not os.path.isdir(APP):
         print(f"{APP} is missing. Run with --build, or scripts/verify.sh first.", file=sys.stderr)
@@ -437,7 +459,14 @@ def main(argv):
         udid = find_sim(sim)
         simctl("boot", udid, check=False)
         simctl("bootstatus", udid, "-b")
-        simctl("install", udid, APP)
+        for attempt in range(3):  # right after a cold boot, CoreSimulator can drop the first try
+            try:
+                simctl("install", udid, APP)
+                break
+            except ScenarioError:
+                if attempt == 2:
+                    raise
+                time.sleep(5)
         simctl("privacy", udid, "grant", "location-always", BUNDLE, check=False)
     except ScenarioError as e:
         print(e, file=sys.stderr)

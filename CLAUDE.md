@@ -24,13 +24,14 @@ iPhone app (SwiftUI, iOS 17+) that keeps chosen apps blocked everywhere except s
 
 - Decisions are pure functions with unit tests: `LockRules`, `PlaceRules`, `BlockRules` and `SyncRules`, under `PlaceLock/PlaceLock/Models` and `Sync`. `AppModel` only gathers their inputs and applies the results. Put new decision logic in a rules type and test it there, not in `AppModel` or views.
 - Logging: `Log.app` and `Log.sync` (subsystem `com.nsimon.PlaceLock`).
-- Debug launch arguments: `-tab rules`, `-sheet add`, `-onboardingStep <step>`, `-demoHistory YES`, and `-onboarded YES` to skip first-run setup.
+- Debug launch arguments: `-tab rules`, `-sheet add`, `-onboardingStep <step>`, `-demoHistory YES`, and `-onboarded YES` to skip first-run setup. `-scenario <name>` starts scenario mode (`App/Scenario.swift`): a separate settings store and no backup, used by `/geofence-scenario`.
 
 ## Checking a change
 
 Run `/verify` (or `PlaceLock/scripts/verify.sh`) before calling a change done. It runs the unit tests, compiles the paid build, runs the migration checks when `supabase/` changed, and with `--screens` takes Simulator screenshots. Afterwards it puts back whichever build was generated before.
 
 - The tests use Swift Testing. Read the "Test run with N tests" line. "Executed 0 tests" from xcodebuild is normal.
+- For geofencing, lock rules, places or launch changes, also run `/geofence-scenario` (`PlaceLock/scripts/geofence-scenario.py --all --build`). It walks the Simulator in and out of places and checks unlock and lock.
 - The Simulator can't show: the real Screen Time block screen, iOS relaunching the app after a force-quit, or real geofence exit timing (100–200 m, a few minutes). When a change touches those, end with a short on-iPhone test list instead of saying it works.
 - The Supabase MCP server points at the **live** project. Check migrations locally (`supabase/local-check/run.sh`) and ask before applying anything remotely.
 
