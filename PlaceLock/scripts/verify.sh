@@ -140,6 +140,16 @@ if [[ $release == 1 ]]; then
     else
       pass "No debug-only code in the paid Release build"
     fi
+    # App Review 2.1: no test-mode or placeholder text on screen. These are the free build's
+    # stand-in texts and Debug's labels; the binary's strings would hold them if they shipped.
+    test_text="Stand-in list|Simulated block screen|\[simulated\]|Pretend I'm at|Skip 24 h wait|TODO\(user\)"
+    if [[ -f "$bin" ]]; then
+      if found="$(strings -n 6 "$bin" | grep -oE "$test_text" | sort -u | tr '\n' ';')"; [[ -n "$found" ]]; then
+        fail "Test text in the paid Release build: $found"
+      else
+        pass "No test text in the paid Release build"
+      fi
+    fi
   else
     show_errors "$out/release.log"
     fail "Paid Release build (see $out/release.log)"
