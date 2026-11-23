@@ -183,15 +183,21 @@ if [[ $screens == 1 ]]; then
     xcrun simctl bootstatus "$udid" -b >/dev/null
     xcrun simctl install "$udid" "$app"
     xcrun simctl privacy "$udid" grant location-always com.nsimon.PlaceLock 2>/dev/null
-    # Home while unlocked needs a place to stand in. A geofence scenario's store (App/Scenario.swift)
-    # gets one without touching the Simulator's own places, and -pretendAt stands there.
-    fixture="$(python3 -c 'import base64, json; print(base64.b64encode(json.dumps([{
-      "id": "5C0F5E1A-0000-4000-8000-000000000001", "name": "Library",
-      "latitude": 37.7786, "longitude": -122.4159, "radius": 150}]).encode()).decode())')"
-    # name | launch arguments. -onboarded YES skips first-run setup (it's read from UserDefaults).
+    # Every shot runs in a geofence scenario's store (App/Scenario.swift), reloaded with the same
+    # three places each time. That leaves the Simulator's own places alone, makes the shots the
+    # same on every run, and turns backup off, so nothing reaches the live Supabase project.
+    fixture="$(python3 -c 'import base64, json; print(base64.b64encode(json.dumps([
+      {"id": "5C0F5E1A-0000-4000-8000-000000000001", "name": "Library",
+       "latitude": 37.7786, "longitude": -122.4159, "radius": 150},
+      {"id": "5C0F5E1A-0000-4000-8000-000000000002", "name": "Gym",
+       "latitude": 37.7700, "longitude": -122.4100, "radius": 150},
+      {"id": "5C0F5E1A-0000-4000-8000-000000000003", "name": "Home",
+       "latitude": 37.7600, "longitude": -122.4300, "radius": 150}]).encode()).decode())')"
+    store="-scenario screens -scenarioPlaces $fixture"
+    # name | launch arguments. -onboarded YES skips first-run setup, NO shows it.
     shots=(
       "home|-onboarded YES -demoHistory YES"
-      "home-unlocked|-scenario screens -scenarioPlaces $fixture -pretendAt Library"
+      "home-unlocked|-onboarded YES -pretendAt Library"
       "rules|-onboarded YES -tab rules"
       "about|-onboarded YES -tab rules -scrollTo about"
       "wait-info|-onboarded YES -tab rules -sheet wait"
@@ -207,7 +213,7 @@ if [[ $screens == 1 ]]; then
         name="$1${shot%%|*}"; args="${shot#*|}"
         xcrun simctl terminate "$udid" com.nsimon.PlaceLock 2>/dev/null
         # shellcheck disable=SC2086
-        xcrun simctl launch "$udid" com.nsimon.PlaceLock $args >/dev/null
+        xcrun simctl launch "$udid" com.nsimon.PlaceLock $store $args >/dev/null
         sleep 4
         xcrun simctl io "$udid" screenshot "$out/$name.png" >/dev/null 2>&1
         # A Simulator that shut down mid-step leaves an empty or missing file.

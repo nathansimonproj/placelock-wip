@@ -32,6 +32,12 @@ enum Scenario {
                 Log.app.error("Scenario \(name, privacy: .public): places didn't load: \(error.localizedDescription, privacy: .public)")
             }
         }
+        // `-onboarded YES/NO` on the command line also applies to the scenario's store, so
+        // `verify.sh --screens` can show first-run setup without leaving scenario mode. Only the
+        // launch arguments count, not the Simulator's own saved value.
+        if let onboarded = UserDefaults.standard.volatileDomain(forName: UserDefaults.argumentDomain)["onboarded"] {
+            store.set(onboarded, forKey: "onboarded")
+        }
         return store
     }()
 }
