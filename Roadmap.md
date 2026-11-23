@@ -16,7 +16,7 @@ Until the paid account, these can't be done: real shields, Apple's app picker, t
    - The `sessions` rows in Supabase (Backend).
    - The place-search spinner (Known issues).
 3. **Shippable to strangers (Phase 3).**
-   - Build the "Allow Screen Time access" setup step now, behind `#if SCREEN_TIME`. Done 2026-11-12, along with first-run setup and Release-only starter places. Still to do: app icon, Rules tab name, notification wording, dark mode and large text (large text checked 2026-11-22 and 2026-11-23), and the Plan.md rewrite.
+   - Build the "Allow Screen Time access" setup step now, behind `#if SCREEN_TIME`. Done 2026-11-12, along with first-run setup and Release-only starter places. Still to do: app icon, Rules tab name, notification wording, dark mode and large text (large text checked 2026-11-22 and 2026-11-23), and ~~the Plan.md rewrite~~ (done 2026-11-23).
    - Any new UI that shows blocked apps goes through one small view: names in the free build, `Label(token)` in the paid build. Real tokens have no names.
 4. **Backend leftovers.**
    - "Delete account". Done 2026-11-12, along with the `SyncEngine` tests. The rate limit is a dashboard setting (see Backend).
@@ -147,7 +147,7 @@ All of this is written and compiles in the paid build (`CODE_SIGNING_ALLOWED=NO`
   - Hidden as decoration: place and step symbols, row arrows, the search glass, the map's center pin, the warning icon on Home's banner, the pictures on the simulated block screen, and the row of app icons on Home (VoiceOver reads the count under it, and Spots lists every blocked app by name).
   - The radius slider in Add place reads "Radius, 150 meters". The stand-in app picker and Debug's Pretend I'm at say which rows are selected. First-run setup's titles are headings, and its hidden Back button on the first step is skipped.
   - Not tried with VoiceOver on the iPhone, and nothing was listened to in the Simulator: only the labels in code were checked, and the screenshots look the same. Also not checked: the real Screen Time block screen and Apple's app picker, which Spots doesn't draw.
-- [ ] Rewrite Plan.md to match the automatic-unlock design. It still describes tap-and-scan.
+- [x] **Plan.md rewritten (2026-11-23).** It now describes what's built: automatic unlock and lock at saved places, the 24 h wait on loosening, permissions, the two builds, the code layout and backup as records only. The tap-and-scan design is gone; the camera scan is kept as an on-hold idea, and the 8 h cap, Lock until I leave and the Shortcuts approach are listed under "Tried and dropped". Docs only.
 
 ### Backend: Supabase sync (started 2026-11-11)
 Design is in Plan.md under "Backend". In short: the phone decides blocking, the server keeps records, and an outbox syncs them with newest edit wins.
@@ -384,7 +384,7 @@ Tried and dropped. It needed a Shortcuts "App Is Opened" automation for each app
 
 ## Next
 1. **Test on the iPhone.** Walk into a saved place and confirm the apps unlock on their own (the arrival event can take a minute or two). Walk about 300 m away and confirm they lock within a few minutes. Also test with an Xcode `.gpx` route.
-2. **Camera check (MobileCLIP): on hold (2026-11-10).** Unlocking is automatic now, so the scan only matters for "unlock with friends anywhere" and verified lock-ins. We'll revisit after real blocking works. The earlier plan was build-order steps 5–7 in Plan.md.
+2. **Camera check (MobileCLIP): on hold (2026-11-10).** Unlocking is automatic now, so the scan only matters for "unlock with friends anywhere" and verified lock-ins. We'll revisit after real blocking works. The earlier plan is under "On hold: camera scan" in Plan.md.
    - Validate it first with a Mac webcam script.
    - Then build video scan enrollment and unlock on the phone.
    - Unlocking is now automatic, so the scan would be an opt-in per place ("Scan" places get an arrival notification that opens the camera). Auto places stay zero-tap.

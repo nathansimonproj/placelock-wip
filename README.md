@@ -157,4 +157,4 @@ Decisions live in pure functions (`LockRules`, `PlaceRules`, `BlockRules`, `Sync
 
 - [Roadmap.md](Roadmap.md): the ship plan, what's built, known issues and next steps. Most up to date.
 - [docs/app-store/launch-checklist.md](docs/app-store/launch-checklist.md): the steps before launch that only you can do (Apple account, App Store Connect, the iPhone).
-- [Plan.md](Plan.md): the original design. Parts are out of date: it describes unlocking by tapping and scanning the room with the camera, but unlocking is now automatic and the camera check is on hold.
+- [Plan.md](Plan.md): the design as built (rewritten 2026-11-23): automatic unlock, the 24 h waits, the two builds, backup, and ideas for later, including the camera check that's on hold.

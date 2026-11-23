@@ -1,6 +1,6 @@
 # Spots (code name PlaceLock)
 
-iPhone app (SwiftUI, iOS 17+) that keeps chosen apps blocked everywhere except saved places. [README.md](README.md) explains what it does and how to build it. [Roadmap.md](Roadmap.md) is the most up-to-date record of what's built, known issues and what's next. [Plan.md](Plan.md) is the original design and partly out of date.
+iPhone app (SwiftUI, iOS 17+) that keeps chosen apps blocked everywhere except saved places. [README.md](README.md) explains what it does and how to build it. [Roadmap.md](Roadmap.md) is the most up-to-date record of what's built, known issues and what's next. [Plan.md](Plan.md) is the design as built, with ideas for later (rewritten 2026-11-23).
 
 ## Don't break these
 
