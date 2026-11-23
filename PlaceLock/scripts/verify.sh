@@ -127,6 +127,7 @@ if [[ $screens == 1 ]]; then
       "add-place|-onboarded YES -sheet add"
       "setup-apps|-onboarded NO -onboardingStep apps"
     )
+    empty=()
     for shot in "${shots[@]}"; do
       name="${shot%%|*}"; args="${shot#*|}"
       xcrun simctl terminate "$udid" com.nsimon.PlaceLock 2>/dev/null
@@ -134,9 +135,15 @@ if [[ $screens == 1 ]]; then
       xcrun simctl launch "$udid" com.nsimon.PlaceLock $args >/dev/null
       sleep 4
       xcrun simctl io "$udid" screenshot "$out/$name.png" >/dev/null 2>&1
+      # A Simulator that shut down mid-step leaves an empty or missing file.
+      [[ -s "$out/$name.png" ]] || empty+=("$name")
     done
     xcrun simctl terminate "$udid" com.nsimon.PlaceLock 2>/dev/null
-    pass "Screenshots: $(cd "$out" && ls ./*.png | tr '\n' ' ')"
+    if (( ${#empty[@]} > 0 )); then
+      fail "Screenshots empty or missing: ${empty[*]} (did the Simulator shut down? run again)"
+    else
+      pass "Screenshots: $(cd "$out" && ls ./*.png | tr '\n' ' ')"
+    fi
   fi
 fi
 

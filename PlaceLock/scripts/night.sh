@@ -3,7 +3,7 @@
 # separate git worktree on a night/<date> branch, so your own checkout is never touched.
 #
 # Usage: PlaceLock/scripts/night.sh [--runs N] [--hours H] [--base REF]
-#   --runs N    stop after N runs (default 12; use 1 for a dry run)
+#   --runs N    stop after N runs (default 24; use 1 for a dry run)
 #   --hours H   stop starting new runs after H hours (default 8)
 #   --base REF  branch the night work from REF (default main)
 #
@@ -13,7 +13,7 @@
 # limit twice, or when you create .night/STOP. Logs: .night/log.md and .night/runs/.
 set -uo pipefail
 
-runs=12 hours=8 base=main
+runs=24 hours=8 base=main
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --runs) runs="$2"; shift ;;
@@ -49,6 +49,12 @@ if [[ -d "$wt" ]]; then
   fi
   if git -C "$repo" show-ref --quiet "refs/heads/$branch"; then
     git -C "$wt" switch --quiet "$branch"
+    # Pick up whatever landed on $base since this branch started.
+    if ! git -C "$wt" rebase --quiet "$base"; then
+      git -C "$wt" rebase --abort
+      echo "$branch conflicts with $base. Rebase it by hand in $wt, then run again." >&2
+      exit 1
+    fi
   else
     git -C "$wt" switch --quiet -c "$branch" "$base"
   fi
