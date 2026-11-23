@@ -1,0 +1,94 @@
+# DRAFT: Spots privacy policy
+
+> **DRAFT, not published.** Written 2026-11-23 from [data-inventory.md](data-inventory.md) (checked against the code at commit 4a52129). Before hosting it:
+>
+> - Fill in every `TODO(user)`: the effective date, the contact email, who runs Spots, and the Supabase region and log retention (Supabase dashboard; see [launch-checklist.md](launch-checklist.md)).
+> - It describes the app as it is today: **backup is on from first launch**. If the backup consent question in `.night/needs-you.md` changes that (opt-in backup, or no `address`), update "Backup" and "What we collect" here and in `docs/privacy/index.html`.
+> - It's a plain-language draft, not legal advice. If you expect users in places with specific privacy laws (the EU, the UK, California), have it checked against those.
+> - The same text is in [`docs/privacy/index.html`](../privacy/index.html), ready to host. Keep the two in step.
+
+---
+
+# Spots privacy policy
+
+Effective date: TODO(user): the date you publish this.
+
+Spots blocks the apps you choose everywhere except at places you save. This page says what Spots keeps on your iPhone, what it sends off it, and how to delete it.
+
+Spots is made by TODO(user): your name or company, as it appears on the App Store.
+
+## The short version
+
+- Spots works out where you are on your iPhone. Your live location is never sent to us.
+- Your saved places and unlock history are backed up to our server under an anonymous account. There's no sign-in, and we never ask for your name, email or phone number.
+- The apps you block stay on your iPhone. Spots never sends that list anywhere.
+- No ads, no analytics, no tracking, and we don't sell or share your data.
+- You can delete everything we have at any time: Spots › Backup › Delete account.
+
+## What stays on your iPhone
+
+- **Your location.** iOS tells Spots when you arrive at or leave one of your places, and Spots checks your location to decide whether apps unblock. This happens on your iPhone. Your live location isn't sent to our server.
+- **Your blocked apps.** You pick them in Apple's Screen Time picker. Spots gets only Apple's codes for them, keeps them on your iPhone and hands them to Screen Time. They're never backed up or logged.
+- **Your places, settings and visit list.** These are saved on your iPhone. Places and unlock history are also backed up (see below).
+- **Notifications.** All of Spots' notifications ("At Gym, apps unblocked.") are made on your iPhone. Nothing goes through a push server.
+
+## Backup: what we collect and why
+
+When you first open Spots, it creates an anonymous account and starts backing up. This is so a reinstall brings back your places and history, and doesn't hand you a fresh day with no 24-hour waits.
+
+We store, linked to that anonymous account:
+
+- **An account ID.** A random ID made when the account is created. It isn't made from your name, email, phone number, Apple ID or any device identifier.
+- **Your saved places.** Each place's name (what you typed or picked), its address from Apple Maps if it has one, its exact center and its size. If a change to a place is waiting out its 24 hours, the new center and size too.
+- **Your unlock history.** For each time apps unblocked: which place, when they unblocked, when they blocked again, and why (for example, you left).
+- **Timing for the rules.** When your first 24-hour setup window ends, when each place starts working, when places were deleted, and when each item was last changed.
+
+Together, your places and unlock history show when you were at each of your saved places. We use this only to back up and restore Spots on your phone. We don't use it for anything else.
+
+Like any internet service, our server also sees your phone's IP address and basic connection details (such as the app and iOS version) when Spots connects. TODO(user): say how long Supabase keeps its request logs (IP address, user agent) for your project, from the Supabase dashboard › Logs.
+
+## Where it's stored
+
+Backups are stored with Supabase, a database hosting company, in TODO(user): your project's region (Supabase dashboard › Project Settings › General). Supabase stores the data for us. Data is sent over an encrypted (HTTPS) connection, and each account can read and change only its own data.
+
+## Apple services Spots uses
+
+Some features ask Apple for information. These requests don't include your Spots account ID, and Apple handles them under [Apple's privacy policy](https://www.apple.com/legal/privacy/):
+
+- **Place search.** When you search for a place to add, the text you type and the area around you go to Apple Maps, so nearby results come first.
+- **The map.** Apple Maps loads the map area you're looking at when you add or edit a place.
+- **"Estimated @" on the block screen.** While apps are blocked, Spots sends your current location to Apple Maps (at most once a minute while Spots is open, every 5 minutes in the background) to get a nearby place name to show on the block screen.
+- **Crash reports.** If you've chosen to share analytics with app developers in iOS Settings, Apple may send us crash reports. Spots has no crash reporting or analytics of its own.
+
+## What we don't do
+
+- No ads, analytics, tracking or advertising IDs.
+- We don't sell your data, share it with data brokers or use it to profile you.
+- We don't collect which apps you have or which ones you block.
+- We don't ask for your name, email, phone number or contacts.
+
+## How long we keep it
+
+Your backup stays until you delete your account. TODO(user): if your Supabase plan keeps database backups, say how long a deleted account can remain in them (Supabase dashboard › Database › Backups). Places you delete in the app are kept in the backup, marked as deleted, so a reinstall doesn't bring them back; they're removed for good when you delete your account.
+
+If you delete Spots from your iPhone without deleting your account first, the backup stays on our server. iOS keeps Spots' sign-in on the iPhone, so reinstalling Spots on the same iPhone reconnects to the same account, and you can delete it from there.
+
+## Deleting your data
+
+- **Everything on our server:** open Spots › Backup › Delete account. This permanently deletes your account, your backed-up places and your unlock history straight away, and turns backup off. Your places and blocked apps stay on your iPhone, and blocking keeps working. You can turn backup back on later; it starts a new account.
+- **Everything on your iPhone:** delete Spots from your iPhone. iOS keeps only Spots' anonymous sign-in, so a reinstall can reconnect to your backup.
+- **Location access:** you can turn it off any time in iOS Settings › Privacy & Security › Location Services › Spots. Without it, Spots keeps your apps blocked, because it can't tell that you're at one of your places.
+
+Because the account is anonymous, we can't look it up by your name or email. Delete account in the app is the way to remove it. If that doesn't work for you, email us (below) and we'll help.
+
+## Children
+
+TODO(user): decide what to say here. Spots doesn't ask anyone's age. If you rate Spots 4+ in App Store Connect or expect children to use it, have this section checked, because places and unlock history are location data.
+
+## Changes to this policy
+
+If what Spots collects changes, we'll update this page and its effective date before the new version of the app is released.
+
+## Contact
+
+Questions or requests: TODO(user): your support email.

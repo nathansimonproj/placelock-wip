@@ -205,6 +205,7 @@ Design is in Plan.md under "Backend". In short: the phone decides blocking, the 
   - `verify.sh --release` now also fails if the Release binary contains the stand-in or Debug wording ("Stand-in list", "Pretend I'm at" and so on).
 
   Left for you: backup starts without asking, and setup's "Your location stays on this phone." isn't quite true (both in `.night/needs-you.md`). Also left: the privacy policy link, keeping Supabase from pausing during review, and on-device testing. Not seen on the iPhone: the new wording in iOS's location prompts.
+- [x] Privacy policy draft (2026-11-23). `docs/app-store/privacy-policy.md` is a plain-language draft that follows `docs/app-store/data-inventory.md`. It covers what stays on the phone (live location, blocked apps, notifications), what backup sends to Supabase and why, Apple's place search, map and "Estimated @" lookups, how long backups are kept and Delete account. `docs/privacy/index.html` has the same text as one static page with no scripts or fonts, ready to host. Both are marked DRAFT. Left for you (`TODO(user)`): the effective date, your name, the support email, the Supabase region, how long Supabase keeps request logs and backups, and what to say about children. The draft describes backup as on from first launch, so it changes if the backup consent question in `.night/needs-you.md` does. Not published or linked in the app yet.
 - [ ] App Store Connect listing:
   - Screenshots, description, Productivity category, support URL.
   - Privacy policy URL (also goes in `Shared/Brand.swift` for the in-app link).
