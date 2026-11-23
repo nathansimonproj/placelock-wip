@@ -175,6 +175,7 @@ Design is in Plan.md under "Backend". In short: the phone decides blocking, the 
 - [ ] TestFlight with a few friends walking around campus.
 - [x] Debug-only code stays out of Release (2026-11-23). Behind `#if DEBUG`: the launch arguments `-tab`, `-sheet`, `-onboardingStep`, `-demoHistory` and `-scenario`, the Debug screen and its link in Spots › Settings, Pretend I'm at, Skip 24 h wait, sample visits, scenario mode and the check for running under unit tests. The free build's stand-ins (the stand-in app list and picker, the simulated block screen) aren't compiled into the paid build at all. `-onboarded` stays: it's the real saved setting. `verify.sh --release` now fails if any of these show up in the paid Release binary's symbols. Debug builds behave as before; free Release builds no longer have the Debug screen. Not tried on the iPhone: a Release build there.
 - [x] No crashes from bad saved data (2026-11-23). Saved places, visits, the session, the block list, settings and backup state now load through `SavedData` (`Models/SavedData.swift`, with tests). A damaged place or visit is dropped on its own and the rest still load. A damaged session means locked. A damaged setup-window date ends the first day's instant changes instead of starting a new one. Anything that can't be read is logged and copied to `unreadable.<key>` before the app saves over it. A failed save keeps the last good one instead of erasing it. The app code has no `try!`, `as!`, force unwraps or `fatalError` left. Not tried on the iPhone: a real Screen Time app list that can't be read (see Known issues).
+- [x] Version numbers and export compliance (2026-11-23). `project.yml` sets the version (`MARKETING_VERSION`, 1.0.0) and build number (`CURRENT_PROJECT_VERSION`, 1). The app's and the Shield extension's Info.plists both read them, so the two always match. Both also say `ITSAppUsesNonExemptEncryption = NO`: the only encryption is HTTPS, so App Store Connect won't ask the encryption question on each upload. `scripts/bump-build.sh` raises the build number (and sets the version with `--version 1.1.0`) and regenerates the project. Checked in the paid Release build: app and extension both show 1.0.0 (1). Not tried yet: an actual upload to App Store Connect.
 - [ ] App Store Connect listing:
   - Screenshots, description, Productivity category, support URL.
   - Privacy policy URL.
@@ -184,7 +185,7 @@ Design is in Plan.md under "Backend". In short: the phone decides blocking, the 
     - Usage history: sessions.
 
     Update the privacy policy to match.
-  - Encryption question: none (`ITSAppUsesNonExemptEncryption = NO`).
+  - ~~Encryption question: none (`ITSAppUsesNonExemptEncryption = NO`).~~ Set in both Info.plists 2026-11-23.
 - [ ] Review notes:
   - Explain why the app needs "Always" location, with a short screen recording.
   - Explain that a place added in the first 24 h (the setup window) works right away, so the reviewer can test where they are.

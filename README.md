@@ -44,6 +44,15 @@ xcodegen generate --spec project-paid.yml   # adds SCREEN_TIME, entitlements, Ap
 
 Put your paid team ID in `project-paid.yml` first. Run plain `xcodegen generate` to switch back. The block screen only works on a real device.
 
+**Version and build number.** Both live in `project.yml` (`MARKETING_VERSION`, `CURRENT_PROJECT_VERSION`), and the app and the Shield extension both read them. Before each App Store Connect upload, raise the build number:
+
+```sh
+PlaceLock/scripts/bump-build.sh                    # 1.0.0 (1) -> 1.0.0 (2)
+PlaceLock/scripts/bump-build.sh --version 1.1.0    # -> 1.1.0 (3)
+```
+
+It regenerates whichever project (free or paid) is open now.
+
 **Debug launch arguments** (Debug builds):
 
 | Argument | Effect |

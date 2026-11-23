@@ -8,6 +8,11 @@ settings:
     SWIFT_VERSION: "5.0"
     DEVELOPMENT_TEAM: R6W24T35J6 # free Personal Team -> blocking is simulated. project-paid.yml switches it.
     CODE_SIGN_STYLE: Automatic
+    # The version people see on the App Store, and the build number. Every upload needs a higher
+    # build number. Raise them with scripts/bump-build.sh rather than by hand. Both Info.plists
+    # read these, so the Shield extension always matches the app.
+    MARKETING_VERSION: "1.0.0"
+    CURRENT_PROJECT_VERSION: "1"
 packages:
   Supabase:
     url: https://github.com/supabase/supabase-swift
@@ -25,6 +30,11 @@ targets:
       path: PlaceLock/Info.plist
       properties:
         CFBundleDisplayName: Spots
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        # Export compliance: the only encryption is HTTPS (Supabase over URLSession), which is exempt.
+        # Saying so here skips App Store Connect's encryption question on every upload.
+        ITSAppUsesNonExemptEncryption: false
         UILaunchScreen: {}
         UIBackgroundModes: [location]
         # Backup and sync (Sync/SyncEngine.swift). The publishable key is meant to ship in apps:
