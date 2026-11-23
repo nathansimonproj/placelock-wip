@@ -59,7 +59,7 @@ final class PlaceSearch: NSObject, ObservableObject {
     @Published private(set) var message: String?
 
     private static let slowAfter: Double = 8
-    private nonisolated static let noMatches = "No matches. Try the full name, or move the map to drop a pin."
+    nonisolated static let noMatches = "No matches. Try the full name, or move the map to drop a pin."
     private let completer = MKLocalSearchCompleter()
     private var slowTimer: Task<Void, Never>?
     private var directSearch: MKLocalSearch?
@@ -100,24 +100,27 @@ final class PlaceSearch: NSObject, ObservableObject {
         do {
             let response = try await search.start()
             Log.app.info("Search direct: \(response.mapItems.count) results after \(Self.seconds(since: started), privacy: .public)")
-            guard PlaceSearchRules.shouldApplyDirectResult(searched: text, current: query) else {
-                Log.app.info("Search direct: field changed, result dropped")
-                return nil
-            }
-            guard let item = response.mapItems.first else {
-                message = Self.noMatches
-                return nil
-            }
-            return Self.result(item, name: text, address: nil)
+            return finishDirectSearch(text, found: response.mapItems.first.map { Self.result($0, name: text, address: nil) },
+                                      error: nil)
         } catch {
             Log.app.error("Search direct failed after \(Self.seconds(since: started), privacy: .public): \(Self.describe(error), privacy: .public)")
-            if PlaceSearchRules.shouldApplyDirectResult(searched: text, current: query) {
-                slowTimer?.cancel()
-                isSearching = false
-                message = Self.failureMessage(error)
-            }
+            return finishDirectSearch(text, found: nil, error: error)
+        }
+    }
+
+    /// Settles the field once a direct search for `text` has answered: stops the spinner and the
+    /// slow-connection timer, and says why there's no place ("No matches" or the error). Drops
+    /// the answer if the field has changed since. Internal so tests can call it.
+    func finishDirectSearch(_ text: String, found: PlaceResult?, error: Error?) -> PlaceResult? {
+        guard PlaceSearchRules.shouldApplyDirectResult(searched: text, current: query) else {
+            Log.app.info("Search direct: field changed, result dropped")
             return nil
         }
+        slowTimer?.cancel()
+        isSearching = false
+        if let found { return found }
+        message = error.map(Self.failureMessage) ?? Self.noMatches
+        return nil
     }
 
     private static func result(_ item: MKMapItem, name: String, address: String?) -> PlaceResult {

@@ -329,7 +329,9 @@ private struct PlaceRow: View {
                     Countdown(meaning: "New area in", until: change.appliesAt)
                 }
             }
-            Spacer(minLength: 0)
+            // The side-by-side layout has its own spacer; a second one here would split the
+            // spare width and leave the status floating mid-row.
+            if typeSize.isAccessibilitySize { Spacer(minLength: 0) }
             Chevron()
         }
     }

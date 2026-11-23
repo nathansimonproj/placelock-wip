@@ -4,7 +4,7 @@ import Foundation
 /// empties it. `AppModel` saves JSON in `UserDefaults`; this decides what to load from it.
 ///
 /// Safe means: keep blocking, keep everything that still reads, and report what was lost so
-/// the caller can log it and set the original bytes aside (`Storage.keepUnreadable`).
+/// the caller can log it and set the original bytes aside (`Storage.load`).
 enum SavedData {
     enum Outcome<Value> {
         /// Nothing saved under the key (a first launch, or never set).

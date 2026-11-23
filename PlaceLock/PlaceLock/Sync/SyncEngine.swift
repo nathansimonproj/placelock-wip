@@ -90,7 +90,7 @@ final class SyncEngine: ObservableObject {
         self.localProvider = local
         self.defaults = defaults
         // Unreadable state is logged and set aside; starting fresh pulls everything once.
-        state = Storage.load(Self.stateKey, in: defaults) { SavedData.decode(State.self, from: $0) }.value ?? State()
+        state = Storage.load(Self.stateKey, in: defaults, log: Log.sync) { SavedData.decode(State.self, from: $0) }.value ?? State()
         status = backend == nil ? .off : state.turnedOffAt != nil ? .turnedOff : .idle
         pendingCount = state.outbox.count
     }

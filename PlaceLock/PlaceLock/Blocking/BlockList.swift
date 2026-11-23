@@ -68,8 +68,18 @@ extension BlockList {
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         selection = try c.decodeIfPresent(FamilyActivitySelection.self, forKey: .selection) ?? FamilyActivitySelection()
-        simulatedApps = (try? c.decodeIfPresent([String].self, forKey: .simulatedApps)) ?? []
-        pendingRemovals = (try? c.decodeIfPresent(PendingRemovals.self, forKey: .pendingRemovals)) ?? PendingRemovals()
+        simulatedApps = Self.readOrLog(c, .simulatedApps) ?? []
+        pendingRemovals = Self.readOrLog(c, .pendingRemovals) ?? PendingRemovals()
+    }
+
+    /// One optional part, or nil if it's missing or can't be read (logged, so a dropped part isn't silent).
+    private static func readOrLog<T: Decodable>(_ c: KeyedDecodingContainer<CodingKeys>, _ key: CodingKeys) -> T? {
+        do {
+            return try c.decodeIfPresent(T.self, forKey: key)
+        } catch {
+            Log.app.error("Saved block list: \(key.stringValue, privacy: .public) couldn't be read and was reset (\(String(describing: type(of: error)), privacy: .public))")
+            return nil
+        }
     }
 }
 
