@@ -2,12 +2,13 @@
 # Checks a change end to end: unit tests (free build, Simulator), the paid build still compiles,
 # the database migrations (when supabase/ changed) and, optionally, Simulator screenshots.
 #
-# Usage: scripts/verify.sh [--quick] [--no-paid] [--release] [--db] [--screens] [--sim "iPhone 17"]
+# Usage: scripts/verify.sh [--quick] [--no-paid] [--release] [--db] [--screens] [--large-text] [--sim "iPhone 17"]
 #   --quick     unit tests only
 #   --no-paid   skip the paid (Screen Time) compile check
 #   --release   also compile the paid build in Release (what ships to the App Store)
 #   --db        run the migration checks even if supabase/ didn't change
 #   --screens   install the free build in the Simulator and screenshot the main screens
+#   --large-text  --screens, plus the same screens at the largest accessibility text size (large-*.png)
 #   --sim NAME  Simulator to use (default $VERIFY_SIM, else "iPhone 17")
 #
 # XcodeGen rewrites the project, Info.plists and entitlements. When the script exits it
@@ -16,7 +17,7 @@
 set -uo pipefail
 cd "$(dirname "$0")/.."   # PlaceLock/
 
-quick=0 paid=1 release=0 db=auto screens=0 sim="${VERIFY_SIM:-iPhone 17}"
+quick=0 paid=1 release=0 db=auto screens=0 large=0 sim="${VERIFY_SIM:-iPhone 17}"
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --quick) quick=1 paid=0 release=0 db=0 ;;
@@ -24,8 +25,9 @@ while [[ $# -gt 0 ]]; do
     --no-paid) paid=0 ;;
     --db) db=1 ;;
     --screens) screens=1 ;;
+    --large-text) screens=1 large=1 ;;
     --sim) sim="$2"; shift ;;
-    -h|--help) sed -n 2,15p "$0"; exit 0 ;;
+    -h|--help) sed -n 2,16p "$0"; exit 0 ;;
     *) echo "Unknown option: $1" >&2; exit 2 ;;
   esac
   shift
@@ -184,21 +186,32 @@ if [[ $screens == 1 ]]; then
       "about|-onboarded YES -tab rules -scrollTo about"
       "wait-info|-onboarded YES -tab rules -sheet wait"
       "backup|-onboarded YES -tab rules -push backup"
+      "debug|-onboarded YES -tab rules -push debug"
       "add-place|-onboarded YES -sheet add"
       "setup-apps|-onboarded NO -onboardingStep apps"
     )
     empty=()
-    for shot in "${shots[@]}"; do
-      name="${shot%%|*}"; args="${shot#*|}"
+    take_shots() { # $1: file name prefix
+      for shot in "${shots[@]}"; do
+        name="$1${shot%%|*}"; args="${shot#*|}"
+        xcrun simctl terminate "$udid" com.nsimon.PlaceLock 2>/dev/null
+        # shellcheck disable=SC2086
+        xcrun simctl launch "$udid" com.nsimon.PlaceLock $args >/dev/null
+        sleep 4
+        xcrun simctl io "$udid" screenshot "$out/$name.png" >/dev/null 2>&1
+        # A Simulator that shut down mid-step leaves an empty or missing file.
+        [[ -s "$out/$name.png" ]] || empty+=("$name")
+      done
       xcrun simctl terminate "$udid" com.nsimon.PlaceLock 2>/dev/null
-      # shellcheck disable=SC2086
-      xcrun simctl launch "$udid" com.nsimon.PlaceLock $args >/dev/null
-      sleep 4
-      xcrun simctl io "$udid" screenshot "$out/$name.png" >/dev/null 2>&1
-      # A Simulator that shut down mid-step leaves an empty or missing file.
-      [[ -s "$out/$name.png" ]] || empty+=("$name")
-    done
-    xcrun simctl terminate "$udid" com.nsimon.PlaceLock 2>/dev/null
+    }
+    take_shots ""
+    if [[ $large == 1 ]]; then
+      # The largest accessibility text size, then back to what the Simulator had.
+      size="$(xcrun simctl ui "$udid" content_size 2>/dev/null)"
+      xcrun simctl ui "$udid" content_size accessibility-extra-extra-extra-large
+      take_shots large-
+      xcrun simctl ui "$udid" content_size "${size:-large}"
+    fi
     if (( ${#empty[@]} > 0 )); then
       fail "Screenshots empty or missing: ${empty[*]} (did the Simulator shut down? run again)"
     else

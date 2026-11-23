@@ -65,12 +65,13 @@ struct Place: Identifiable, Codable, Hashable {
 }
 
 extension Date {
-    /// Compact time left until this date: "23 h", "45 min", "now".
+    /// Compact time left until this date: "23 h", "45 min", "now". The space is a no-break
+    /// space, so large text wraps before "23 h" rather than inside it.
     var shortTimeLeft: String {
         let seconds = timeIntervalSinceNow
         if seconds <= 60 { return "now" }
-        if seconds < 3600 { return "\(Int(seconds / 60)) min" }
-        return "\(Int((seconds / 3600).rounded(.up))) h"
+        if seconds < 3600 { return "\(Int(seconds / 60))\u{00A0}min" }
+        return "\(Int((seconds / 3600).rounded(.up)))\u{00A0}h"
     }
 }
 

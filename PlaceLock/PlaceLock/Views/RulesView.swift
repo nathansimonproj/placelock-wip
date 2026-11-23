@@ -10,6 +10,7 @@ struct RulesView: View {
     @State private var showInfo = false
     #if DEBUG
     @State private var showBackup = false
+    @State private var showDebug = false
     @State private var openedForScreenshot = false
     #endif
 
@@ -37,20 +38,22 @@ struct RulesView: View {
             .sheet(isPresented: $showInfo) { WaitInfoSheet() }
             #if DEBUG
             .navigationDestination(isPresented: $showBackup) { BackupView() }
+            .navigationDestination(isPresented: $showDebug) { DebugView() }
             #endif
         }
     }
 
     #if DEBUG
     /// Debug builds, for screenshots (with `-tab rules`): `-sheet wait` opens the 24-hour wait
-    /// sheet, `-push backup` opens Backup (even when backup is off) and `-scrollTo about`
-    /// scrolls down to About.
+    /// sheet, `-push backup` opens Backup (even when backup is off), `-push debug` opens Debug
+    /// and `-scrollTo about` scrolls down to About.
     private func openForScreenshot(_ scroller: ScrollViewProxy) {
         guard !openedForScreenshot else { return } // only on launch, not every return to the tab
         openedForScreenshot = true
         let args = UserDefaults.standard
         if args.string(forKey: "sheet") == "wait" { showInfo = true }
         if args.string(forKey: "push") == "backup" { showBackup = true }
+        if args.string(forKey: "push") == "debug" { showDebug = true }
         if args.string(forKey: "scrollTo") == "about" {
             // The list lays out its rows after onAppear, so wait a moment before scrolling.
             Task {
@@ -201,7 +204,7 @@ struct RulesView: View {
                     LabeledContent {
                         Text(BackupView.statusText(sync))
                             .foregroundStyle(BackupView.isProblem(sync) ? Theme.waiting : .secondary)
-                            .lineLimit(1)
+                            .lineLimit(typeSize.isAccessibilitySize ? 3 : 1)
                     } label: {
                         Label("Backup", systemImage: "icloud")
                     }
@@ -256,33 +259,41 @@ struct RulesView: View {
     }
 }
 
-/// The 24-hour rules in one place, instead of repeated in every footer.
+/// The 24-hour rules in one place, instead of repeated in every footer. Half height, or full
+/// height and scrolling with accessibility text sizes.
 private struct WaitInfoSheet: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     var body: some View {
         NavigationStack {
-            VStack(alignment: .leading, spacing: Theme.medium) {
-                Text("Some changes wait 24 hours, so you can't unblock apps on a whim.")
-                    .font(.title3.weight(.semibold))
-                VStack(alignment: .leading, spacing: 12) {
-                    Label("Removing a blocked app", systemImage: "app.badge")
-                    Label("Adding a new place", systemImage: "mappin")
-                    Label("Making a place's area bigger", systemImage: "arrow.up.left.and.arrow.down.right")
-                }
-                .foregroundStyle(.secondary)
-                Text("During your first 24 hours (setup), every change applies right away.")
-                    .foregroundStyle(.secondary)
-                Spacer()
+            ScrollView {
+                text
+                    .padding(Theme.large)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .padding(Theme.large)
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+            .scrollBounceBehavior(.basedOnSize)
             .calmBackground()
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } }
             }
         }
-        .presentationDetents([.medium])
+        .presentationDetents(typeSize.isAccessibilitySize ? [.large] : [.medium])
+    }
+
+    private var text: some View {
+        VStack(alignment: .leading, spacing: Theme.medium) {
+            Text("Some changes wait 24 hours, so you can't unblock apps on a whim.")
+                .font(.title3.weight(.semibold))
+            VStack(alignment: .leading, spacing: 12) {
+                Label("Removing a blocked app", systemImage: "app.badge")
+                Label("Adding a new place", systemImage: "mappin")
+                Label("Making a place's area bigger", systemImage: "arrow.up.left.and.arrow.down.right")
+            }
+            .foregroundStyle(.secondary)
+            Text("During your first 24 hours (setup), every change applies right away.")
+                .foregroundStyle(.secondary)
+        }
     }
 }
 

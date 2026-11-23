@@ -16,7 +16,7 @@ Until the paid account, these can't be done: real shields, Apple's app picker, t
    - The `sessions` rows in Supabase (Backend).
    - The place-search spinner (Known issues).
 3. **Shippable to strangers (Phase 3).**
-   - Build the "Allow Screen Time access" setup step now, behind `#if SCREEN_TIME`. Done 2026-11-12, along with first-run setup and Release-only starter places. Still to do: app icon, Rules tab name, notification wording, dark mode and large text (large text checked 2026-11-22), and the Plan.md rewrite.
+   - Build the "Allow Screen Time access" setup step now, behind `#if SCREEN_TIME`. Done 2026-11-12, along with first-run setup and Release-only starter places. Still to do: app icon, Rules tab name, notification wording, dark mode and large text (large text checked 2026-11-22 and 2026-11-23), and the Plan.md rewrite.
    - Any new UI that shows blocked apps goes through one small view: names in the free build, `Label(token)` in the paid build. Real tokens have no names.
 4. **Backend leftovers.**
    - "Delete account". Done 2026-11-12, along with the `SyncEngine` tests. The rate limit is a dashboard setting (see Backend).
@@ -128,6 +128,12 @@ All of this is written and compiles in the paid build (`CODE_SIGNING_ALLOWED=NO`
   - First-run setup: the buttons stop growing at the second accessibility size, so the explanation keeps most of the screen. The scroll bar flashes when a step opens, to show there's more text below.
   - Add place: the "go to my location" arrow no longer spills out of its circle.
   - Not checked on the iPhone, and not checked: the block screen, the Backup and Debug screens, the 24-hour info sheet, and Home while unlocked.
+  - 2026-11-23: the rest checked in the Simulator at the largest accessibility text size: Home while unlocked, Backup, Debug, the 24-hour info sheet, About and the setup row on Spots. `verify.sh --large-text` now takes every `--screens` shot again at that size (`large-*.png`), and `-push debug` (with `-tab rules`) opens Debug for its shot. Fixes:
+    - The 24-hour info sheet cut every line short ("Some chan…", "Removing…"). At accessibility sizes it now opens full height and scrolls. At normal sizes it looks the same.
+    - The setup row broke "21 h" across two lines. Countdowns ("21 h", "45 min") now keep the number and unit together everywhere.
+    - The Backup row on Spots cut its status to "Backed up…". At accessibility sizes it gets up to three lines.
+    - Fine as they were: Home while unlocked (it scrolls), the Backup screen and About. Debug breaks "Some-where else" inside the word; it's only in Debug builds, so left alone.
+    - Not checked: the block screen, which needs the paid build and a real Screen Time block, so it can't be screenshotted in the Simulator. Nothing here was tried on the iPhone.
 - [x] **Recovery when permissions are denied (2026-11-23).** Checked in the Simulator (free build) with `xcrun simctl privacy`: location never asked, denied, While Using only, and Always, standing inside a saved place. With Always it unlocked; denied and Precise off showed Locked. In the never-asked and While Using shots iOS's own location prompt covers the lock, and `LockRules` keeps apps locked without Always (tested).
   - Home's banner now names the problem: "Location access needed" (never asked; Fix shows iOS's prompt), "Location access is off" (denied; Fix opens Settings), "Location isn't set to Always" and "Precise Location is off" (Fix opens Settings). Before, denied and never asked both said "Location isn't set to Always". The wording and the button's action come from `PermissionRules`, tested in `PermissionRulesTests`.
   - First-run setup's location step says "Location access is off" when it was denied, next to its Open Settings button. Before, it showed only the button.

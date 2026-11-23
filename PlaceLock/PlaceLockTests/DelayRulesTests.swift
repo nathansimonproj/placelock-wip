@@ -224,3 +224,12 @@ struct BlockRulesTests {
         #expect(decoded.pendingRemovals.isEmpty)
     }
 }
+
+/// The short countdown shown in rows and on the setup row ("21 h left").
+struct ShortTimeLeftTests {
+    @Test func hoursAndMinutesKeepTheNumberWithItsUnit() {
+        #expect(Date.now.addingTimeInterval(20.5 * 3600).shortTimeLeft == "21\u{00A0}h")
+        #expect(Date.now.addingTimeInterval(45 * 60 + 30).shortTimeLeft == "45\u{00A0}min")
+        #expect(Date.now.addingTimeInterval(30).shortTimeLeft == "now")
+    }
+}
