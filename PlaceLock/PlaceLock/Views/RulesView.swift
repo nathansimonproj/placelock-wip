@@ -16,6 +16,7 @@ struct RulesView: View {
                 blockedApps
                 places
                 if sync.isAvailable || Self.hasDebug { settings }
+                about
             }
             .calmList()
             .navigationTitle("Spots")
@@ -166,6 +167,29 @@ struct RulesView: View {
                 Label("Debug", systemImage: "ladybug")
             }
             #endif
+        }
+        .calmRows()
+    }
+
+    // MARK: About
+
+    private static let aboutLinks = AboutRules.links(privacyPolicy: Brand.privacyPolicyURL,
+                                                     supportURL: Brand.supportURL,
+                                                     supportEmail: Brand.supportEmail)
+    private static let version = AboutRules.version(info: Bundle.main.infoDictionary)
+
+    /// The version, and the privacy policy and support links once they're set in `Brand`.
+    private var about: some View {
+        Section("About") {
+            if let version = Self.version {
+                LabeledContent("Version", value: version)
+            }
+            if let url = Self.aboutLinks.privacyPolicy {
+                Link(destination: url) { Label("Privacy policy", systemImage: "hand.raised") }
+            }
+            if let url = Self.aboutLinks.support {
+                Link(destination: url) { Label("Contact support", systemImage: "envelope") }
+            }
         }
         .calmRows()
     }

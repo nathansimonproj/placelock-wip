@@ -122,6 +122,7 @@ Decisions live in pure functions (`LockRules`, `PlaceRules`, `BlockRules`, `Sync
 - Remove `SupabaseURL` and `SupabaseKey` from `project.yml` to turn sync off.
 - Spots › Backup › **Delete account** removes every row on the server. Places and blocking keep working on the phone.
 - To name your location on the block screen, the app looks up its coordinates with Apple Maps (`CLGeocoder`).
+- Spots › About shows the version and, once they're set in `Shared/Brand.swift`, links to the privacy policy and support.
 - Logs never show place names, addresses, coordinates or search text: they're marked private. [docs/app-store/data-inventory.md](docs/app-store/data-inventory.md) lists everything that leaves the phone.
 
 ## Docs

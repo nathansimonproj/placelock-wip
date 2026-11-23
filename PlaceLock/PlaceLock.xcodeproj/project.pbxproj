@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		0F554471DD25FFB93BCD67B0 /* GeofenceKeysTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23D9164E8462A6B598013E6F /* GeofenceKeysTests.swift */; };
 		1CD9A4CFD47812FBD86875B9 /* SyncRecords.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12C3158076D6AC19C3ADC719 /* SyncRecords.swift */; };
+		1EFD4877BD0067223D2F31F5 /* AboutRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FCB932DA3017B792A8C6FA8 /* AboutRules.swift */; };
 		1FF550F0C17DC28A7D1CD4D9 /* PlaceLockApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F59A484B78A348C5262E7870 /* PlaceLockApp.swift */; };
 		30C4CE2396B31968E925BB68 /* PlaceSearch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FBD08DB08E79AAF2072B19F /* PlaceSearch.swift */; };
 		35423264C633FAA8F771A784 /* Visit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3136504583AA8525FE077B62 /* Visit.swift */; };
@@ -44,6 +45,7 @@
 		DFCDB9F40228EBA722EC36AF /* Place.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E62CA27720DE486B022456D /* Place.swift */; };
 		E7A98364A46DBBF562638394 /* Brand.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3BBFAE4F3564799986DC02F /* Brand.swift */; };
 		EAA880B4DA66678CDC067A0C /* SyncEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CAF9493EEA45E820E20FF7B /* SyncEngine.swift */; };
+		EB6D13B6BDD7ABF35540D06C /* AboutRulesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D35BF2AAE8A8F45C1BDDC8A /* AboutRulesTests.swift */; };
 		F0238D7B9A2095779A604C9D /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53614D80BE59F5D4E4D38663 /* AppModel.swift */; };
 		F21F0EA4391EA426DAE4BC5B /* EstimateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCC930178BC75876BA07D368 /* EstimateTests.swift */; };
 		F2F3125FB8A56C57CB3F32DA /* AddPlaceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F1DB436EEAF46816BC65503 /* AddPlaceView.swift */; };
@@ -63,6 +65,7 @@
 /* Begin PBXFileReference section */
 		02D01B76D7B72477A1CB4908 /* SyncEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncEngineTests.swift; sourceTree = "<group>"; };
 		0C01BC85CE6073FBB12EC3EF /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		0D35BF2AAE8A8F45C1BDDC8A /* AboutRulesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutRulesTests.swift; sourceTree = "<group>"; };
 		0DD0D67532EF61C7B10B8B1C /* SimulatedBlockingViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimulatedBlockingViews.swift; sourceTree = "<group>"; };
 		0DEB15F584AC1C3B42B912EC /* PlaceLock.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = PlaceLock.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		12295D516F9E3307ED4AE8E1 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
@@ -92,6 +95,7 @@
 		95AFE7CF7EC4F0FF88828540 /* LockRulesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockRulesTests.swift; sourceTree = "<group>"; };
 		9A0EC14E6AAEC6D1B2FFE5FA /* SharedStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedStore.swift; sourceTree = "<group>"; };
 		9DD45A2814AEBAE89221F599 /* DebugView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugView.swift; sourceTree = "<group>"; };
+		9FCB932DA3017B792A8C6FA8 /* AboutRules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutRules.swift; sourceTree = "<group>"; };
 		A1A758279946CD369E3E785D /* Log.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Log.swift; sourceTree = "<group>"; };
 		A83B29AEE773F5E7AFDB2827 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		AF41772D465AFA76B4DD0F62 /* SyncRulesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncRulesTests.swift; sourceTree = "<group>"; };
@@ -151,6 +155,7 @@
 		8C675CEEA5D0A0DD3E658C6A /* PlaceLockTests */ = {
 			isa = PBXGroup;
 			children = (
+				0D35BF2AAE8A8F45C1BDDC8A /* AboutRulesTests.swift */,
 				3AA40BCF7520E01816FF0D4C /* DelayRulesTests.swift */,
 				BCC930178BC75876BA07D368 /* EstimateTests.swift */,
 				23D9164E8462A6B598013E6F /* GeofenceKeysTests.swift */,
@@ -174,6 +179,7 @@
 		BBD6C6E3AACA102FC6584E09 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				9FCB932DA3017B792A8C6FA8 /* AboutRules.swift */,
 				B8ACE3FF9981C077600B49CB /* DefaultPlaces.swift */,
 				6E62CA27720DE486B022456D /* Place.swift */,
 				5AE15B9E6666283175C24DE0 /* Rules.swift */,
@@ -349,6 +355,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1EFD4877BD0067223D2F31F5 /* AboutRules.swift in Sources */,
 				F2F3125FB8A56C57CB3F32DA /* AddPlaceView.swift in Sources */,
 				F0238D7B9A2095779A604C9D /* AppModel.swift in Sources */,
 				512408B8CB61E58B9C00A8D7 /* BackupView.swift in Sources */,
@@ -387,6 +394,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EB6D13B6BDD7ABF35540D06C /* AboutRulesTests.swift in Sources */,
 				D2CB59667290A998CB3C9053 /* DelayRulesTests.swift in Sources */,
 				F21F0EA4391EA426DAE4BC5B /* EstimateTests.swift in Sources */,
 				0F554471DD25FFB93BCD67B0 /* GeofenceKeysTests.swift in Sources */,

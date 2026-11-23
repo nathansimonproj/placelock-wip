@@ -16,6 +16,21 @@ enum Brand {
     /// app, so the app picker steps suggest picking it too.
     static let websiteTip = "Also pick each app's website (like youtube.com), so the browser isn't a way around."
 
+    // MARK: About links (Spots tab › About)
+
+    // TODO(user): fill these in once the privacy policy and support page are hosted
+    // (docs/app-store/launch-checklist.md › Your steps). While one is nil, its row is hidden,
+    // so nothing made-up ships. Apple requires the privacy policy to be reachable in the app.
+    // Each must be an https address; the email is a plain address like name@example.com.
+    // "Contact support" opens the email if it's set, otherwise the support page.
+
+    /// The hosted privacy policy, e.g. "https://…/privacy".
+    static let privacyPolicyURL: String? = nil
+    /// The support page (App Store Connect asks for one too).
+    static let supportURL: String? = nil
+    /// The support email.
+    static let supportEmail: String? = nil
+
     /// The block screen's button.
     static let shieldButton = "Back to focus"
 
