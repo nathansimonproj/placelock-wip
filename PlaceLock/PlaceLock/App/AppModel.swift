@@ -239,7 +239,7 @@ final class AppModel: ObservableObject {
     func startUp() async {
         guard !didStart else { return }
         didStart = true
-        Log.app.notice("Launch: \(self.places.count) places, session=\(self.activePlace?.name ?? "none", privacy: .public)")
+        Log.app.notice("Launch: \(self.places.count) places, session=\(self.activePlace?.name ?? "none", privacy: .private)")
         ShieldManager.stopLegacySessionCap()
         if location.authorization == .notDetermined {
             // Watching places makes iOS show the location prompt right away. On a new install,
@@ -378,7 +378,7 @@ final class AppModel: ObservableObject {
     }
 
     private func unlock(at place: Place) {
-        Log.app.notice("Auto-unlock at \(place.name, privacy: .public)")
+        Log.app.notice("Auto-unlock at \(place.name, privacy: .private)")
         ShieldManager.unlock()
         let started = UnlockSession(placeID: place.id, startedAt: .now)
         session = started
@@ -414,7 +414,8 @@ final class AppModel: ObservableObject {
     /// `end` is recorded in the synced history if a session was running.
     func lockNow(reason: String?, end: SessionEnd = .manual) {
         let wasUnlocked = session != nil
-        Log.app.notice("Lock (was unlocked: \(wasUnlocked)): \(reason ?? "manual", privacy: .public)")
+        // The reason can name the place ("Left Gym, apps blocked."), so only `end` is public.
+        Log.app.notice("Lock (was unlocked: \(wasUnlocked)): \(reason ?? "manual", privacy: .private) [\(end.rawValue, privacy: .public)]")
         ShieldManager.lock(blockList)
         if let session { SyncEngine.shared.sessionEnded(session, reason: end) }
         session = nil
@@ -435,7 +436,7 @@ final class AppModel: ObservableObject {
         }
         if let slot { placeSlots.removeAll { $0 == slot } }
         places.append(place)
-        Log.app.info("Added \(place.name, privacy: .public), active \(place.activeAfter?.description ?? "now", privacy: .public)")
+        Log.app.info("Added \(place.name, privacy: .private), active \(place.activeAfter?.description ?? "now", privacy: .public)")
     }
 
     /// Renames apply right away. A new circle applies right away only if it makes the place

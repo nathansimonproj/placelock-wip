@@ -37,7 +37,7 @@ final class PlaceSearch: NSObject, ObservableObject {
                     // Stop the spinner so the screen doesn't look stuck. Late results still show.
                     self.isSearching = false
                     self.message = "Search is taking a while, so your connection may be slow. You can clear the search and drag the map to drop a pin instead."
-                    Log.app.info("Search slow: no response after \(Int(Self.slowAfter))s for \(trimmed, privacy: .public)")
+                    Log.app.info("Search slow: no response after \(Int(Self.slowAfter))s for \(trimmed, privacy: .private)")
                 }
             }
             completer.queryFragment = trimmed
@@ -85,7 +85,7 @@ extension PlaceSearch: MKLocalSearchCompleterDelegate {
         }
         Task { @MainActor in
             guard !self.query.trimmingCharacters(in: .whitespaces).isEmpty else { return }
-            Log.app.info("Search results: \(rows.count) for \(self.query, privacy: .public)")
+            Log.app.info("Search results: \(rows.count) for \(self.query, privacy: .private)")
             self.slowTimer?.cancel()
             self.isSearching = false
             self.suggestions = rows

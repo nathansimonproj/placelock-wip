@@ -8,6 +8,8 @@ Things only you can do (Apple account, App Store Connect, Supabase dashboard, ho
 
 - **Archive and export a signed build:** with Xcode signed in to the paid team (Xcode › Settings › Accounts), run `PlaceLock/scripts/bump-build.sh` if this version's build number was already uploaded, then `PlaceLock/scripts/archive.sh`. It prints the `.ipa` path, e.g. `PlaceLock/build/archive/Spots-1.0.0-1-export/PlaceLock.ipa`.
 - **Upload the build (pick one):** in Xcode, `open PlaceLock/build/archive/Spots-1.0.0-1.xcarchive`, then Organizer › Distribute App › App Store Connect › Upload; or save an app-specific password (appleid.apple.com › Sign-In and Security › App-Specific Passwords) with `xcrun altool --store-password-in-keychain-item SPOTS_ASC -u <your Apple ID> -p <app-specific password>`, then run `xcrun altool --validate-app -f PlaceLock/build/archive/Spots-1.0.0-1-export/PlaceLock.ipa -t ios -p @keychain:SPOTS_ASC` and `xcrun altool --upload-app -f PlaceLock/build/archive/Spots-1.0.0-1-export/PlaceLock.ipa -t ios -p @keychain:SPOTS_ASC`. The Transporter app (drag in the `.ipa`, click Deliver) works too.
+- **Check what Supabase keeps about each request:** in the Supabase dashboard, open the project › Logs (API Gateway and Auth) and Project Settings › General (region). Note whether IP addresses and user agents are kept and for how long, and add that to `docs/app-store/data-inventory.md` ("Not checked") and the privacy policy.
+- **Check that logs hide private values on the iPhone:** with the iPhone connected but no Xcode debugging, open Console on the Mac, pick the iPhone, filter on `com.nsimon.PlaceLock`, add a place and walk out of one. Place names, search text and coordinates should show as `<private>`.
 
 ## Not checked yet
 

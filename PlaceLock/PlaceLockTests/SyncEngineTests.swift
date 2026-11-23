@@ -237,6 +237,19 @@ struct SyncEngineTests {
         #expect(engine.isEnabled)
         #expect(server.rows[gym.id] != nil)
     }
+
+    // MARK: Logs
+
+    /// Public log text names the error, never the place: Postgres repeats a rejected row in `details`.
+    @Test func publicErrorLogLeavesOutTheRow() {
+        let rejected = PostgrestError(details: "Failing row contains (Gym, 47.6537, -122.3012).",
+                                      code: "23514", message: "new row for relation \"places\" violates check constraint")
+        let label = SyncEngine.logLabel(rejected)
+        #expect(label == "PostgrestError 23514")
+        #expect(!label.contains("Gym") && !label.contains("47.65"))
+
+        #expect(SyncEngine.logLabel(URLError(.notConnectedToInternet)) == "URLError -1009")
+    }
 }
 
 // MARK: - Fakes

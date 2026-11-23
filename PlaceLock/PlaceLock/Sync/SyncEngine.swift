@@ -209,7 +209,7 @@ final class SyncEngine: ObservableObject {
                 failures += 1
                 let delay = SyncRules.retryDelay(afterFailures: failures)
                 status = .failed(Self.describe(error))
-                Log.sync.error("Sync failed (\(self.failures)x, retry in \(Int(delay)) s): \(String(describing: error), privacy: .public)")
+                Log.sync.error("Sync failed (\(self.failures)x, retry in \(Int(delay)) s): \(Self.logLabel(error), privacy: .public) \(String(describing: error), privacy: .private)")
                 retryTask = Task { [weak self] in
                     try? await Task.sleep(for: .seconds(delay))
                     guard !Task.isCancelled else { return }
@@ -240,7 +240,7 @@ final class SyncEngine: ObservableObject {
                 throw error // offline: keep the account, try again later
             } catch {
                 // The stored session can't be refreshed (revoked or expired for good).
-                Log.sync.error("Session unusable, starting a new account: \(String(describing: error), privacy: .public)")
+                Log.sync.error("Session unusable, starting a new account: \(Self.logLabel(error), privacy: .public) \(String(describing: error), privacy: .private)")
                 state.lastPull = nil // the new account starts empty: upload everything on its first sync
                 state.pullCursor = nil
             }
@@ -306,7 +306,7 @@ final class SyncEngine: ObservableObject {
                 do {
                     try await send([record])
                 } catch let error as PostgrestError where SyncRules.isPermanentFailure(postgresCode: error.code) {
-                    Log.sync.error("Dropped a \(table, privacy: .public) row the server rejects: \(error.message, privacy: .public)")
+                    Log.sync.error("Dropped a \(table, privacy: .public) row the server rejects: \(Self.logLabel(error), privacy: .public) \(error.message, privacy: .private)")
                 }
                 state.outbox.remove([change(record)])
             }
@@ -314,6 +314,16 @@ final class SyncEngine: ObservableObject {
     }
 
     // MARK: Helpers
+
+    /// An error's type and code, safe for public logs. Never the server's text: a rejected
+    /// row's `details` repeats the row, with the place's name, address and coordinates.
+    static func logLabel(_ error: Error) -> String {
+        if let error = error as? URLError { return "URLError \(error.code.rawValue)" }
+        if let error = error as? PostgrestError { return "PostgrestError \(error.code ?? "no code")" }
+        if let error = error as? AuthError { return "AuthError \(error.errorCode.rawValue)" }
+        let ns = error as NSError
+        return "\(ns.domain) \(ns.code)"
+    }
 
     static func describe(_ error: Error) -> String {
         if error is URLError { return "Offline" }

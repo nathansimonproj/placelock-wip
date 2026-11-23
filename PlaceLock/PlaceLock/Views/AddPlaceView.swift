@@ -261,7 +261,7 @@ struct AddPlaceView: View {
                     nameFromSearch = result.name
                 }
                 search.query = ""
-                Log.app.info("Search picked \(result.name, privacy: .public) at \(result.coordinate.latitude, privacy: .private), \(result.coordinate.longitude, privacy: .private)")
+                Log.app.info("Search picked \(result.name, privacy: .private) at \(result.coordinate.latitude, privacy: .private), \(result.coordinate.longitude, privacy: .private)")
             } catch {
                 Log.app.error("Search resolve failed: \(error.localizedDescription, privacy: .public)")
             }
@@ -272,14 +272,14 @@ struct AddPlaceView: View {
         guard let center else { return }
         if let place = editing {
             model.editPlace(place.id, name: trimmedName, address: address, center: center, radius: radius)
-            Log.app.info("Edited place \(trimmedName, privacy: .public) r=\(Int(radius))m")
+            Log.app.info("Edited place \(trimmedName, privacy: .private) r=\(Int(radius))m")
             dismiss()
             return
         }
         let place = Place(name: trimmedName, address: address,
                           latitude: center.latitude, longitude: center.longitude, radius: radius)
         model.addPlace(place, fillingSlot: slot)
-        Log.app.info("Added place \(place.name, privacy: .public) r=\(Int(place.radius))m at \(center.latitude, privacy: .private), \(center.longitude, privacy: .private)")
+        Log.app.info("Added place \(place.name, privacy: .private) r=\(Int(place.radius))m at \(center.latitude, privacy: .private), \(center.longitude, privacy: .private)")
         dismiss()
     }
 }
