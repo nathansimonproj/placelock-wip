@@ -1,6 +1,6 @@
 # PlaceLock Roadmap
 
-Last updated: 2026-11-19. The full design is in [Plan.md](Plan.md). This file tracks the ship plan, what's built, temporary workarounds, and what's next.
+Last updated: 2026-11-22. The full design is in [Plan.md](Plan.md). This file tracks the ship plan, what's built, temporary workarounds, and what's next.
 
 ## Ship plan (written 2026-11-10)
 The critical path is Apple, not code. Real blocking needs the paid account, and the App Store needs Apple to approve a separate Family Controls **distribution** entitlement, which can take days to weeks. Request it first and do everything else while waiting.
@@ -8,7 +8,7 @@ The critical path is Apple, not code. Real blocking needs the paid account, and 
 ### Free-account plan (written 2026-11-12)
 Until the paid account, these can't be done: real shields, Apple's app picker, the two extensions, the App Group, Sign in with Apple, push notifications, TestFlight, and filing the distribution request. Everything else can. Work in this order:
 
-1. **Keep both builds compiling.** After any blocking change, run `xcodegen generate --spec project-paid.yml`, build with `CODE_SIGNING_ALLOWED=NO`, then run plain `xcodegen generate` to go back. Last checked 2026-11-19, after the block screen estimate and custom tab bar: paid build succeeds, free build passes all 87 tests. The tests use Swift Testing, so look for "Test run with 87 tests"; xcodebuild's XCTest line always says "Executed 0 tests".
+1. **Keep both builds compiling.** After any blocking change, run `xcodegen generate --spec project-paid.yml`, build with `CODE_SIGNING_ALLOWED=NO`, then run plain `xcodegen generate` to go back. Last checked 2026-11-22, after the geofence keys and sync-in-reconcile change: paid build succeeds, free build passes all 96 tests. The tests use Swift Testing, so look for "Test run with 96 tests"; xcodebuild's XCTest line always says "Executed 0 tests".
 2. **Test location on the iPhone (Phase 2).** This is the riskiest part, and it works fully on the free account.
    - Real walks, plus Xcode `.gpx` routes for repeatable tests.
    - With the app force-quit, after a restart, in Low Power Mode, and with location briefly off.
@@ -51,7 +51,7 @@ All of this is written and compiles in the paid build (`CODE_SIGNING_ALLOWED=NO`
   - Free builds keep using `UserDefaults.standard`, since the free team has no App Group.
   - The app shares the active place names and the block selection for the extensions.
 - [x] **Block screen** (`Extensions/Shield`): "Instagram is blocked" with "Unblocks at Gym, Soccer Field or Home."
-- [x] ~~**8 h safety cap** (`Extensions/SessionCap`, a Device Activity monitor).~~ **Removed 2026-11-19**, along with the 8 h GPS recheck: at home overnight the recheck could fail indoors and lock you out until you left and came back. Missed exits are covered by significant-change wakes now. The app clears any leftover cap schedule at launch (`ShieldManager.stopLegacySessionCap`). What it did:
+- [x] ~~**8 h safety cap** (`Extensions/SessionCap`, a Device Activity monitor).~~ **Removed 2026-11-19**, along with the 8 h GPS recheck: at home overnight the recheck could fail indoors and lock you out until you left and came back. ~~Missed exits are covered by significant-change wakes now.~~ Corrected 2026-11-22: significant-change wakes re-read what iOS has already decided about each place. A late exit still waits for iOS. The app clears any leftover cap schedule at launch (`ShieldManager.stopLegacySessionCap`). What it did:
   - Every unlock starts a one-off schedule ending 8 h 5 min later. Locking stops it, and moving to another place or passing the 8 h recheck restarts it.
   - If it runs out, the app never got to recheck. The extension blocks the apps again and sends "Open PlaceLock if you're still there". Opening the app runs the overdue recheck.
   - The app now also wakes itself for the 8 h recheck while it's running, so the extension is only a backstop.
@@ -68,6 +68,27 @@ All of this is written and compiles in the paid build (`CODE_SIGNING_ALLOWED=NO`
 - [x] Unit tests: 41 tests in `PlaceLockTests/` for `LockRules`, `PlaceRules` and `BlockRules` (2026-11-11). Run with ⌘U or `xcodebuild test`.
 - [ ] A few days of real use: arrival and departure timing, after a restart, battery, radius sizes.
 - [x] **Arriving didn't unblock until the app was opened (seen 2026-11-19 on the iPhone, fix untested).** Apple's docs: Core Location treats `CLMonitor` events as When In Use unless the app holds a `CLServiceSession` asking for Always, which must be recreated right away on every launch, including background relaunches. `LocationService` now holds one (iOS 18+) and logs its diagnostics if iOS still limits it. Background wakes also ask for extra time (`AppModel.reconcileWhileAwake`), and significant-change updates (about every 500 m, even after a force-quit) re-check every place and refresh "Estimated @". **Test:** close the app, walk home, and check that apps unblock without opening PlaceLock.
+- [x] **Battery and temporary notifications (2026-11-22, untested on the iPhone).**
+  - "Estimated @" no longer turns on GPS when the significant-change location that woke the app is already within 200 m, never turns it on in Low Power Mode, and in the background runs at most every 5 min (moves and lock changes still estimate right away). Apple Maps names are reused within 100 m (`AppModel.lastGeocode`).
+  - Arrive and leave notices share one ID, so each replaces the last. iOS has no expiry, so `clearOldNotices` removes notices older than 5 min (`AppModel.noticeLifetime`) on every wake, and all of them when the app opens. The Screen Time warning stays until access is back.
+  - **Test:** a day of normal use, then check Settings › Battery for Spots, and that Notification Center holds at most one recent Spots notice.
+- [x] **Removed "Lock until I leave" (2026-11-22)** to get automatic unlock and lock solid first. It also had two bugs: an unknown reading cancelled the pause, and an overlapping place unlocked again right away. `LockRules.decide` no longer takes a paused set, Home shows "Apps block again when you leave." when unlocked, and the saved `pausedPlaces` is cleared at launch. `lock_until_leave` stays in `SessionEnd` and the database for older history.
+- [x] **Geofence fixes (2026-11-22, untested on the iPhone).**
+  - Each watched circle's identifier now carries its center and radius (`GeofenceKeys` in `Models/Rules.swift`). Syncing is a plain set difference: a circle that didn't change is never removed and re-added. Before, the app compared iOS's stored copy with exact numbers, and a tiny mismatch would have reset every place to "unknown" on every launch and dropped the exit that woke it.
+  - Circles are synced only inside `reconcile`, one pass at a time, right before reading iOS's states. Before, a places change and a launch could sync at the same time and undo each other.
+  - Logs: every circle added or removed, CLMonitor's iOS 18 warning flags (like `conditionLimitExceeded`), and, on each ~500 m move while unlocked, how far the fix is from the place's edge next to iOS's reading. Logs show the place's ID, never its coordinates.
+  - Turning off Always or Precise Location while the app is running now locks at once, instead of at the next wake.
+  - After a restart, the app waits for the first unlock before loading anything. Launched earlier, it would have read nothing and saved that over your places, setup window and blocked apps.
+  - Renaming a place keeps its exact circle. The edit screen's map could move the center by a hair, which re-added the circle or started a 24 h change.
+  - **One time after this update** every place reads "unknown" until iOS checks again, because each circle is re-added under its new identifier. An unlock already running stays on.
+  - Considered and not built: using the ~500 m fix to override iOS's "inside". An indoor Wi-Fi fix can be kilometers off, which is why the 8 h recheck was removed. The new log line will show whether iOS ever misses an exit.
+  - **Test:** see "On-iPhone checks for the geofence fixes" below.
+- [ ] **On-iPhone checks for the geofence fixes (2026-11-22).**
+  - A plain relaunch logs no "Geofence … added" or "removed" lines.
+  - The first launch of the new build logs one "removed (old identifier)" and one "added" per place, once.
+  - Renaming a place logs no add or remove.
+  - With Spots open and unlocked, set Location to Never in Settings and come back: apps lock.
+  - Restart the phone, don't unlock it, walk more than 500 m, then unlock: the log shows "Launched before first unlock; waiting for protected data" and the places are all still there.
 - [ ] Fix the place-search spinner (Known issues). The spinner now stops when the "slow connection" message shows (2026-11-12). The cause is still unconfirmed.
 
 ### Phase 3: Make it shippable to strangers (about 3–4 days)
@@ -202,7 +223,7 @@ Tried and dropped. It needed a Shortcuts "App Is Opened" automation for each app
   - Apple search is free and needs no API key. It missed "Gates Center" in a quick test (found one in New York). If campus buildings keep missing, swap in Google Places inside `PlaceSearch`. That needs a Google Cloud project with billing turned on and an API key.
 - [x] **Blocked by default, automatic unlock at allowed places (2026-11-10).** There's no Unlock button. `CLMonitor` watches every saved place (20 at most). When iOS sees you arrive, apps unlock and you get an "Unlocked at X" notification. When you leave, they lock again with an "apps locked" notification. All of this happens in the background, even when the app is closed.
   - One function, `AppModel.reconcile()`, decides the lock state from iOS's reading for each place. It runs after every geofence event, on launch, when the app comes to the front, and when places change.
-  - **Lock until I leave:** locks now and doesn't unlock at that place again until iOS sees you leave it.
+  - ~~**Lock until I leave:** locks now and doesn't unlock at that place again until iOS sees you leave it.~~ **Removed 2026-11-22** to focus on the core unlock and lock (see Phase 2).
   - **Overlapping places:** leaving one place while still inside another moves the session over instead of locking.
 - [x] **Starter allowlist (2026-11-10, removed for new installs 2026-11-12, see Phase 3).** Installs from before 2026-11-12 got these once, from `Models/DefaultPlaces.swift`:
   - **Gym:** the IMA (47.6537, −122.3012).
@@ -247,6 +268,7 @@ Tried and dropped. It needed a Shortcuts "App Is Opened" automation for each app
 - [x] App's own log lines (`com.nsimon.PlaceLock`) for debugging. See `App/Log.swift`.
 
 ## Known issues (to fix)
+- **Turning off location while unlocked keeps apps unblocked (accepted for now, 2026-11-22).** With Location set to Never or While Using, or Precise Location off, iOS stops waking Spots. If you're unlocked at the time and Spots isn't open, nothing locks until you open it. The removed 8 h cap was the backstop for this. A Device Activity backstop could bring it back; the decision is open.
 - **The app picker is crowded with websites (seen 2026-11-19, first paid build on the iPhone).** Partly settled 2026-11-19: categories now block their websites too, and selections are capped at 50 of each kind (see Phase 3). Still open: pairing an app with its website. How Opal handles it (researched 2026-11-19, from Opal's help pages): same Screen Time picker, so only sites visited in Safari appear and domains can't be typed in (their workaround: open the site in Safari for ~10 min); blocking is reliable in Safari only, not Chrome/Firefox/Brave/Arc; their fix is an Allow List mode (block everything except picked apps). Ideas for Spots: tell people to block other browser apps too; check whether Screen Time's web content filter (`WebContentSettings`) accepts plain domain names, which could block youtube.com automatically when YouTube is picked (unverified, likely Safari only). Apple's `FamilyActivityPicker` lists many websites next to the apps, which makes it hard to pick just the few things you want. Blocking sites matters (youtube.com is the obvious way around a blocked YouTube app), but how many should we block, and how?
   - **What the code does now:** `SharedStore.shield` blocks the apps, app categories and individual websites you pick. Picking a category blocks its apps only. Its websites stay open, because `shield.webDomainCategories` isn't set.
   - **Questions to settle:**

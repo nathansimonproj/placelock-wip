@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0F554471DD25FFB93BCD67B0 /* GeofenceKeysTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23D9164E8462A6B598013E6F /* GeofenceKeysTests.swift */; };
 		1CD9A4CFD47812FBD86875B9 /* SyncRecords.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12C3158076D6AC19C3ADC719 /* SyncRecords.swift */; };
 		1FF550F0C17DC28A7D1CD4D9 /* PlaceLockApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F59A484B78A348C5262E7870 /* PlaceLockApp.swift */; };
 		30C4CE2396B31968E925BB68 /* PlaceSearch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FBD08DB08E79AAF2072B19F /* PlaceSearch.swift */; };
@@ -63,6 +64,7 @@
 		12295D516F9E3307ED4AE8E1 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		12C3158076D6AC19C3ADC719 /* SyncRecords.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncRecords.swift; sourceTree = "<group>"; };
 		1447AA6F99DAA8460135F25D /* BackupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupView.swift; sourceTree = "<group>"; };
+		23D9164E8462A6B598013E6F /* GeofenceKeysTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeofenceKeysTests.swift; sourceTree = "<group>"; };
 		23F319CF959190E250597B2B /* SyncRules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncRules.swift; sourceTree = "<group>"; };
 		24DA55A1FDD739A0BDE9E0DE /* ShieldManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldManager.swift; sourceTree = "<group>"; };
 		2F1DB436EEAF46816BC65503 /* AddPlaceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddPlaceView.swift; sourceTree = "<group>"; };
@@ -143,6 +145,7 @@
 			children = (
 				3AA40BCF7520E01816FF0D4C /* DelayRulesTests.swift */,
 				BCC930178BC75876BA07D368 /* EstimateTests.swift */,
+				23D9164E8462A6B598013E6F /* GeofenceKeysTests.swift */,
 				95AFE7CF7EC4F0FF88828540 /* LockRulesTests.swift */,
 				02D01B76D7B72477A1CB4908 /* SyncEngineTests.swift */,
 				AF41772D465AFA76B4DD0F62 /* SyncRulesTests.swift */,
@@ -371,6 +374,7 @@
 			files = (
 				D2CB59667290A998CB3C9053 /* DelayRulesTests.swift in Sources */,
 				F21F0EA4391EA426DAE4BC5B /* EstimateTests.swift in Sources */,
+				0F554471DD25FFB93BCD67B0 /* GeofenceKeysTests.swift in Sources */,
 				5C41A912A70BB6409E7BE0CB /* LockRulesTests.swift in Sources */,
 				443AFBC3553E2DA5961B5B35 /* SyncEngineTests.swift in Sources */,
 				D903CB3682F9B462AF4763B9 /* SyncRulesTests.swift in Sources */,

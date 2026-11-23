@@ -3,6 +3,9 @@ import CoreLocation
 /// Watches every saved place and reports when the user enters or leaves one.
 /// iOS relaunches the app in the background for these events, so `start` runs on every launch.
 /// CLMonitor allows at most 20 conditions per app, so that's the cap on saved places.
+///
+/// Each circle is watched under `GeofenceKeys.key(for:)`, which carries its geometry (see
+/// Models/Rules.swift). Those identifiers include coordinates, so logs show only the place's UUID.
 actor GeofenceMonitor {
     static let shared = GeofenceMonitor()
     static let maxPlaces = 20
@@ -19,7 +22,7 @@ actor GeofenceMonitor {
         return await task.value
     }
 
-    /// Latest event per place as delivered to us. The monitor's stored record can lag the
+    /// Latest event per identifier as delivered to us. The monitor's stored record can lag the
     /// event stream by a few ms, so a fresh event wins over an older record.
     private var latest: [String: CLMonitor.Event] = [:]
 
@@ -27,14 +30,18 @@ actor GeofenceMonitor {
         latest[event.identifier] = event
     }
 
+    /// The UUID part of an identifier, safe for public logs (no coordinates).
+    private static func logID(_ identifier: String) -> String { String(identifier.prefix(36)) }
+
     /// Starts listening and calls `onChange` after every enter or exit event.
     func start(onChange: @escaping @Sendable () async -> Void) async {
         let m = await get()
         Task {
             do {
                 for try await event in await m.events {
-                    Log.app.info("Geofence \(event.identifier, privacy: .public): \(String(describing: event.state), privacy: .public)")
-                    await self.remember(event)
+                    Log.app.notice("Geofence \(Self.logID(event.identifier), privacy: .public): \(String(describing: event.state), privacy: .public)")
+                    if #available(iOS 18.0, *) { Self.logLimits(event) }
+                    self.remember(event)
                     await onChange()
                 }
             } catch {
@@ -43,44 +50,68 @@ actor GeofenceMonitor {
         }
     }
 
-    /// Make the monitored circles match `places`. Unchanged places keep their current state.
-    /// New ones start as unknown, and iOS reports whether you're inside shortly after.
+    /// Logs anything iOS says is stopping it from watching a place (iOS 18 adds these flags).
+    @available(iOS 18.0, *)
+    private static func logLimits(_ e: CLMonitor.Event) {
+        let flags = [
+            ("accuracyLimited", e.accuracyLimited),
+            ("conditionLimitExceeded", e.conditionLimitExceeded),
+            ("conditionUnsupported", e.conditionUnsupported),
+            ("persistenceUnavailable", e.persistenceUnavailable),
+            ("insufficientlyInUse", e.insufficientlyInUse),
+            ("serviceSessionRequired", e.serviceSessionRequired),
+            ("authorizationDenied", e.authorizationDenied),
+            ("authorizationDeniedGlobally", e.authorizationDeniedGlobally),
+            ("authorizationRestricted", e.authorizationRestricted),
+            ("authorizationRequestInProgress", e.authorizationRequestInProgress),
+        ].filter(\.1).map(\.0)
+        guard !flags.isEmpty else { return }
+        Log.app.error("Geofence \(logID(e.identifier), privacy: .public) limited: \(flags.joined(separator: ", "), privacy: .public)")
+    }
+
+    /// Make the monitored circles match `places`. Unchanged circles are left alone and keep their
+    /// state. New or changed ones start as unknown, and iOS reports whether you're inside shortly
+    /// after. Called only from `AppModel.reconcileNow`, so two syncs never overlap.
     func sync(_ places: [Place]) async {
         let m = await get()
-        let wanted = Dictionary(uniqueKeysWithValues: places.prefix(Self.maxPlaces).map { ($0.id.uuidString, $0) })
-        for id in await m.identifiers {
-            guard let place = wanted[id],
-                  let circle = await m.record(for: id)?.condition as? CLMonitor.CircularGeographicCondition,
-                  circle.center.latitude == place.latitude, circle.center.longitude == place.longitude,
-                  circle.radius == place.radius
-            else {
-                await m.remove(id)
-                latest[id] = nil
-                continue
-            }
+        let plan = GeofenceKeys.diff(current: await m.identifiers, places: places, max: Self.maxPlaces)
+        guard !plan.isEmpty else { return }
+        let wantedIDs = Set(places.map(\.id.uuidString))
+        // Removes first: iOS allows 20 conditions, and the adds can be a whole new set (the first
+        // launch after identifiers started carrying geometry replaces every one).
+        for identifier in plan.remove {
+            await m.remove(identifier)
+            latest[identifier] = nil
+            let id = Self.logID(identifier)
+            let reason = !identifier.contains("@") ? "old identifier" : wantedIDs.contains(id) ? "moved or resized" : "deleted"
+            Log.app.notice("Geofence \(id, privacy: .public) removed (\(reason, privacy: .public))")
         }
-        let existing = Set(await m.identifiers)
-        for (id, place) in wanted where !existing.contains(id) {
+        for place in plan.add {
+            let key = GeofenceKeys.key(for: place)
+            latest[key] = nil // an edit back to an earlier circle mustn't reuse that circle's old event
             await m.add(CLMonitor.CircularGeographicCondition(center: place.coordinate, radius: place.radius),
-                        identifier: id)
+                        identifier: key)
+            Log.app.notice("Geofence \(place.id.uuidString, privacy: .public) added (r=\(Int(place.radius)) m)")
         }
     }
 
-    /// iOS's latest reading for each monitored place.
-    func states() async -> [UUID: CLMonitor.Event.State] {
+    /// iOS's latest reading for each watched place. A place with no record gets no reading.
+    func states(for places: [Place]) async -> [UUID: CLMonitor.Event.State] {
         let m = await get()
         var result: [UUID: CLMonitor.Event.State] = [:]
-        for id in await m.identifiers {
-            guard let uuid = UUID(uuidString: id), let record = await m.record(for: id) else { continue }
+        for place in GeofenceKeys.watched(places, max: Self.maxPlaces) {
+            let key = GeofenceKeys.key(for: place)
+            guard let record = await m.record(for: key) else { continue }
             var event = record.lastEvent
-            if let fresh = latest[id], fresh.date >= event.date { event = fresh }
-            result[uuid] = event.state
+            if let fresh = latest[key], fresh.date >= event.date { event = fresh }
+            result[place.id] = event.state
         }
         return result
     }
 }
 
 extension Presence {
+    /// `.unmonitored` (iOS 18) counts as unknown, like anything else that isn't a clear answer.
     init(_ state: CLMonitor.Event.State) {
         switch state {
         case .satisfied: self = .inside

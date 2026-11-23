@@ -1,5 +1,6 @@
 import CoreLocation
 import Foundation
+import UIKit
 
 /// Names where the phone thinks it is, for the block screen's "Estimated @" line.
 enum EstimateRules {
@@ -32,9 +33,11 @@ enum EstimateRules {
 
 extension AppModel {
     /// Saves a fresh "Estimated @" for the block screen. Runs after reconciles, at most once a
-    /// minute, and never holds up locking: a fix can take a few seconds.
+    /// minute with the app open and every 5 minutes in the background (a move or a lock change
+    /// still estimates right away), and never holds up locking: a fix can take a few seconds.
     func refreshEstimate() {
-        guard estimateTask == nil, Date.now.timeIntervalSince(lastEstimateAttempt) > 60 else { return }
+        let gap: TimeInterval = UIApplication.shared.applicationState == .active ? 60 : 300
+        guard estimateTask == nil, Date.now.timeIntervalSince(lastEstimateAttempt) > gap else { return }
         lastEstimateAttempt = .now
         estimateTask = Task { @MainActor in
             defer { estimateTask = nil }
@@ -51,12 +54,26 @@ extension AppModel {
         case nil: break
         }
         if let activePlace { return activePlace.name } // unlocked: iOS already says where you are
-        // 200 m is enough to name a building or street, and comes quickly from Wi-Fi. A background
-        // wake is short, so after 5 s fall back to where a recent move woke the app.
-        let fresh = try? await location.currentLocation(maxAccuracy: 200, timeout: 5)
+        // 200 m is enough to name a building or street. Battery: if the move that woke the app is
+        // already that good, use it instead of turning on GPS; in Low Power Mode never turn it on.
+        // Otherwise ask for a fix, and after 5 s (a background wake is short) fall back to the move.
+        let lowPower = ProcessInfo.processInfo.isLowPowerModeEnabled
         let recentMove = lastMove.flatMap { -$0.timestamp.timeIntervalSinceNow < 300 ? $0 : nil }
-        guard let here = fresh ?? recentMove else { return nil }
-        let mapName = try? await CLGeocoder().reverseGeocodeLocation(here).first?.name
-        return EstimateRules.label(at: here, places: places, mapName: mapName)
+        var here = recentMove.flatMap { $0.horizontalAccuracy >= 0 && ($0.horizontalAccuracy <= 200 || lowPower) ? $0 : nil }
+        if here == nil, !lowPower {
+            here = try? await location.currentLocation(maxAccuracy: 200, timeout: 5)
+        }
+        guard let here = here ?? recentMove else { return nil }
+        return EstimateRules.label(at: here, places: places, mapName: await mapName(at: here))
+    }
+
+    /// Apple Maps' name for the spot, reusing the last answer within 100 m of it. Failures
+    /// (offline, rate-limited) aren't remembered, so the next estimate tries again.
+    private func mapName(at here: CLLocation) async -> String? {
+        if let last = lastGeocode, last.location.distance(from: here) < 100 { return last.name }
+        guard let marks = try? await CLGeocoder().reverseGeocodeLocation(here) else { return nil }
+        let name = marks.first?.name
+        lastGeocode = (here, name)
+        return name
     }
 }

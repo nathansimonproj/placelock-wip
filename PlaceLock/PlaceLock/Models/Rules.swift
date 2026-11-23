@@ -15,7 +15,6 @@ enum LockRules {
     struct Input {
         var places: [Place]
         var session: UnlockSession?
-        var paused: Set<UUID>
         var presence: [UUID: Presence]
         var hasAlways: Bool
         var now: Date
@@ -31,33 +30,69 @@ enum LockRules {
         case lock(reason: String)
     }
 
-    /// Apps are blocked by default and unblock while you're inside an active, non-paused place.
-    /// Also returns the paused set with places you've left removed.
-    static func decide(_ input: Input) -> (action: Action, paused: Set<UUID>) {
+    /// Apps are blocked by default and unblock while you're inside an active place.
+    static func decide(_ input: Input) -> Action {
         // Without Always, iOS can't wake us when you leave, so nothing may stay unlocked.
         guard input.hasAlways else {
-            return (input.session == nil ? .stayLocked : .lock(reason: "Location is no longer set to Always. Apps blocked."),
-                    input.paused)
+            return input.session == nil ? .stayLocked : .lock(reason: "Location is no longer set to Always. Apps blocked.")
         }
 
-        let inside = Set(input.presence.filter { $0.value == .inside }.keys)
-        let paused = input.paused.intersection(inside) // left a paused place, so it can unlock next time
         let unlockable = input.places.first {
-            inside.contains($0.id) && $0.isActive(at: input.now) && !paused.contains($0.id)
+            input.presence[$0.id] == .inside && $0.isActive(at: input.now)
         }
 
         guard let session = input.session else {
-            return (unlockable.map { .unlock(at: $0.id) } ?? .stayLocked, paused)
+            return unlockable.map { .unlock(at: $0.id) } ?? .stayLocked
         }
         guard let place = input.places.first(where: { $0.id == session.placeID }) else {
-            return (.lock(reason: "That place was deleted. Apps blocked."), paused)
+            return .lock(reason: "That place was deleted. Apps blocked.")
         }
         // Only a definite "outside" ends the session. Unknown readings are ignored.
         if input.presence[place.id] == .outside {
-            if let next = unlockable { return (.move(from: place.id, to: next.id), paused) }
-            return (.lock(reason: "Left \(place.name), apps blocked."), paused)
+            if let next = unlockable { return .move(from: place.id, to: next.id) }
+            return .lock(reason: "Left \(place.name), apps blocked.")
         }
-        return (.stayUnlocked, paused)
+        return .stayUnlocked
+    }
+}
+
+// MARK: - Watched circles
+
+/// Which circles iOS watches (`GeofenceMonitor`). Each circle's identifier carries its geometry, so
+/// keeping iOS in step is a plain set difference: nothing reads iOS's stored circle back and
+/// compares Doubles, and a circle that didn't change is never removed and re-added (which would
+/// reset its state to unknown and drop a pending exit).
+enum GeofenceKeys {
+    /// "<uuid>@<lat>,<lon>,<radius>". Changes exactly when the circle moves or resizes. The name,
+    /// the 24 h delays and pending changes stay out. `String(format:)` isn't localized, so the
+    /// separator is always ".". Never build this from `hashValue` or `Hasher`: they're seeded per
+    /// launch, so every launch would re-add every circle.
+    static func key(for place: Place) -> String {
+        place.id.uuidString + "@" + String(format: "%.6f,%.6f,%.0f", place.latitude, place.longitude, place.radius)
+    }
+
+    /// The places iOS watches: the first `max` (iOS allows 20 conditions per app), one per id.
+    static func watched(_ places: [Place], max: Int) -> [Place] {
+        var seen = Set<UUID>()
+        return Array(places.filter { seen.insert($0.id).inserted }.prefix(max))
+    }
+
+    struct Plan: Equatable {
+        /// Identifiers to stop watching: deleted, moved or resized places, and old-style ids.
+        var remove: [String]
+        /// Places to start watching, each under `key(for:)`.
+        var add: [Place]
+
+        var isEmpty: Bool { remove.isEmpty && add.isEmpty }
+    }
+
+    /// What to remove and add so iOS watches exactly `watched(places, max:)`.
+    static func diff(current: [String], places: [Place], max: Int) -> Plan {
+        let wanted = watched(places, max: max)
+        let wantedKeys = Set(wanted.map(key(for:)))
+        let have = Set(current)
+        return Plan(remove: current.filter { !wantedKeys.contains($0) },
+                    add: wanted.filter { !have.contains(key(for: $0)) })
     }
 }
 
@@ -88,9 +123,11 @@ enum PlaceRules {
         var place = place
         place.name = name
         place.address = address
-        let unchanged = place.latitude == center.latitude && place.longitude == center.longitude
-            && place.radius == radius
-        if unchanged { return (place, .unchangedArea) }
+        // Within 1 m counts as the same circle: the edit screen takes the map's center, which can
+        // drift by a hair from the saved one. Keeping the exact saved values means a rename never
+        // re-adds the circle (state back to unknown) or starts a 24 h change.
+        let drift = CLLocation(latitude: center.latitude, longitude: center.longitude).distance(from: place.location)
+        if drift < 1, abs(place.radius - radius) < 0.5 { return (place, .unchangedArea) }
         if inSetup || !place.isActive(at: now) || place.contains(center: center, radius: radius) {
             place.latitude = center.latitude
             place.longitude = center.longitude

@@ -91,7 +91,7 @@ extension PlaceRecord {
 enum SessionEnd: String, Codable {
     case left
     case moved
-    case lockUntilLeave = "lock_until_leave"
+    case lockUntilLeave = "lock_until_leave" // no longer recorded (removed 2026-11-22); older history has it
     case placeDeleted = "place_deleted"
     case lostAlways = "lost_always"
     case recheckFailed = "recheck_failed" // no longer recorded (8 h recheck removed); older history has it

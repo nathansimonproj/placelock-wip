@@ -22,6 +22,9 @@ final class LocationService: NSObject, ObservableObject, CLLocationManagerDelega
 
     private let manager = CLLocationManager()
     private var onMove: ((CLLocation) -> Void)?
+    /// Called after `authorization` or `isPrecise` really changed, so a running app reconciles at
+    /// once. Not called for the callback iOS sends on every launch, which repeats the same values.
+    var onAuthorizationChange: (() -> Void)?
     /// A `CLServiceSession` asking for Always (iOS 18+). Without one, Core Location treats the
     /// app's geofence events as When In Use, and arriving somewhere didn't unblock apps until the
     /// app was opened. Created as soon as Always is granted and on every launch, including the
@@ -81,6 +84,7 @@ final class LocationService: NSObject, ObservableObject, CLLocationManagerDelega
         let status = manager.authorizationStatus
         let precise = manager.accuracyAuthorization == .fullAccuracy
         Task { @MainActor in
+            let changed = status != self.authorization || precise != self.isPrecise
             self.authorization = status
             if precise != self.isPrecise {
                 Log.app.info("Precise Location \(precise ? "on" : "off", privacy: .public)")
@@ -94,6 +98,7 @@ final class LocationService: NSObject, ObservableObject, CLLocationManagerDelega
             if status == .authorizedWhenInUse { self.manager.requestAlwaysAuthorization() }
             self.startMovementUpdatesIfAllowed()
             self.holdAlwaysSessionIfAllowed()
+            if changed { self.onAuthorizationChange?() } // after the values above are updated
         }
     }
 

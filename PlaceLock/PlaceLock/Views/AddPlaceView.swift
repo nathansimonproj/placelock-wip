@@ -259,7 +259,7 @@ struct AddPlaceView: View {
                     nameFromSearch = result.name
                 }
                 search.query = ""
-                Log.app.info("Search picked \(result.name, privacy: .public) at \(result.coordinate.latitude), \(result.coordinate.longitude)")
+                Log.app.info("Search picked \(result.name, privacy: .public) at \(result.coordinate.latitude, privacy: .private), \(result.coordinate.longitude, privacy: .private)")
             } catch {
                 Log.app.error("Search resolve failed: \(error.localizedDescription, privacy: .public)")
             }
@@ -277,7 +277,7 @@ struct AddPlaceView: View {
         let place = Place(name: trimmedName, address: address,
                           latitude: center.latitude, longitude: center.longitude, radius: radius)
         model.addPlace(place, fillingSlot: slot)
-        Log.app.info("Added place \(place.name, privacy: .public) r=\(Int(place.radius))m at \(center.latitude), \(center.longitude)")
+        Log.app.info("Added place \(place.name, privacy: .public) r=\(Int(place.radius))m at \(center.latitude, privacy: .private), \(center.longitude, privacy: .private)")
         dismiss()
     }
 }

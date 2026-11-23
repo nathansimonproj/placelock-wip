@@ -40,6 +40,22 @@ struct PlaceRulesTests {
         #expect(result == .unchangedArea)
     }
 
+    @Test func renameWithSubMeterMapDriftKeepsTheExactArea() {
+        // The edit screen takes the map's center, which can be a hair off the saved one.
+        let (place, result) = edit(gym, name: "IMA", lat: gym.latitude + 0.000003, lon: gym.longitude - 0.000003)
+        #expect(result == .unchangedArea)
+        #expect(place.name == "IMA")
+        #expect(place.latitude == gym.latitude && place.longitude == gym.longitude)
+        #expect(place.pendingChange == nil)
+    }
+
+    @Test func moveOfTwoMetersIsStillAMove() {
+        // About 2 m north: past the 1 m tolerance, so it's a real move and waits like any other.
+        let (place, result) = edit(gym, lat: gym.latitude + 0.000018)
+        #expect(result == .pending(until: now.addingTimeInterval(day)))
+        #expect(place.pendingChange?.latitude == gym.latitude + 0.000018)
+    }
+
     @Test func shrinkingAppliesRightAway() {
         let (place, result) = edit(gym, radius: 100)
         #expect(result == .appliedNow)

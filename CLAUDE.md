@@ -17,7 +17,7 @@ iPhone app (SwiftUI, iOS 17+) that keeps chosen apps blocked everywhere except s
 
 - Apps are blocked by default and unblock only inside a saved place. There's no unlock button.
 - After the first 24 h, anything that loosens the rules waits 24 h: adding a place, moving or enlarging one, removing an app. Changes that only make things stricter apply at once.
-- Losing Always or Precise Location access locks right away.
+- Losing Always or Precise Location access locks as soon as Spots runs: right away if it's open, otherwise the next time it's opened. iOS doesn't wake the app for a permission change, so apps stay unblocked until then (accepted for now, 2026-11-22; see Roadmap Known issues).
 - Blocking decisions are made on the phone and never wait on the network. Sync is backup only.
 
 ## Code layout

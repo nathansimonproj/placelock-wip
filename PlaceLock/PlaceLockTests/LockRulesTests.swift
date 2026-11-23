@@ -8,11 +8,10 @@ struct LockRulesTests {
     let gym = Place(name: "Gym", latitude: 47.6537, longitude: -122.3012, radius: 150)
     let home = Place(name: "Home", latitude: 47.6634, longitude: -122.3139, radius: 150)
 
-    func decide(session: UnlockSession? = nil, paused: Set<UUID> = [], presence: [UUID: Presence] = [:],
-                hasAlways: Bool = true, places: [Place]? = nil, at time: Date? = nil) -> (LockRules.Action, Set<UUID>) {
-        let result = LockRules.decide(.init(places: places ?? [gym, home], session: session, paused: paused,
-                                            presence: presence, hasAlways: hasAlways, now: time ?? now))
-        return (result.action, result.paused)
+    func decide(session: UnlockSession? = nil, presence: [UUID: Presence] = [:],
+                hasAlways: Bool = true, places: [Place]? = nil, at time: Date? = nil) -> LockRules.Action {
+        LockRules.decide(.init(places: places ?? [gym, home], session: session,
+                               presence: presence, hasAlways: hasAlways, now: time ?? now))
     }
 
     func session(at place: Place, startedAt: Date? = nil) -> UnlockSession {
@@ -22,91 +21,86 @@ struct LockRulesTests {
     // MARK: Locked
 
     @Test func staysLockedAwayFromEveryPlace() {
-        #expect(decide(presence: [gym.id: .outside, home.id: .outside]).0 == .stayLocked)
+        #expect(decide(presence: [gym.id: .outside, home.id: .outside]) == .stayLocked)
     }
 
     @Test func unknownReadingsDoNotUnlock() {
-        #expect(decide(presence: [gym.id: .unknown]).0 == .stayLocked)
+        #expect(decide(presence: [gym.id: .unknown]) == .stayLocked)
     }
 
     @Test func unlocksOnArrival() {
-        #expect(decide(presence: [gym.id: .inside, home.id: .outside]).0 == .unlock(at: gym.id))
+        #expect(decide(presence: [gym.id: .inside, home.id: .outside]) == .unlock(at: gym.id))
     }
 
     @Test func doesNotUnlockAtAPlaceStillInItsDelay() {
         var waiting = gym
         waiting.activeAfter = now.addingTimeInterval(60)
-        #expect(decide(presence: [gym.id: .inside], places: [waiting]).0 == .stayLocked)
+        #expect(decide(presence: [gym.id: .inside], places: [waiting]) == .stayLocked)
     }
 
     @Test func unlocksOnceTheDelayHasPassed() {
         var ready = gym
         ready.activeAfter = now.addingTimeInterval(-1)
-        #expect(decide(presence: [gym.id: .inside], places: [ready]).0 == .unlock(at: gym.id))
+        #expect(decide(presence: [gym.id: .inside], places: [ready]) == .unlock(at: gym.id))
     }
 
     @Test func withoutAlwaysLocationNothingUnlocks() {
-        #expect(decide(presence: [gym.id: .inside], hasAlways: false).0 == .stayLocked)
-    }
-
-    // MARK: Lock until I leave
-
-    @Test func pausedPlaceStaysLockedWhileYouAreThere() {
-        let (action, paused) = decide(paused: [gym.id], presence: [gym.id: .inside])
-        #expect(action == .stayLocked)
-        #expect(paused == [gym.id])
-    }
-
-    @Test func leavingAPausedPlaceClearsThePause() {
-        let (action, paused) = decide(paused: [gym.id], presence: [gym.id: .outside])
-        #expect(action == .stayLocked)
-        #expect(paused.isEmpty)
-    }
-
-    @Test func pauseOnlyAppliesToThatPlace() {
-        let (action, _) = decide(paused: [gym.id], presence: [gym.id: .inside, home.id: .inside])
-        #expect(action == .unlock(at: home.id))
+        #expect(decide(presence: [gym.id: .inside], hasAlways: false) == .stayLocked)
     }
 
     // MARK: Unlocked
 
     @Test func staysUnlockedWhileInside() {
-        #expect(decide(session: session(at: gym), presence: [gym.id: .inside]).0 == .stayUnlocked)
+        #expect(decide(session: session(at: gym), presence: [gym.id: .inside]) == .stayUnlocked)
     }
 
     @Test func unknownReadingDoesNotEndASession() {
-        #expect(decide(session: session(at: gym), presence: [gym.id: .unknown]).0 == .stayUnlocked)
+        #expect(decide(session: session(at: gym), presence: [gym.id: .unknown]) == .stayUnlocked)
     }
 
     @Test func leavingLocks() {
-        let action = decide(session: session(at: gym), presence: [gym.id: .outside]).0
+        let action = decide(session: session(at: gym), presence: [gym.id: .outside])
         #expect(action == .lock(reason: "Left Gym, apps blocked."))
     }
 
     @Test func leavingIntoAnotherPlaceMovesTheSession() {
-        let action = decide(session: session(at: gym), presence: [gym.id: .outside, home.id: .inside]).0
+        let action = decide(session: session(at: gym), presence: [gym.id: .outside, home.id: .inside])
         #expect(action == .move(from: gym.id, to: home.id))
     }
 
-    @Test func leavingIntoAPausedPlaceLocks() {
-        let action = decide(session: session(at: gym), paused: [home.id],
-                            presence: [gym.id: .outside, home.id: .inside]).0
+    @Test func unknownSessionPlaceWithAnotherInsideStaysUnlocked() {
+        // Only a definite "outside" at the session's place moves or ends it.
+        let action = decide(session: session(at: gym), presence: [gym.id: .unknown, home.id: .inside])
+        #expect(action == .stayUnlocked)
+    }
+
+    @Test func moveSkipsAPlaceStillInItsDelay() {
+        var waiting = home
+        waiting.activeAfter = now.addingTimeInterval(60)
+        let action = decide(session: session(at: gym), presence: [gym.id: .outside, home.id: .inside],
+                            places: [gym, waiting])
         #expect(action == .lock(reason: "Left Gym, apps blocked."))
     }
 
+    @Test func firstActiveInsidePlaceWinsWhenSeveralAreInside() {
+        let both: [UUID: Presence] = [gym.id: .inside, home.id: .inside]
+        #expect(decide(presence: both, places: [gym, home]) == .unlock(at: gym.id))
+        #expect(decide(presence: both, places: [home, gym]) == .unlock(at: home.id))
+    }
+
     @Test func deletedPlaceLocks() {
-        let action = decide(session: session(at: gym), presence: [:], places: [home]).0
+        let action = decide(session: session(at: gym), presence: [:], places: [home])
         #expect(action == .lock(reason: "That place was deleted. Apps blocked."))
     }
 
     @Test func losingAlwaysLocationLocks() {
-        let action = decide(session: session(at: gym), presence: [gym.id: .inside], hasAlways: false).0
+        let action = decide(session: session(at: gym), presence: [gym.id: .inside], hasAlways: false)
         #expect(action == .lock(reason: "Location is no longer set to Always. Apps blocked."))
     }
 
     /// No time limit: a long stay stays unlocked until iOS reports you've left.
     @Test func longStaysStayUnlocked() {
         let start = now.addingTimeInterval(-20 * 3600)
-        #expect(decide(session: session(at: gym, startedAt: start), presence: [gym.id: .inside]).0 == .stayUnlocked)
+        #expect(decide(session: session(at: gym, startedAt: start), presence: [gym.id: .inside]) == .stayUnlocked)
     }
 }

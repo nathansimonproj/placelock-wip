@@ -12,9 +12,8 @@ Pick the apps that distract you and the places where they're allowed, like the g
 
 - **Blocked by default.** Your chosen apps are blocked unless you're inside one of your saved places.
 - **Automatic unlock and lock.** iOS watches each saved place (`CLMonitor` geofences, up to 20). It wakes the app when you arrive or leave, even if the app is closed. Leaving can take a few minutes and 100–200 m to register. Places can be 50–500 m across, and Add place warns below 100 m, where indoor location fuzz can miss you arriving.
-- **Lock until I leave.** Locks now, and doesn't unlock at this place again until you've left it.
 - **No quick loopholes.** After the first 24 hours, a new place takes 24 h to start working, and so does moving or enlarging one. Removing an app from the block list also takes 24 h. Changes that only make things stricter apply right away.
-- **Safety net.** iOS also wakes the app every time you move about 500 m, even after a force-quit, and the app re-checks every place. Losing Always or Precise Location access locks right away. There's no time limit: you stay unlocked until iOS reports you've left.
+- **Safety net.** iOS also wakes the app every time you move about 500 m, even after a force-quit, and the app re-reads iOS's state for every place. That catches an exit iOS noticed but didn't deliver; a late exit still waits for iOS. Losing Always or Precise Location access locks right away while Spots is running, and otherwise the next time it runs. If you turn location off while unlocked and never open Spots, apps stay unblocked (a known issue). There's no time limit: you stay unlocked until iOS reports you've left.
 - **Block screen.** Opening a blocked app shows where the app last estimated you were and where the app opens: "Estimated @ Suzzallo Library · 2 min ago" and "Opens at Gym or Home."
 - **Backup.** Places and unlock history sync to Supabase under an anonymous account, so a reinstall can restore them. Blocking decisions are made on the phone and never wait on the network.
 

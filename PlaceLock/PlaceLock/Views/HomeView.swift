@@ -64,13 +64,8 @@ struct HomeView: View {
 
             Group {
                 if unlocked {
-                    Button { model.lockUntilLeave() } label: {
-                        Label("Lock until I leave", systemImage: "lock.fill")
-                            .font(.subheadline.weight(.semibold))
-                            .padding(.horizontal, 20).padding(.vertical, 12)
-                            .background(.ultraThinMaterial, in: Capsule())
-                    }
-                    .buttonStyle(.plain)
+                    Text("Apps block again when you leave.")
+                        .foregroundStyle(.secondary)
                 } else if model.blockList.isEmpty {
                     Button("Choose apps to block", action: showRules).fontWeight(.semibold)
                 } else if model.places.isEmpty {

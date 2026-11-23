@@ -19,11 +19,7 @@ final class AppModel: ObservableObject {
             save(places, key: Keys.places)
             shareAllowedPlaces()
             if !applyingRemote { SyncEngine.shared.placesChanged(old: oldValue, new: places) }
-            Task {
-                // Before the location prompt is answered, startUp syncs them once it is.
-                if location.authorization != .notDetermined { await GeofenceMonitor.shared.sync(places) }
-                await reconcile()
-            }
+            Task { await reconcile() } // reconcile syncs the watched circles first
         }
     }
     /// True while taking places from the server, so they aren't queued to upload again.
@@ -60,11 +56,10 @@ final class AppModel: ObservableObject {
     var lastEstimateAttempt = Date.distantPast
     /// The location from the latest significant-change wake (`watchMovement`).
     var lastMove: CLLocation?
+    /// The last Apple Maps name looked up, so standing still doesn't ask Apple again.
+    var lastGeocode: (location: CLLocation, name: String?)?
     /// Finished unlock visits from the last two weeks, oldest first. On this phone only.
     @Published private(set) var visits: [Visit] = [] { didSet { save(visits, key: Keys.visits) } }
-    /// Places you're at but chose to stay locked at ("Lock until I leave").
-    /// A place leaves this set once iOS sees you leave it.
-    @Published private(set) var pausedPlaceIDs: Set<UUID> = [] { didSet { save(pausedPlaceIDs, key: Keys.paused) } }
     /// Allowlist names still waiting for a location (e.g. "Home"). Tapping one opens Add place.
     @Published var placeSlots: [String] = [] { didSet { save(placeSlots, key: Keys.slots) } }
     @Published var message: String?
@@ -106,6 +101,10 @@ final class AppModel: ObservableObject {
     let location = LocationService()
 
     private var reconcileTask: Task<Void, Never>?
+    /// True once `startWatchingPlaces` ran. Until then nothing touches CLMonitor's circles, since
+    /// watching places makes iOS show the location prompt.
+    private var watchingPlaces = false
+    private var didStart = false
 
     private enum Keys {
         static let places = "places", session = "session", blockList = "blockList", paused = "pausedPlaces"
@@ -148,7 +147,7 @@ final class AppModel: ObservableObject {
             ].filter { $0.end < .now }
         }
         #endif
-        _pausedPlaceIDs = Published(initialValue: load(Set<UUID>.self, key: Keys.paused) ?? [])
+        Storage.defaults.removeObject(forKey: Keys.paused) // "Lock until I leave" removed 2026-11-22
         _placeSlots = Published(initialValue: load([String].self, key: Keys.slots) ?? [])
         if let saved = load(Date.self, key: Keys.setupEnds) {
             _setupEndsAt = Published(initialValue: saved)
@@ -163,6 +162,10 @@ final class AppModel: ObservableObject {
         seedDefaultPlacesOnce()
         // The loads above skip the observers, so share what the extensions need explicitly.
         shareAllowedPlaces()
+        // Losing Always or Precise while the app is running locks right away, not at the next wake.
+        location.onAuthorizationChange = { [weak self] in
+            Task { await self?.reconcileWhileAwake() }
+        }
     }
 
     /// The block screen lists where apps unblock. Only places that work right now count.
@@ -228,7 +231,9 @@ final class AppModel: ObservableObject {
 
     /// Runs on every launch, including background relaunches for geofence events.
     func startUp() async {
-        Log.app.info("Launch: \(self.places.count) places, session=\(self.activePlace?.name ?? "none", privacy: .public)")
+        guard !didStart else { return }
+        didStart = true
+        Log.app.notice("Launch: \(self.places.count) places, session=\(self.activePlace?.name ?? "none", privacy: .public)")
         ShieldManager.stopLegacySessionCap()
         if location.authorization == .notDetermined {
             // Watching places makes iOS show the location prompt right away. On a new install,
@@ -248,21 +253,37 @@ final class AppModel: ObservableObject {
 
     private func startWatchingPlaces() async {
         await GeofenceMonitor.shared.start { await AppModel.shared.reconcileWhileAwake() }
-        await GeofenceMonitor.shared.sync(places)
+        watchingPlaces = true // the caller's reconcile syncs the circles
         startWatchingMovement()
     }
 
     /// Backstop for the geofences: iOS wakes the app every time you move about 500 m, even if it
-    /// was force-quit, and the app re-checks every place (and refreshes the block screen's
-    /// "Estimated @"). The geofences still decide; this makes sure the app is awake to act on them.
+    /// was force-quit, and the app re-reads iOS's state for every place (and refreshes the block
+    /// screen's "Estimated @"). This catches a state change iOS recorded but didn't deliver. It
+    /// doesn't catch an exit iOS hasn't noticed yet: the geofences still decide.
     private func startWatchingMovement() {
         location.watchMovement { [weak self] here in
             guard let self else { return }
-            Log.app.info("Moved (significant change, ±\(Int(here.horizontalAccuracy)) m)")
             self.lastMove = here
             self.lastEstimateAttempt = .distantPast // estimate again right away
-            Task { await self.reconcileWhileAwake() }
+            Task {
+                await self.logMove(here)
+                await self.reconcileWhileAwake()
+            }
         }
+    }
+
+    /// Logs a significant-change fix against the running session's place. Changes nothing: it's
+    /// data for deciding whether iOS ever misses an exit (Roadmap, 2026-11-22).
+    private func logMove(_ here: CLLocation) async {
+        let fix = "±\(Int(here.horizontalAccuracy)) m, \(Int(-here.timestamp.timeIntervalSinceNow)) s old"
+        guard let place = activePlace else {
+            Log.app.notice("Moved (significant change, \(fix, privacy: .public))")
+            return
+        }
+        let reading = await GeofenceMonitor.shared.states(for: [place])[place.id].map(Presence.init)
+        let edge = place.distanceOutside(here)
+        Log.app.notice("Moved (significant change, \(fix, privacy: .public)); session \(place.name, privacy: .private) reads \(reading.map { "\($0)" } ?? "nothing", privacy: .public), fix \(Int(abs(edge))) m \(edge > 0 ? "outside" : "inside", privacy: .public) its edge")
     }
 
     /// For wakes iOS gives the app in the background (a geofence or movement event): asks for a
@@ -289,8 +310,13 @@ final class AppModel: ObservableObject {
     }
 
     private func reconcileNow() async {
+        await clearOldNotices() // before this pass sends its own
         await refreshScreenTimeAccess()
         applyDueChanges()
+        // Every states read follows a sync of the same list, and passes run one at a time, so syncs
+        // never overlap. A sync with nothing to change is one read of the monitor's identifiers.
+        let watched = places
+        if watchingPlaces { await GeofenceMonitor.shared.sync(watched) }
         defer {
             scheduleNextActivation()
             refreshEstimate()
@@ -303,13 +329,11 @@ final class AppModel: ObservableObject {
             if let simulated = simulatedPresence() {
                 presence = simulated
             } else {
-                presence = await GeofenceMonitor.shared.states().mapValues(Presence.init)
+                presence = await GeofenceMonitor.shared.states(for: watched).mapValues(Presence.init)
             }
         }
-        let (action, paused) = LockRules.decide(.init(
-            places: places, session: session, paused: pausedPlaceIDs, presence: presence,
-            hasAlways: hasAlways, now: .now))
-        if paused != pausedPlaceIDs { pausedPlaceIDs = paused }
+        let action = LockRules.decide(.init(
+            places: places, session: session, presence: presence, hasAlways: hasAlways, now: .now))
 
         switch action {
         case .stayLocked:
@@ -323,7 +347,7 @@ final class AppModel: ObservableObject {
             let moved = UnlockSession(placeID: to, startedAt: .now)
             session = moved
             SyncEngine.shared.sessionStarted(moved)
-            Log.app.info("Moved session from \(from.uuidString, privacy: .public) to \(to.uuidString, privacy: .public)")
+            Log.app.notice("Moved session from \(from.uuidString, privacy: .public) to \(to.uuidString, privacy: .public)")
         case .lock(let reason):
             // LockRules locks a running session for one of three reasons; name it for history.
             let end: SessionEnd = !hasAlways ? .lostAlways : (activePlace == nil ? .placeDeleted : .left)
@@ -343,7 +367,7 @@ final class AppModel: ObservableObject {
     }
 
     private func unlock(at place: Place) {
-        Log.app.info("Auto-unlock at \(place.name, privacy: .public)")
+        Log.app.notice("Auto-unlock at \(place.name, privacy: .public)")
         ShieldManager.unlock()
         let started = UnlockSession(placeID: place.id, startedAt: .now)
         session = started
@@ -367,25 +391,19 @@ final class AppModel: ObservableObject {
         guard access != screenTimeAccess else { return }
         if access == .turnedOff {
             Log.app.error("Screen Time access was turned off")
-            notify("Screen Time access is off, so Spots can't block apps. Open Spots to turn it back on.")
+            notify("Screen Time access is off, so Spots can't block apps. Open Spots to turn it back on.",
+                   id: Self.screenTimeNoticeID)
         } else {
+            UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: [Self.screenTimeNoticeID])
             Log.app.info("Screen Time access: \(access.rawValue, privacy: .public)")
         }
         screenTimeAccess = access
     }
 
-    /// "Lock until I leave": lock now, and don't auto-unlock here again until you've left.
-    func lockUntilLeave() {
-        guard let place = activePlace else { return }
-        pausedPlaceIDs.insert(place.id)
-        lockNow(reason: nil, end: .lockUntilLeave)
-        message = "Locked until you leave \(place.name)."
-    }
-
     /// `end` is recorded in the synced history if a session was running.
     func lockNow(reason: String?, end: SessionEnd = .manual) {
         let wasUnlocked = session != nil
-        Log.app.info("Lock (was unlocked: \(wasUnlocked)): \(reason ?? "manual", privacy: .public)")
+        Log.app.notice("Lock (was unlocked: \(wasUnlocked)): \(reason ?? "manual", privacy: .public)")
         ShieldManager.lock(blockList)
         if let session { SyncEngine.shared.sessionEnded(session, reason: end) }
         session = nil
@@ -520,12 +538,34 @@ final class AppModel: ObservableObject {
         Log.app.info("First-run setup finished")
     }
 
-    private func notify(_ text: String) {
+    /// Arrive and leave notices share one ID, so each replaces the last and at most one sits in
+    /// Notification Center.
+    private static let statusNoticeID = "status"
+    /// "Screen Time access is off" needs action, so it stays until access is back.
+    private static let screenTimeNoticeID = "screen-time-off"
+    /// How long arrive/leave and allowlist notices stay in Notification Center.
+    static let noticeLifetime: TimeInterval = 5 * 60
+
+    private func notify(_ text: String, id: String = AppModel.statusNoticeID) {
         let content = UNMutableNotificationContent()
         content.title = "Spots"
         content.body = text
-        let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil)
+        let request = UNNotificationRequest(identifier: id, content: content, trigger: nil)
         UNUserNotificationCenter.current().add(request)
+    }
+
+    /// Notices are temporary. iOS has no expiry date for notifications, so the app removes them
+    /// itself: all of them once the app is open, and ones older than `noticeLifetime` whenever
+    /// iOS wakes the app (every geofence event and every ~500 m move). The Screen Time warning stays.
+    func clearOldNotices(all: Bool = false) async {
+        let center = UNUserNotificationCenter.current()
+        let stale = await center.deliveredNotifications()
+            .filter { $0.request.identifier != Self.screenTimeNoticeID }
+            .filter { all || -$0.date.timeIntervalSinceNow > Self.noticeLifetime }
+            .map(\.request.identifier)
+        guard !stale.isEmpty else { return }
+        center.removeDeliveredNotifications(withIdentifiers: stale)
+        Log.app.info("Cleared \(stale.count) old notification(s)")
     }
 
     private func activationNoticeID(_ id: UUID, change: Bool) -> String {
