@@ -318,6 +318,7 @@ final class AppModel: ObservableObject {
     private func reconcileNow() async {
         await clearOldNotices() // before this pass sends its own
         await refreshScreenTimeAccess()
+        await refreshNotificationAccess()
         applyDueChanges()
         // Every states read follows a sync of the same list, and passes run one at a time, so syncs
         // never overlap. A sync with nothing to change is one read of the monitor's identifiers.
@@ -541,7 +542,25 @@ final class AppModel: ObservableObject {
     /// Asked during first-run setup, where the reason is on screen. True if allowed.
     @discardableResult
     func requestNotificationPermission() async -> Bool {
-        (try? await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound])) ?? false
+        let allowed = (try? await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound])) ?? false
+        await refreshNotificationAccess()
+        return allowed
+    }
+
+    /// Notifications were turned off in Settings. Blocking works without them, so only the Spots
+    /// tab and setup's notifications step mention it.
+    @Published private(set) var notificationsOff = false
+
+    func refreshNotificationAccess() async {
+        var status = await UNUserNotificationCenter.current().notificationSettings().authorizationStatus
+        #if DEBUG
+        // `-notificationsOff YES` pretends they're off, which `simctl privacy` can't set.
+        if UserDefaults.standard.bool(forKey: "notificationsOff") { status = .denied }
+        #endif
+        let off = PermissionRules.notificationsOff(status)
+        guard off != notificationsOff else { return }
+        Log.app.info("Notifications \(off ? "off" : "on", privacy: .public)")
+        notificationsOff = off
     }
 
     func finishOnboarding() {

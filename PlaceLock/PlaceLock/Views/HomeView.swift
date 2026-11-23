@@ -42,7 +42,7 @@ struct HomeView: View {
 
     private func layout(now: Date) -> some View {
         VStack(spacing: 0) {
-            if needsFix { FixBanner().padding(.horizontal, Theme.medium).padding(.top, Theme.small) }
+            if let problem { FixBanner(problem: problem).padding(.horizontal, Theme.medium).padding(.top, Theme.small) }
             Spacer(minLength: Theme.medium)
             BreathingLock(unlocked: unlocked)
             status(now: now)
@@ -55,7 +55,10 @@ struct HomeView: View {
         }
     }
 
-    private var needsFix: Bool { !location.canWatchPlaces || model.screenTimeAccess != .approved }
+    private var problem: PermissionRules.Problem? {
+        PermissionRules.problem(screenTime: model.screenTimeAccess, location: location.authorization,
+                                precise: location.isPrecise)
+    }
 
     // MARK: Status
 
@@ -234,16 +237,18 @@ private struct AppBubble<Icon: View>: View {
     }
 }
 
-/// One line when blocking can't work: a skipped setup step or access turned off in Settings.
+/// One line when places can't unlock apps: a skipped setup step or access turned off in Settings.
+/// Apps stay blocked meanwhile. What it says and does comes from `PermissionRules`.
 struct FixBanner: View {
     @EnvironmentObject private var model: AppModel
     @EnvironmentObject private var location: LocationService
+    let problem: PermissionRules.Problem
 
     var body: some View {
         Button(action: fix) {
             HStack(spacing: Theme.small) {
                 Image(systemName: "exclamationmark.circle.fill").foregroundStyle(Theme.waiting)
-                Text(text).foregroundStyle(.primary)
+                Text(problem.text).foregroundStyle(.primary)
                 Spacer()
                 Text("Fix").fontWeight(.semibold)
             }
@@ -253,17 +258,12 @@ struct FixBanner: View {
             .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: Theme.radius))
         }
         .buttonStyle(.plain)
-    }
-
-    private var text: String {
-        if model.screenTimeAccess != .approved {
-            return model.screenTimeAccess == .turnedOff ? "Blocking is off" : "Screen Time access needed"
-        }
-        return location.hasAlways ? "Precise Location is off" : "Location isn't set to Always"
+        .accessibilityHint(problem.fix == .openSettings ? "Opens Settings" : "")
     }
 
     private func fix() {
-        if model.screenTimeAccess != .approved {
+        switch problem.fix {
+        case .askScreenTime:
             Task {
                 do {
                     try await ShieldManager.requestAuthorization()
@@ -272,9 +272,9 @@ struct FixBanner: View {
                 }
                 await model.reconcile()
             }
-        } else if location.authorization == .notDetermined {
+        case .askLocation:
             location.requestPermission()
-        } else {
+        case .openSettings:
             if let url = URL(string: UIApplication.openSettingsURLString) { UIApplication.shared.open(url) }
         }
     }

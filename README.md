@@ -70,6 +70,8 @@ PlaceLock/scripts/archive.sh --check    # archive without signing and check what
 | `-sheet add` | Open Add place |
 | `-onboardingStep apps` | Open first-run setup on a step (`location`, `screenTime`, `apps`, `places`, `notifications`) |
 | `-demoHistory YES` | Fill today with two sample visits, for screenshots |
+| `-preciseOff YES` | Read Precise Location as off, which `simctl privacy` can't set |
+| `-notificationsOff YES` | Read notifications as turned off in Settings, which `simctl privacy` can't set |
 
 Debug builds also have a **Debug** screen under Spots › Settings. Its **Pretend I'm at** list feeds fake inside and outside readings through the same logic the real geofences use, and **Skip 24 h wait** applies waiting changes at once. `-onboarded YES` is different: it sets the real saved setting.
 

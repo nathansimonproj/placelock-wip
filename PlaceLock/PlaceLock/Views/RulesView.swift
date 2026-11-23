@@ -15,7 +15,7 @@ struct RulesView: View {
                 if model.inSetupWindow { setupWindow }
                 blockedApps
                 places
-                if sync.isAvailable || Self.hasDebug { settings }
+                if sync.isAvailable || Self.hasDebug || model.notificationsOff { settings }
                 about
             }
             .calmList()
@@ -150,7 +150,18 @@ struct RulesView: View {
     // MARK: Settings
 
     private var settings: some View {
-        Section("Settings") {
+        Section {
+            if model.notificationsOff {
+                Button {
+                    if let url = URL(string: UIApplication.openSettingsURLString) { UIApplication.shared.open(url) }
+                } label: {
+                    LabeledContent {
+                        Text("Open Settings").foregroundStyle(.tint)
+                    } label: {
+                        Label("Notifications are off", systemImage: "bell.slash").foregroundStyle(.primary)
+                    }
+                }
+            }
             if sync.isAvailable {
                 NavigationLink { BackupView() } label: {
                     LabeledContent {
@@ -167,6 +178,12 @@ struct RulesView: View {
                 Label("Debug", systemImage: "ladybug")
             }
             #endif
+        } header: {
+            Text("Settings")
+        } footer: {
+            if model.notificationsOff {
+                Text("Spots can't tell you when apps unblock or lock. Apps still block and unblock as usual.")
+            }
         }
         .calmRows()
     }

@@ -33,7 +33,7 @@ final class LocationService: NSObject, ObservableObject, CLLocationManagerDelega
 
     override init() {
         authorization = manager.authorizationStatus
-        isPrecise = manager.accuracyAuthorization == .fullAccuracy
+        isPrecise = Self.readPrecise(manager)
         super.init()
         manager.delegate = self
         holdAlwaysSessionIfAllowed()
@@ -51,6 +51,14 @@ final class LocationService: NSObject, ObservableObject, CLLocationManagerDelega
                 Log.app.error("Location session limited: inUse=\(d.insufficientlyInUse) sessionRequired=\(d.serviceSessionRequired) alwaysDenied=\(d.alwaysAuthorizationDenied) fullAccuracyDenied=\(d.fullAccuracyDenied) denied=\(d.authorizationDenied)")
             }
         }
+    }
+
+    nonisolated private static func readPrecise(_ manager: CLLocationManager) -> Bool {
+        #if DEBUG
+        // `-preciseOff YES` pretends Precise Location is off, which `simctl privacy` can't set.
+        if UserDefaults.standard.bool(forKey: "preciseOff") { return false }
+        #endif
+        return manager.accuracyAuthorization == .fullAccuracy
     }
 
     var hasAlways: Bool { authorization == .authorizedAlways }
@@ -82,7 +90,7 @@ final class LocationService: NSObject, ObservableObject, CLLocationManagerDelega
 
     nonisolated func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         let status = manager.authorizationStatus
-        let precise = manager.accuracyAuthorization == .fullAccuracy
+        let precise = Self.readPrecise(manager)
         Task { @MainActor in
             let changed = status != self.authorization || precise != self.isPrecise
             self.authorization = status

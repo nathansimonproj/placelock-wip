@@ -24,7 +24,7 @@ iPhone app (SwiftUI, iOS 17+) that keeps chosen apps blocked everywhere except s
 
 - Decisions are pure functions with unit tests: `LockRules`, `PlaceRules`, `BlockRules` and `SyncRules`, under `PlaceLock/PlaceLock/Models` and `Sync`. `AppModel` only gathers their inputs and applies the results. Put new decision logic in a rules type and test it there, not in `AppModel` or views.
 - Logging: `Log.app` and `Log.sync` (subsystem `com.nsimon.PlaceLock`).
-- Debug launch arguments: `-tab rules`, `-sheet add`, `-onboardingStep <step>`, `-demoHistory YES`, and `-onboarded YES` to skip first-run setup. `-scenario <name>` starts scenario mode (`App/Scenario.swift`): a separate settings store and no backup, used by `/geofence-scenario`.
+- Debug launch arguments: `-tab rules`, `-sheet add`, `-onboardingStep <step>`, `-demoHistory YES`, `-preciseOff YES` and `-notificationsOff YES` (permissions `simctl privacy` can't set), and `-onboarded YES` to skip first-run setup. `-scenario <name>` starts scenario mode (`App/Scenario.swift`): a separate settings store and no backup, used by `/geofence-scenario`.
 
 ## Checking a change
 

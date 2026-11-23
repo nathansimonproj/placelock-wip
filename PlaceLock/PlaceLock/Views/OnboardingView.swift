@@ -106,6 +106,9 @@ struct OnboardingView: View {
             } else if location.authorization == .authorizedWhenInUse {
                 Text("Location is set to While Using. Choose **Always** in Settings › Spots › Location.")
                     .font(.footnote).foregroundStyle(.secondary).multilineTextAlignment(.center)
+            } else if location.authorization != .notDetermined {
+                Text("Location access is off. Choose **Always** in Settings › Spots › Location.")
+                    .font(.footnote).foregroundStyle(.secondary).multilineTextAlignment(.center)
             }
         } actions: {
             if location.canWatchPlaces {
@@ -213,12 +216,22 @@ struct OnboardingView: View {
         StepPage(symbol: "bell.badge.fill",
                  title: "Know when apps lock",
                  text: "Get a heads-up when you arrive and apps unblock, when you leave and they lock again, and when a new place starts working.") {
-            EmptyView()
+            if model.notificationsOff {
+                Text("Notifications are off. Turn them on in Settings › Spots › Notifications.")
+                    .font(.footnote).foregroundStyle(.secondary).multilineTextAlignment(.center)
+            }
         } actions: {
-            PrimaryButton("Turn on notifications") {
-                Task {
-                    await model.requestNotificationPermission()
-                    next()
+            if model.notificationsOff {
+                // iOS won't ask again once they're turned off.
+                PrimaryButton("Open Settings") {
+                    if let url = URL(string: UIApplication.openSettingsURLString) { UIApplication.shared.open(url) }
+                }
+            } else {
+                PrimaryButton("Turn on notifications") {
+                    Task {
+                        await model.requestNotificationPermission()
+                        next()
+                    }
                 }
             }
             SkipButton(title: "Not now", action: next)

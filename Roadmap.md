@@ -128,6 +128,13 @@ All of this is written and compiles in the paid build (`CODE_SIGNING_ALLOWED=NO`
   - First-run setup: the buttons stop growing at the second accessibility size, so the explanation keeps most of the screen. The scroll bar flashes when a step opens, to show there's more text below.
   - Add place: the "go to my location" arrow no longer spills out of its circle.
   - Not checked on the iPhone, and not checked: the block screen, the Backup and Debug screens, the 24-hour info sheet, and Home while unlocked.
+- [x] **Recovery when permissions are denied (2026-11-23).** Checked in the Simulator (free build) with `xcrun simctl privacy`: location never asked, denied, While Using only, and Always, standing inside a saved place. With Always it unlocked; denied and Precise off showed Locked. In the never-asked and While Using shots iOS's own location prompt covers the lock, and `LockRules` keeps apps locked without Always (tested).
+  - Home's banner now names the problem: "Location access needed" (never asked; Fix shows iOS's prompt), "Location access is off" (denied; Fix opens Settings), "Location isn't set to Always" and "Precise Location is off" (Fix opens Settings). Before, denied and never asked both said "Location isn't set to Always". The wording and the button's action come from `PermissionRules`, tested in `PermissionRulesTests`.
+  - First-run setup's location step says "Location access is off" when it was denied, next to its Open Settings button. Before, it showed only the button.
+  - Notifications turned off in Settings: the Spots tab shows "Notifications are off" under Settings, with Open Settings, and setup's notifications step shows Open Settings instead of a button that did nothing. Blocking doesn't need them, so Home doesn't nag. "Not now" during setup isn't flagged.
+  - `simctl privacy` can't turn off Precise Location or notifications, so those two were checked with new Debug launch arguments, `-preciseOff YES` and `-notificationsOff YES`, which make the app read them as off.
+  - Screen Time access denied (paid build only) was checked by reading the code, not run: `refreshScreenTimeAccess` notices on every reconcile, sends "Screen Time access is off…", and Home's banner says "Blocking is off" with Fix asking for access again. iOS removes every block when access is turned off, so apps can't stay blocked then; the warning is all Spots can do.
+  - Not checked on the iPhone: that Fix and Open Settings land on Spots' page in Settings, real Precise Location and notification switches, and that asking for Screen Time again after turning it off shows Apple's prompt.
 - [ ] Rewrite Plan.md to match the automatic-unlock design. It still describes tap-and-scan.
 
 ### Backend: Supabase sync (started 2026-11-11)

@@ -21,6 +21,7 @@
 		470E9AB205C5B4249FA8074D /* Storage.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC2205ACC9F22D561AD5A326 /* Storage.swift */; };
 		512408B8CB61E58B9C00A8D7 /* BackupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1447AA6F99DAA8460135F25D /* BackupView.swift */; };
 		57FA6591067C1823DFAD7E29 /* SharedStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A0EC14E6AAEC6D1B2FFE5FA /* SharedStore.swift */; };
+		5B1F1F193149268B33D1580D /* PermissionRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01A3A522B467A14626E0CCF3 /* PermissionRules.swift */; };
 		5C41A912A70BB6409E7BE0CB /* LockRulesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95AFE7CF7EC4F0FF88828540 /* LockRulesTests.swift */; };
 		605A21D2D74E88DF0C3EAF00 /* DefaultPlaces.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8ACE3FF9981C077600B49CB /* DefaultPlaces.swift */; };
 		7243B324929393ED3ABBAADC /* BlockList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54519AA1DD4CAF17DF32BF3B /* BlockList.swift */; };
@@ -32,6 +33,7 @@
 		A7E918B024542DA7E905CDE6 /* Log.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1A758279946CD369E3E785D /* Log.swift */; };
 		A99140E7BA3244546725BE50 /* LocationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BB4FF5F9AC07525CD9DB78A /* LocationService.swift */; };
 		ABB57E998D3642FF343F184E /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 66C4D3934EB0622241E048E9 /* PrivacyInfo.xcprivacy */; };
+		ABCED47A3AAD75F2D0C479B3 /* PermissionRulesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDECA7D442F8F28BBA5DDA38 /* PermissionRulesTests.swift */; };
 		B5E10F455E1D80A4E460152F /* Scenario.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE408562C2FAB86FCA99E90B /* Scenario.swift */; };
 		B9F91CB9ACC3BC0BA4ADC886 /* SimulatedBlockingViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DD0D67532EF61C7B10B8B1C /* SimulatedBlockingViews.swift */; };
 		C94FFF64641E41B3A2806058 /* SavedData.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF53E2F264303957289C9D30 /* SavedData.swift */; };
@@ -63,6 +65,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		01A3A522B467A14626E0CCF3 /* PermissionRules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionRules.swift; sourceTree = "<group>"; };
 		02D01B76D7B72477A1CB4908 /* SyncEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncEngineTests.swift; sourceTree = "<group>"; };
 		0C01BC85CE6073FBB12EC3EF /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		0D35BF2AAE8A8F45C1BDDC8A /* AboutRulesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutRulesTests.swift; sourceTree = "<group>"; };
@@ -104,6 +107,7 @@
 		BEF0A66881420B56B9639C1F /* PlaceLockTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = PlaceLockTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C3BBFAE4F3564799986DC02F /* Brand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Brand.swift; sourceTree = "<group>"; };
 		CC2205ACC9F22D561AD5A326 /* Storage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Storage.swift; sourceTree = "<group>"; };
+		DDECA7D442F8F28BBA5DDA38 /* PermissionRulesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionRulesTests.swift; sourceTree = "<group>"; };
 		E1779E7DF2B48787081442EA /* GeofenceMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeofenceMonitor.swift; sourceTree = "<group>"; };
 		EF53E2F264303957289C9D30 /* SavedData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedData.swift; sourceTree = "<group>"; };
 		F59A484B78A348C5262E7870 /* PlaceLockApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaceLockApp.swift; sourceTree = "<group>"; };
@@ -160,6 +164,7 @@
 				BCC930178BC75876BA07D368 /* EstimateTests.swift */,
 				23D9164E8462A6B598013E6F /* GeofenceKeysTests.swift */,
 				95AFE7CF7EC4F0FF88828540 /* LockRulesTests.swift */,
+				DDECA7D442F8F28BBA5DDA38 /* PermissionRulesTests.swift */,
 				3EE8AB985B0354D54E5DE322 /* SavedDataTests.swift */,
 				02D01B76D7B72477A1CB4908 /* SyncEngineTests.swift */,
 				AF41772D465AFA76B4DD0F62 /* SyncRulesTests.swift */,
@@ -181,6 +186,7 @@
 			children = (
 				9FCB932DA3017B792A8C6FA8 /* AboutRules.swift */,
 				B8ACE3FF9981C077600B49CB /* DefaultPlaces.swift */,
+				01A3A522B467A14626E0CCF3 /* PermissionRules.swift */,
 				6E62CA27720DE486B022456D /* Place.swift */,
 				5AE15B9E6666283175C24DE0 /* Rules.swift */,
 				EF53E2F264303957289C9D30 /* SavedData.swift */,
@@ -369,6 +375,7 @@
 				A99140E7BA3244546725BE50 /* LocationService.swift in Sources */,
 				A7E918B024542DA7E905CDE6 /* Log.swift in Sources */,
 				750ED36252F11E4A39ABE15D /* OnboardingView.swift in Sources */,
+				5B1F1F193149268B33D1580D /* PermissionRules.swift in Sources */,
 				DFCDB9F40228EBA722EC36AF /* Place.swift in Sources */,
 				1FF550F0C17DC28A7D1CD4D9 /* PlaceLockApp.swift in Sources */,
 				30C4CE2396B31968E925BB68 /* PlaceSearch.swift in Sources */,
@@ -399,6 +406,7 @@
 				F21F0EA4391EA426DAE4BC5B /* EstimateTests.swift in Sources */,
 				0F554471DD25FFB93BCD67B0 /* GeofenceKeysTests.swift in Sources */,
 				5C41A912A70BB6409E7BE0CB /* LockRulesTests.swift in Sources */,
+				ABCED47A3AAD75F2D0C479B3 /* PermissionRulesTests.swift in Sources */,
 				81C0A6D6F2C077A9BC9AA710 /* SavedDataTests.swift in Sources */,
 				443AFBC3553E2DA5961B5B35 /* SyncEngineTests.swift in Sources */,
 				D903CB3682F9B462AF4763B9 /* SyncRulesTests.swift in Sources */,
