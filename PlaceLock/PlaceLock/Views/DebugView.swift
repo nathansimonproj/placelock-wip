@@ -58,9 +58,12 @@ struct DebugView: View {
             HStack {
                 Label(title, systemImage: symbol).foregroundStyle(.primary)
                 Spacer()
-                if model.simulatedSpot == spot { Image(systemName: "checkmark").foregroundStyle(.tint) }
+                if model.simulatedSpot == spot {
+                    Image(systemName: "checkmark").foregroundStyle(.tint).accessibilityHidden(true)
+                }
             }
         }
+        .accessibilityAddTraits(model.simulatedSpot == spot ? .isSelected : [])
     }
 
     // MARK: Test mode (simulated blocking, free build)

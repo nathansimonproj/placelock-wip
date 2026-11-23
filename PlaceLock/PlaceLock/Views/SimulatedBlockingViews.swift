@@ -21,8 +21,10 @@ struct SimulatedAppPicker: View {
                                 Spacer()
                                 Image(systemName: picked.contains(app.name) ? "checkmark.circle.fill" : "circle")
                                     .foregroundStyle(picked.contains(app.name) ? Color.accentColor : .secondary)
+                                    .accessibilityHidden(true)
                             }
                         }
+                        .accessibilityAddTraits(picked.contains(app.name) ? .isSelected : [])
                     }
                 } footer: {
                     Text("Stand-in list. With the paid developer account this becomes Apple's Screen Time picker showing your real apps.")
@@ -55,9 +57,12 @@ struct MockShieldView: View {
     var body: some View {
         VStack(spacing: 20) {
             Spacer()
+            // Pictures of the app and a lock; the title below says both.
             Image(systemName: SimulatedApps.symbol(for: appName))
                 .font(.system(size: 56)).foregroundStyle(.secondary)
+                .accessibilityHidden(true)
             Image(systemName: "lock.fill").font(.title).foregroundStyle(.tint)
+                .accessibilityHidden(true)
             Text("\(appName) is locked").font(.title2.bold())
             Text(Brand.shieldSubtitle(estimate: SharedStore.estimate,
                                       places: model.places.filter { $0.isActive() }.map(\.name)))

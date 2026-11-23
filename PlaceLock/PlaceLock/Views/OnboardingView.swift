@@ -60,6 +60,7 @@ struct OnboardingView: View {
                 .labelStyle(.iconOnly)
                 .opacity(index > 0 ? 1 : 0)
                 .disabled(index == 0)
+                .accessibilityHidden(index == 0)
             Spacer()
             HStack(spacing: 6) {
                 ForEach(steps.indices, id: \.self) { i in
@@ -72,6 +73,7 @@ struct OnboardingView: View {
             .accessibilityLabel("Step \(index + 1) of \(steps.count)")
             Spacer()
             Image(systemName: "chevron.left").opacity(0) // balances the back button
+                .accessibilityHidden(true)
         }
         .font(.title3.weight(.semibold))
         .padding()
@@ -184,7 +186,8 @@ struct OnboardingView: View {
             VStack(spacing: 8) {
                 ForEach(model.places) { place in
                     PlaceLine(symbol: place.symbol, name: place.name,
-                              detail: place.address ?? "\(Int(place.radius)) m", isPlace: true) {
+                              detail: place.address ?? "\(Int(place.radius)) m",
+                              spokenDetail: place.address ?? SpokenRules.meters(place.radius), isPlace: true) {
                         placeSheet = .edit(place)
                     }
                 }
@@ -260,7 +263,9 @@ private struct StepPage<Extra: View, Actions: View>: View {
                         .frame(width: 96, height: 96)
                         .background(Circle().fill(.tint.opacity(0.12)))
                         .padding(.top, 24)
+                        .accessibilityHidden(true) // decoration; the title says what the step is
                     Text(title).font(.title.bold()).multilineTextAlignment(.center)
+                        .accessibilityAddTraits(.isHeader)
                     Text(text).font(.body).foregroundStyle(.secondary).multilineTextAlignment(.center)
                     extra
                 }
@@ -327,6 +332,8 @@ private struct PlaceLine: View {
     let symbol: String
     let name: String
     let detail: String
+    /// What VoiceOver reads for `detail`, when it differs ("150 meters" for "150 m").
+    var spokenDetail: String?
     /// A saved place (accent symbol) or a slot still waiting for a location (gray).
     let isPlace: Bool
     let action: () -> Void
@@ -338,12 +345,15 @@ private struct PlaceLine: View {
                     .font(.system(size: 17, weight: .medium))
                     .foregroundStyle(isPlace ? AnyShapeStyle(.tint) : AnyShapeStyle(.secondary))
                     .frame(width: 28)
+                    .accessibilityHidden(true)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(name).foregroundStyle(.primary)
                     Text(detail).font(.footnote).foregroundStyle(.secondary).lineLimit(1)
+                        .accessibilityLabel(spokenDetail ?? detail)
                 }
                 Spacer()
                 Image(systemName: "chevron.right").font(.footnote.weight(.semibold)).foregroundStyle(.tertiary)
+                    .accessibilityHidden(true)
             }
             .padding(12)
             .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: Theme.radius))

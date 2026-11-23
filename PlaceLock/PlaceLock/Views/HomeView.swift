@@ -44,7 +44,8 @@ struct HomeView: View {
         VStack(spacing: 0) {
             if let problem { FixBanner(problem: problem).padding(.horizontal, Theme.medium).padding(.top, Theme.small) }
             Spacer(minLength: Theme.medium)
-            BreathingLock(unlocked: unlocked)
+            BreathingLock(unlocked: unlocked,
+                          spoken: SpokenRules.lock(unlocked: unlocked, nothingBlocked: model.blockList.isEmpty))
             status(now: now)
                 .padding(.top, Theme.large)
             Spacer(minLength: Theme.medium)
@@ -68,11 +69,16 @@ struct HomeView: View {
             Text(unlocked ? "Unlocked" : "Locked")
                 .font(.system(size: 46, weight: .semibold, design: .rounded))
                 .contentTransition(.opacity)
+                .accessibilityAddTraits(.isHeader)
             Group {
                 if let place = model.activePlace, let session = model.session {
-                    Text("at \(place.name) for \(now.timeIntervalSince(session.visitStartedAt).hoursMinutes)")
+                    let time = now.timeIntervalSince(session.visitStartedAt)
+                    Text("at \(place.name) for \(time.hoursMinutes)")
+                        .accessibilityLabel("at \(place.name) for \(SpokenRules.duration(time))")
                 } else if let since = model.lockedSince {
-                    Text("for \(now.timeIntervalSince(since).hoursMinutes)")
+                    let time = now.timeIntervalSince(since)
+                    Text("for \(time.hoursMinutes)")
+                        .accessibilityLabel("for \(SpokenRules.duration(time))")
                 }
             }
             .font(.title3.monospacedDigit())
@@ -115,6 +121,9 @@ struct HomeView: View {
                         AppBubble { Label(token).labelStyle(.iconOnly) }
                     }
                 }
+                // Only the first six, as pictures. VoiceOver reads the count below; Spots lists
+                // every blocked app by name.
+                .accessibilityHidden(true)
                 Text(unlocked ? "\(model.blockedCount) apps open here" : "\(model.blockedCount) apps resting")
                     .font(.caption).foregroundStyle(.secondary)
             }
@@ -134,11 +143,13 @@ struct HomeView: View {
                             Image(systemName: place.symbol)
                                 .font(.system(size: 18, weight: .medium))
                                 .foregroundStyle(.primary)
+                                .accessibilityHidden(true)
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(place.name).font(.subheadline.weight(.semibold))
                                 Group {
                                     if !place.isActive(), let starts = place.activeAfter {
                                         Text("Starts in \(starts.shortTimeLeft)").foregroundStyle(Theme.waiting)
+                                            .accessibilityLabel("Starts in \(SpokenRules.timeLeft(until: starts))")
                                     } else if isHere {
                                         Text("You're here")
                                     } else {
@@ -162,6 +173,7 @@ struct HomeView: View {
                     Button { placeSheet = .fill(slot: slot) } label: {
                         VStack(alignment: .leading, spacing: 10) {
                             Image(systemName: Place.symbol(for: slot)).font(.system(size: 18, weight: .medium))
+                                .accessibilityHidden(true)
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(slot).font(.subheadline.weight(.semibold))
                                 Text("Set location").font(.caption).foregroundStyle(.secondary)
@@ -193,8 +205,10 @@ struct HomeView: View {
 // MARK: - Pieces
 
 /// The lock inside two soft rings that grow and shrink over 8 s: breathe in, breathe out.
+/// VoiceOver reads it as one picture that says whether apps are blocked (`spoken`).
 private struct BreathingLock: View {
     let unlocked: Bool
+    let spoken: String
     @State private var inhale = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.dynamicTypeSize) private var typeSize
@@ -221,7 +235,9 @@ private struct BreathingLock: View {
             guard !reduceMotion else { inhale = true; return }
             withAnimation(.easeInOut(duration: 4).repeatForever(autoreverses: true)) { inhale = true }
         }
-        .accessibilityHidden(true)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(spoken)
+        .accessibilityAddTraits(.isImage)
     }
 }
 
@@ -248,6 +264,7 @@ struct FixBanner: View {
         Button(action: fix) {
             HStack(spacing: Theme.small) {
                 Image(systemName: "exclamationmark.circle.fill").foregroundStyle(Theme.waiting)
+                    .accessibilityHidden(true)
                 Text(problem.text).foregroundStyle(.primary)
                 Spacer()
                 Text("Fix").fontWeight(.semibold)

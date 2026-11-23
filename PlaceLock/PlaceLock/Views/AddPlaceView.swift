@@ -89,6 +89,7 @@ struct AddPlaceView: View {
         VStack(alignment: .leading, spacing: 6) {
             HStack {
                 Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
+                    .accessibilityHidden(true)
                 TextField("Search for a place", text: $search.query)
                     .focused($searchFocused)
                     .submitLabel(.search)
@@ -157,6 +158,7 @@ struct AddPlaceView: View {
                 .font(.title).foregroundStyle(.tint)
                 .offset(y: -14)
                 .allowsHitTesting(false)
+                .accessibilityHidden(true) // marks the map's center; the map itself is what VoiceOver reads
         }
         .overlay(alignment: .bottomTrailing) {
             // Back to where you are. Not MapKit's MapUserLocationButton: it switches the camera to
@@ -203,9 +205,12 @@ struct AddPlaceView: View {
             Section {
                 VStack(alignment: .leading) {
                     Text("Radius: \(Int(radius)) m")
+                        .accessibilityHidden(true) // the slider reads it
                     Slider(value: $radius, in: 50...500, step: 25) { editing in
                         if editing { dismissKeyboard() }
                     }
+                    .accessibilityLabel("Radius")
+                    .accessibilityValue(SpokenRules.meters(radius))
                 }
             } footer: {
                 VStack(alignment: .leading, spacing: 6) {

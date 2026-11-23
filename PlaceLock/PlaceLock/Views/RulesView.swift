@@ -81,6 +81,7 @@ struct RulesView: View {
             layout {
                 Label("Setup · \(model.setupEndsAt.shortTimeLeft) left", systemImage: "hourglass")
                     .foregroundStyle(.secondary)
+                    .accessibilityLabel("Setup, \(SpokenRules.timeLeft(until: model.setupEndsAt)) left")
                 if !typeSize.isAccessibilitySize { Spacer() }
                 Button("Finish") { confirmFinish = true }
                     .confirmationDialog("Finish setup?", isPresented: $confirmFinish, titleVisibility: .visible) {
@@ -166,7 +167,7 @@ struct RulesView: View {
                             Text("Set location").font(.footnote).foregroundStyle(.secondary)
                         }
                         Spacer()
-                        Image(systemName: "chevron.right").font(.footnote.weight(.semibold)).foregroundStyle(.tertiary)
+                        Chevron()
                     }
                     .contentShape(Rectangle())
                 }
@@ -316,6 +317,8 @@ private struct PlaceRow: View {
                     Text([place.address, "\(Int(place.radius)) m"].compactMap { $0 }.joined(separator: " · "))
                         .font(.footnote).foregroundStyle(.secondary)
                         .lineLimit(typeSize.isAccessibilitySize ? 2 : 1)
+                        .accessibilityLabel([place.address, SpokenRules.meters(place.radius)].compactMap { $0 }
+                            .joined(separator: ", "))
                 }
                 if !typeSize.isAccessibilitySize { Spacer(minLength: 0) }
                 if let starts = place.activeAfter, !place.isActive() {
@@ -327,7 +330,7 @@ private struct PlaceRow: View {
                 }
             }
             Spacer(minLength: 0)
-            Image(systemName: "chevron.right").font(.footnote.weight(.semibold)).foregroundStyle(.tertiary)
+            Chevron()
         }
     }
 }
@@ -359,8 +362,8 @@ private struct BlockedRow<Content: View>: View {
     }
 }
 
-/// A 24 h wait. The only orange in the app.
-/// A 24 h wait in a row: a clock and the time left ("23 h"). VoiceOver reads the full phrase.
+/// A 24 h wait in a row: a clock and the time left ("23 h"). The only orange in the app.
+/// VoiceOver reads the full phrase in words ("Starts in 23 hours, 4 minutes").
 /// Plain views, not a `Label`: inside a List row iOS restyled the Label as a row label of its
 /// own, dropping the text and padding the row to about 2.5 times its height.
 private struct Countdown: View {
@@ -377,7 +380,7 @@ private struct Countdown: View {
         .foregroundStyle(Theme.waiting)
         .fixedSize()
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("\(meaning) \(until.shortTimeLeft)")
+        .accessibilityLabel("\(meaning) \(SpokenRules.timeLeft(until: until))")
     }
 }
 
@@ -390,5 +393,14 @@ private struct PlaceIcon: View {
             .font(.system(size: 17, weight: .medium))
             .foregroundStyle(.secondary)
             .frame(width: 28)
+            .accessibilityHidden(true) // the row's name says which place
+    }
+}
+
+/// The arrow on a row that opens something. VoiceOver already says it's a button.
+private struct Chevron: View {
+    var body: some View {
+        Image(systemName: "chevron.right").font(.footnote.weight(.semibold)).foregroundStyle(.tertiary)
+            .accessibilityHidden(true)
     }
 }

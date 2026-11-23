@@ -21,6 +21,7 @@
 		470E9AB205C5B4249FA8074D /* Storage.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC2205ACC9F22D561AD5A326 /* Storage.swift */; };
 		4CA77F9EA2BBA04921FE748D /* PlaceSearchRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F18F275B9964CBB2175AF14 /* PlaceSearchRules.swift */; };
 		512408B8CB61E58B9C00A8D7 /* BackupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1447AA6F99DAA8460135F25D /* BackupView.swift */; };
+		55AE9EEB3DACFE6A31FF4EC6 /* SpokenRulesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 715077721C039440761D2ABB /* SpokenRulesTests.swift */; };
 		57FA6591067C1823DFAD7E29 /* SharedStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A0EC14E6AAEC6D1B2FFE5FA /* SharedStore.swift */; };
 		5B1F1F193149268B33D1580D /* PermissionRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01A3A522B467A14626E0CCF3 /* PermissionRules.swift */; };
 		5C41A912A70BB6409E7BE0CB /* LockRulesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95AFE7CF7EC4F0FF88828540 /* LockRulesTests.swift */; };
@@ -51,6 +52,7 @@
 		EAA880B4DA66678CDC067A0C /* SyncEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CAF9493EEA45E820E20FF7B /* SyncEngine.swift */; };
 		EB6D13B6BDD7ABF35540D06C /* AboutRulesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D35BF2AAE8A8F45C1BDDC8A /* AboutRulesTests.swift */; };
 		F0238D7B9A2095779A604C9D /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53614D80BE59F5D4E4D38663 /* AppModel.swift */; };
+		F0B732381390DBCC9B1E3A06 /* SpokenRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25E88156CB9A4F3DCA6A7A99 /* SpokenRules.swift */; };
 		F21F0EA4391EA426DAE4BC5B /* EstimateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCC930178BC75876BA07D368 /* EstimateTests.swift */; };
 		F2F3125FB8A56C57CB3F32DA /* AddPlaceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F1DB436EEAF46816BC65503 /* AddPlaceView.swift */; };
 		FBA624F16708E33579F3913C /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 175FFEB0E1BA8C86CEAC7A82 /* Supabase */; };
@@ -79,6 +81,7 @@
 		23D9164E8462A6B598013E6F /* GeofenceKeysTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeofenceKeysTests.swift; sourceTree = "<group>"; };
 		23F319CF959190E250597B2B /* SyncRules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncRules.swift; sourceTree = "<group>"; };
 		24DA55A1FDD739A0BDE9E0DE /* ShieldManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldManager.swift; sourceTree = "<group>"; };
+		25E88156CB9A4F3DCA6A7A99 /* SpokenRules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpokenRules.swift; sourceTree = "<group>"; };
 		2F1DB436EEAF46816BC65503 /* AddPlaceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddPlaceView.swift; sourceTree = "<group>"; };
 		3136504583AA8525FE077B62 /* Visit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Visit.swift; sourceTree = "<group>"; };
 		3AA40BCF7520E01816FF0D4C /* DelayRulesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DelayRulesTests.swift; sourceTree = "<group>"; };
@@ -93,6 +96,7 @@
 		5F18F275B9964CBB2175AF14 /* PlaceSearchRules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaceSearchRules.swift; sourceTree = "<group>"; };
 		66C4D3934EB0622241E048E9 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		6E62CA27720DE486B022456D /* Place.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Place.swift; sourceTree = "<group>"; };
+		715077721C039440761D2ABB /* SpokenRulesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpokenRulesTests.swift; sourceTree = "<group>"; };
 		79A33188D87631FAFE8F0BB4 /* RulesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RulesView.swift; sourceTree = "<group>"; };
 		7CAF9493EEA45E820E20FF7B /* SyncEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncEngine.swift; sourceTree = "<group>"; };
 		84BCCF8FECCE10B619F2CF08 /* SyncBackend.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncBackend.swift; sourceTree = "<group>"; };
@@ -171,6 +175,7 @@
 				DDECA7D442F8F28BBA5DDA38 /* PermissionRulesTests.swift */,
 				DB733067CFB69085810F8572 /* PlaceSearchRulesTests.swift */,
 				3EE8AB985B0354D54E5DE322 /* SavedDataTests.swift */,
+				715077721C039440761D2ABB /* SpokenRulesTests.swift */,
 				02D01B76D7B72477A1CB4908 /* SyncEngineTests.swift */,
 				AF41772D465AFA76B4DD0F62 /* SyncRulesTests.swift */,
 			);
@@ -196,6 +201,7 @@
 				5F18F275B9964CBB2175AF14 /* PlaceSearchRules.swift */,
 				5AE15B9E6666283175C24DE0 /* Rules.swift */,
 				EF53E2F264303957289C9D30 /* SavedData.swift */,
+				25E88156CB9A4F3DCA6A7A99 /* SpokenRules.swift */,
 				3136504583AA8525FE077B62 /* Visit.swift */,
 			);
 			path = Models;
@@ -394,6 +400,7 @@
 				57FA6591067C1823DFAD7E29 /* SharedStore.swift in Sources */,
 				DED0AC8EAFD6B366E66DC39B /* ShieldManager.swift in Sources */,
 				B9F91CB9ACC3BC0BA4ADC886 /* SimulatedBlockingViews.swift in Sources */,
+				F0B732381390DBCC9B1E3A06 /* SpokenRules.swift in Sources */,
 				470E9AB205C5B4249FA8074D /* Storage.swift in Sources */,
 				452F6F94C0576382A5D6B892 /* SyncBackend.swift in Sources */,
 				EAA880B4DA66678CDC067A0C /* SyncEngine.swift in Sources */,
@@ -416,6 +423,7 @@
 				ABCED47A3AAD75F2D0C479B3 /* PermissionRulesTests.swift in Sources */,
 				E3F5AF7DE8E25551FBD85F42 /* PlaceSearchRulesTests.swift in Sources */,
 				81C0A6D6F2C077A9BC9AA710 /* SavedDataTests.swift in Sources */,
+				55AE9EEB3DACFE6A31FF4EC6 /* SpokenRulesTests.swift in Sources */,
 				443AFBC3553E2DA5961B5B35 /* SyncEngineTests.swift in Sources */,
 				D903CB3682F9B462AF4763B9 /* SyncRulesTests.swift in Sources */,
 			);
