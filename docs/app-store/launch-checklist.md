@@ -84,7 +84,7 @@ From Roadmap.md. Use the paid build, and keep Console on the Mac open (pick the 
 ### 6. Privacy policy, support page and links in the app
 
 - ~~**Finish the privacy policy.**~~ Done 2026-11-23: name, support email (`nsimon06@uw.edu`), Children section, Supabase facts, effective date November 23, 2026; draft banner and `noindex` removed.
-- ~~**Host it and a support page.**~~ Done 2026-11-23: public repo `nathansimonproj/cove` on GitHub Pages, holding only the two pages. Support: https://nathansimonproj.github.io/cove/. Privacy policy: https://nathansimonproj.github.io/cove/privacy/. Sources: `docs/support/index.html` and `docs/privacy/index.html`; copy them to that repo after any change.
+- ~~**Host it and a support page.**~~ Done 2026-11-23: public repo `nathansimonproj/cove` on GitHub Pages, holding only the two pages. Support: https://nathansimonproj.github.io/cove/. Privacy policy: https://nathansimonproj.github.io/cove/privacy/. Sources: `docs/support/index.html` and `docs/privacy/index.html`; copy them to that repo after any change. Updated 2026-11-23 to say Settings (was Coves), matching build 2.
 - ~~**Link them in the app.**~~ Done 2026-11-23: `Brand.swift` has both addresses and the support email, so Settings › About shows Privacy policy and Contact support (opens Mail).
 
 ### 7. Archive and upload
@@ -92,7 +92,7 @@ From Roadmap.md. Use the paid build, and keep Console on the Mac open (pick the 
 - ~~**Make the App Store signing (once).**~~ Done 2026-11-23: Apple Distribution certificate, and the profiles "Cove App Store" and "Cove Shield App Store". Family Controls (Distribution) had to be ticked in each App ID's Capabilities first ("Assigned" under requests isn't enough); before that, the profiles only carried Family Controls (Development).
 - ~~**Archive and export a signed build.**~~ Done 2026-11-23: 1.0.0 (1) from commit d48efed. Both the app and the Shield are signed with Apple Distribution and carry Family Controls.
 - **Check the privacy report:** Xcode › Window › Organizer › right-click the archive › Generate Privacy Report; it should list precise location, user ID, other user content and product interaction (linked, not tracking, app functionality) and `UserDefaults` with `CA92.1` and `1C8F.1`, as in `docs/app-store/data-inventory.md`.
-- ~~**Upload.**~~ Done 2026-11-23: 1.0.0 (1) uploaded with `xcodebuild -exportArchive` and a copy of `ExportOptions.plist` with `destination` set to `upload`, using Xcode's sign-in. Warning from App Store Connect: from April 2027, uploads need the iOS 27 SDK (Xcode 27).
+- ~~**Upload.**~~ Done 2026-11-23: 1.0.0 (1) uploaded with `xcodebuild -exportArchive` and a copy of `ExportOptions.plist` with `destination` set to `upload`, using Xcode's sign-in. Warning from App Store Connect: from April 2027, uploads need the iOS 27 SDK (Xcode 27). Then 1.0.0 (2) uploaded the same way (2026-11-23, commit 7bee4a4): the darker look and the Settings tab. Submit build 2, not 1.
 
 ### 8. TestFlight with friends
 
@@ -108,13 +108,13 @@ From Roadmap.md. Use the paid build, and keep Console on the Mac open (pick the 
 ### 10. Listing and screenshots
 
 - **Fill in and enter the listing:** fill in each `TODO(user)` in `docs/app-store/listing.md` (support URL, marketing URL or empty, copyright name), then App Information: name, subtitle, Productivity category, privacy policy URL; and on the 1.0 version page: promotional text, description, keywords, support URL. Re-run the length check at the end of `listing.md` after any edit.
-- **Pick and finish the screenshots:** read `.night/app-store-screens/README.md`, retake Home and Cove from the paid build on the iPhone so real app icons show (side button + volume up), then the 1.0 version page › Previews and Screenshots › iPhone 6.9" Display › drag in 3–10 shots, all 1320 × 2868.
+- **Pick and finish the screenshots:** read `.night/app-store-screens/README.md`, retake Home and Settings from the paid build on the iPhone so real app icons show (side button + volume up), then the 1.0 version page › Previews and Screenshots › iPhone 6.9" Display › drag in 3–10 shots, all 1320 × 2868.
 
 ### 11. Submit
 
 - **Keep Supabase awake:** just before submitting, open the Supabase dashboard › the project; if it says Paused, click Resume project (Free plan projects pause after 7 days of low activity, and Delete account then fails for the reviewer). Then check Settings › Backup on the iPhone says "Backed up".
 - **Fill in App Review Information:** 1.0 version page › App Review Information: untick sign-in required, add your name, phone and email, paste the notes from `docs/app-store/review-notes.md` (replace `Screen recording: TODO(user)`), and attach the video.
-- **Submit:** only once step 4 shows Family Controls (Distribution) on both App IDs: 1.0 version page › Build › pick the build, choose manual or automatic release, Add for Review, then Submit to App Review.
+- **Submit:** only once step 4 shows Family Controls (Distribution) on both App IDs: 1.0 version page › Build › pick build 2 (or later), choose manual or automatic release, Add for Review, then Submit to App Review.
 
 ## Not checked yet
 
