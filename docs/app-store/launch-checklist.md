@@ -78,7 +78,7 @@ From Roadmap.md. Use the paid build, and keep Console on the Mac open (pick the 
 
 ### 5. Supabase
 
-- **Rate-limit anonymous sign-ins:** Supabase dashboard › the project › Authentication › Rate Limits › anonymous sign-ins per hour. Supabase's default is 30 per IP address per hour; keep about 30 rather than 10, because friends on the same campus Wi-Fi share one address. Leave CAPTCHA off (the app doesn't send a token). Tick the Roadmap Backend item.
+- ~~**Rate-limit anonymous sign-ins.**~~ Checked 2026-11-23: Authentication › Rate Limits already allows 30 anonymous sign-ins an hour per IP address. Left as is, with CAPTCHA off.
 - **Check what Supabase keeps about each request:** Logs (API Gateway and Auth) and Project Settings › General (region): note whether IP addresses and user agents are kept and for how long, and add it to `docs/app-store/data-inventory.md` ("Not checked") and the privacy policy. Also Database › Backups: how long backups keep a deleted account.
 
 ### 6. Privacy policy, support page and links in the app
