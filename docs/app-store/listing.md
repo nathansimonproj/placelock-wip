@@ -88,7 +88,7 @@ focus,app blocker,block apps,distraction,location,geofence,study,library,gym,det
 
 | Field | Draft |
 | --- | --- |
-| Copyright | `TODO(user)`: "2026 <your name as on the App Store>" |
+| Copyright | 2026 Nathanael Simon |
 | Version | 1.0.0 (from `project.yml`) |
 | Screenshots | 6.9" iPhone shots. Drafts are a separate queue task ("Draft App Store screenshots"). Don't use free-build shots of the app picker or the simulated block screen ([review-audit.md](review-audit.md) › 2.3.3) |
 | App Review information | See [review-notes.md](review-notes.md) |

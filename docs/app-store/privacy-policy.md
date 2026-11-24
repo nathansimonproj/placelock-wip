@@ -2,7 +2,7 @@
 
 > **DRAFT, not published.** Written 2026-11-23 from [data-inventory.md](data-inventory.md) (checked against the code at commit 4a52129). Before hosting it:
 >
-> - Fill in every `TODO(user)`: the effective date, the contact email, who runs Cove, and the Children section.
+> - Fill in the effective date (the day it's hosted), the last `TODO(user)`. Name, email and the Children section were filled in 2026-11-23.
 > - The Supabase facts (region, 1-day logs, no backups) were checked 2026-11-23 for the **Free plan**. On Pro, logs are kept 7 days and backups 7 days: update "What we collect" and "How long we keep it" if you upgrade.
 > - It describes the app as it is today: **backup is on from first launch**, and setup's first step says so (decided 2026-11-23). If that ever changes (opt-in backup, or no `address`), update "Backup" and "What we collect" here and in `docs/privacy/index.html`.
 > - It's a plain-language draft, not legal advice. If you expect users in places with specific privacy laws (the EU, the UK, California), have it checked against those.
@@ -16,7 +16,7 @@ Effective date: TODO(user): the date you publish this.
 
 Cove blocks the apps you choose everywhere except at places you save. This page says what Cove keeps on your iPhone, what it sends off it, and how to delete it.
 
-Cove is made by TODO(user): your name or company, as it appears on the App Store.
+Cove is made by Nathanael Simon.
 
 ## The short version
 
@@ -84,7 +84,7 @@ Because the account is anonymous, we can't look it up by your name or email. Del
 
 ## Children
 
-TODO(user): decide what to say here. Cove doesn't ask anyone's age. If you rate Cove 4+ in App Store Connect or expect children to use it, have this section checked, because places and unlock history are location data.
+Cove isn't directed at children under 13, and we don't knowingly collect their data. If you think a child has used Cove, contact us and we'll delete the account.
 
 ## Changes to this policy
 
@@ -92,4 +92,4 @@ If what Cove collects changes, we'll update this page and its effective date bef
 
 ## Contact
 
-Questions or requests: TODO(user): your support email.
+Questions or requests: nsimon06@uw.edu

@@ -7,9 +7,9 @@
 | Field | Draft |
 | --- | --- |
 | Sign-in required | **No.** Cove has no login. Backup uses an anonymous account it makes on its own |
-| Contact first and last name | `TODO(user)` |
+| Contact first and last name | Nathanael Simon |
 | Contact phone | `TODO(user)` |
-| Contact email | `TODO(user)` |
+| Contact email | nsimon06@uw.edu |
 | Notes | The text below |
 | Attachment | The screen recording (script below). `TODO(user)`: record it, or upload it somewhere and put its link at the end of the notes |
 

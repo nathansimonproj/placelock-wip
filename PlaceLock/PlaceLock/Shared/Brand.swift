@@ -29,7 +29,7 @@ enum Brand {
     /// The support page (App Store Connect asks for one too).
     static let supportURL: String? = nil
     /// The support email.
-    static let supportEmail: String? = nil
+    static let supportEmail: String? = "nsimon06@uw.edu"
 
     /// The block screen's button.
     static let shieldButton = "Back to focus"
