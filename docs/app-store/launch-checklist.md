@@ -74,8 +74,7 @@ From Roadmap.md. Use the paid build, and keep Console on the Mac open (pick the 
 
 ### 4. Family Controls distribution entitlement
 
-- **Check both App IDs are approved:** developer.apple.com › Account › Certificates, Identifiers & Profiles › Identifiers › `com.nsimon.PlaceLock`, then `com.nsimon.PlaceLock.Shield`; each should list "Family Controls (Distribution)" under Capability Requests (requested 2026-11-19). Without it on both, the signed export and TestFlight fail.
-- **If the Shield's is missing:** file the request again for the Shield's bundle ID (Apple's forum replies point to developer.apple.com/contact/request/family-controls-distribution; one says approval is now per team, others say per bundle ID). If it stays "Submitted" for weeks, open a developer support request with team `R6W24T35J6`.
+- ~~**Check both App IDs are approved.**~~ Done 2026-11-23: Identifiers › `com.nsimon.PlaceLock` and `com.nsimon.PlaceLock.Shield` both show "Family Controls (Distribution)" as Assigned.
 
 ### 5. Supabase
 
@@ -122,5 +121,4 @@ From Roadmap.md. Use the paid build, and keep Console on the Mac open (pick the 
 - The `altool` commands come from `xcrun altool --help` (Xcode 26.1). They haven't been run against App Store Connect.
 - The privacy manifests (2026-11-23) are in the built app and Shield extension, but Xcode's privacy report and App Store Connect's checks haven't seen them yet.
 - The listing, App Privacy, age rating and review notes drafts (2026-11-23) haven't been entered in App Store Connect, and the review notes' steps haven't been tried on the iPhone.
-- Whether the Family Controls distribution request covers the Shield extension: Apple's forum replies disagree (per team or per bundle ID). Sources: [774455](https://developer.apple.com/forums/thread/774455), [824845](https://developer.apple.com/forums/thread/824845), [817620](https://developer.apple.com/forums/thread/817620), [809208](https://developer.apple.com/forums/thread/809208). The request form's address comes from those threads and wasn't opened tonight.
 - The App Store Connect and TestFlight click paths are from memory of Apple's current pages, not checked tonight; the Supabase rate limit default (30 per hour per IP) is from Supabase's docs ([anonymous sign-ins](https://supabase.com/docs/guides/auth/auth-anonymous)).

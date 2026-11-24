@@ -1,6 +1,6 @@
 # PlaceLock Roadmap
 
-Last updated: 2026-11-22. The full design is in [Plan.md](Plan.md). This file tracks the ship plan, what's built, temporary workarounds, and what's next.
+Last updated: 2026-11-23. The full design is in [Plan.md](Plan.md). This file tracks the ship plan, what's built, temporary workarounds, and what's next.
 
 ## Ship plan (written 2026-11-10)
 The critical path is Apple, not code. Real blocking needs the paid account, and the App Store needs Apple to approve a separate Family Controls **distribution** entitlement, which can take days to weeks. Request it first and do everything else while waiting.
@@ -40,7 +40,7 @@ Until the paid account, these can't be done: real shields, Apple's app picker, t
 
 ### Phase 0: Start Apple's clocks (about an hour)
 - [x] Join the Apple Developer Program ($99/yr) (done by 2026-11-19; team `R6W24T35J6` in `project-paid.yml`).
-- [x] Request the Family Controls distribution entitlement (submitted 2026-11-19). Apple reportedly approves per team, covering the app and both extensions. No confirmation email comes: check each App ID in Certificates, Identifiers & Profiles for "Family Controls (Distribution)". Waits of weeks are common.
+- [x] Request the Family Controls distribution entitlement (submitted 2026-11-19). Apple reportedly approves per team, covering the app and both extensions. No confirmation email comes: check each App ID in Certificates, Identifiers & Profiles for "Family Controls (Distribution)". Waits of weeks are common. **Approved (checked 2026-11-23):** Certificates, Identifiers & Profiles shows Family Controls (Distribution) as Assigned on both `com.nsimon.PlaceLock` and `com.nsimon.PlaceLock.Shield`, so TestFlight and the App Store can go ahead.
 - [ ] Check that the name "Spots" is available in App Store Connect (renamed from PlaceLock 2026-11-19).
 
 ### Phase 1: Real blocking (code done 2026-11-12, waiting on the paid team to test)
@@ -268,7 +268,7 @@ All the switching happens in `PlaceLock/PlaceLock/Blocking/ShieldManager.swift` 
 3. On the phone: Home › "Allow Screen Time access", then pick apps in Rules.
 4. To go back to the free build, run plain `xcodegen generate`. Commit the free project, not the paid one, until the paid team is the default.
 5. Delete the "Test mode" stand-ins if you like: `SimulatedBlockingViews.swift` and `SimulatedApps`. They're unused in the paid version.
-6. Before any App Store release, file Apple's separate Family Controls **distribution** request for the app **and both extensions**.
+6. ~~Before any App Store release, file Apple's separate Family Controls **distribution** request for the app **and both extensions**.~~ Filed 2026-11-19; Assigned on the app and the Shield (checked 2026-11-23).
 
 Both versions compile today. The paid version was checked with `xcodebuild -destination 'generic/platform=iOS' CODE_SIGNING_ALLOWED=NO`.
 
