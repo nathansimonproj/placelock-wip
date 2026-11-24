@@ -18,16 +18,16 @@ enum Brand {
 
     // MARK: About links (Coves tab › About)
 
-    // TODO(user): fill these in once the privacy policy and support page are hosted
-    // (docs/app-store/launch-checklist.md › Your steps). While one is nil, its row is hidden,
-    // so nothing made-up ships. Apple requires the privacy policy to be reachable in the app.
+    // Hosted on GitHub Pages (repo nathansimonproj/cove) since 2026-11-23; the pages' source is
+    // docs/privacy and docs/support. While one is nil, its row is hidden, so nothing made-up
+    // ships. Apple requires the privacy policy to be reachable in the app.
     // Each must be an https address; the email is a plain address like name@example.com.
     // "Contact support" opens the email if it's set, otherwise the support page.
 
     /// The hosted privacy policy, e.g. "https://…/privacy".
-    static let privacyPolicyURL: String? = nil
+    static let privacyPolicyURL: String? = "https://nathansimonproj.github.io/cove/privacy/"
     /// The support page (App Store Connect asks for one too).
-    static let supportURL: String? = nil
+    static let supportURL: String? = "https://nathansimonproj.github.io/cove/"
     /// The support email.
     static let supportEmail: String? = "nsimon06@uw.edu"
 

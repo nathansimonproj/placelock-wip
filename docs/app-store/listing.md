@@ -16,7 +16,7 @@ The wording follows the app's own: "blocked", "unblock", "your places", "Cove" f
 | Subtitle | 30 | Apps unblock where you choose | 29 |
 | Primary category | | Productivity | |
 | Secondary category | | None (optional; Lifestyle would also fit; your call) | |
-| Privacy Policy URL | | `TODO(user)`: the hosted `docs/privacy/index.html` | |
+| Privacy Policy URL | | https://nathansimonproj.github.io/cove/privacy/ | |
 | Content rights | | No, Cove doesn't contain, show or access third-party content | |
 | Age rating | | 4+ (answers in [age-rating.md](age-rating.md)) | |
 
@@ -81,8 +81,8 @@ focus,app blocker,block apps,distraction,location,geofence,study,library,gym,det
 
 | Field | Required | Draft |
 | --- | --- | --- |
-| Support URL | Yes | `TODO(user)`: the hosted support page (same as `Brand.supportURL`) |
-| Marketing URL | No | `TODO(user)`: leave empty unless you have a page for Cove |
+| Support URL | Yes | https://nathansimonproj.github.io/cove/ (same as `Brand.supportURL`) |
+| Marketing URL | No | Leave empty |
 
 ### Other version fields
 

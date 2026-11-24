@@ -1,18 +1,17 @@
-# DRAFT: Cove privacy policy
+# Cove privacy policy (source)
 
-> **DRAFT, not published.** Written 2026-11-23 from [data-inventory.md](data-inventory.md) (checked against the code at commit 4a52129). Before hosting it:
+> **Published 2026-11-23** at https://nathansimonproj.github.io/cove/privacy/ (repo `nathansimonproj/cove`, GitHub Pages). Written from [data-inventory.md](data-inventory.md) (checked against the code at commit 4a52129).
 >
-> - Fill in the effective date (the day it's hosted), the last `TODO(user)`. Name, email and the Children section were filled in 2026-11-23.
-> - The Supabase facts (region, 1-day logs, no backups) were checked 2026-11-23 for the **Free plan**. On Pro, logs are kept 7 days and backups 7 days: update "What we collect" and "How long we keep it" if you upgrade.
-> - It describes the app as it is today: **backup is on from first launch**, and setup's first step says so (decided 2026-11-23). If that ever changes (opt-in backup, or no `address`), update "Backup" and "What we collect" here and in `docs/privacy/index.html`.
-> - It's a plain-language draft, not legal advice. If you expect users in places with specific privacy laws (the EU, the UK, California), have it checked against those.
-> - The same text is in [`docs/privacy/index.html`](../privacy/index.html), ready to host. Keep the two in step.
+> - The Supabase facts (region, 1-day logs, no backups) were checked 2026-11-23 for the **Free plan**. On Pro, logs are kept 7 days and backups 7 days: update "Backup" and "How long we keep it" if you upgrade.
+> - It describes the app as it is today: **backup is on from first launch**, and setup's first step says so (decided 2026-11-23). If that ever changes (opt-in backup, or no `address`), update "Backup" and "What we collect".
+> - It's plain language, not legal advice. If you expect users in places with specific privacy laws (the EU, the UK, California), have it checked against those.
+> - The same text is in [`docs/privacy/index.html`](../privacy/index.html). After any change, update both, change the effective date, and copy the HTML to the `cove` repo's `privacy/index.html`.
 
 ---
 
 # Cove privacy policy
 
-Effective date: TODO(user): the date you publish this.
+Effective date: November 23, 2026
 
 Cove blocks the apps you choose everywhere except at places you save. This page says what Cove keeps on your iPhone, what it sends off it, and how to delete it.
 

@@ -83,9 +83,9 @@ From Roadmap.md. Use the paid build, and keep Console on the Mac open (pick the 
 
 ### 6. Privacy policy, support page and links in the app
 
-- **Finish the privacy policy:** in `docs/app-store/privacy-policy.md` fill in each `TODO(user)` (effective date, your name as on the App Store, Supabase region, log and backup retention, the Children section, support email), delete the DRAFT note, then rebuild `docs/privacy/index.html` from it (same text; also delete its DRAFT banner and the `noindex` line). Change the Backup section first if backup becomes opt-in.
-- **Host it and a support page:** put `docs/privacy/index.html` and a support page at any `https` address (copy the one file to its own GitHub Pages repo or host; don't publish the whole `docs/` folder, which would also publish the drafts and review notes), and pick a support email.
-- **Link them in the app:** fill in `privacyPolicyURL`, `supportURL` and `supportEmail` in `PlaceLock/PlaceLock/Shared/Brand.swift` (each marked `TODO(user)`; leave one `nil` to hide its row), run `PlaceLock/scripts/verify.sh --release --screens`, and commit. Apple requires the privacy policy link in the app.
+- ~~**Finish the privacy policy.**~~ Done 2026-11-23: name, support email (`nsimon06@uw.edu`), Children section, Supabase facts, effective date November 23, 2026; draft banner and `noindex` removed.
+- ~~**Host it and a support page.**~~ Done 2026-11-23: public repo `nathansimonproj/cove` on GitHub Pages, holding only the two pages. Support: https://nathansimonproj.github.io/cove/. Privacy policy: https://nathansimonproj.github.io/cove/privacy/. Sources: `docs/support/index.html` and `docs/privacy/index.html`; copy them to that repo after any change.
+- ~~**Link them in the app.**~~ Done 2026-11-23: `Brand.swift` has both addresses and the support email, so Coves › About shows Privacy policy and Contact support (opens Mail).
 
 ### 7. Archive and upload
 

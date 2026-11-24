@@ -4,7 +4,7 @@
 
 ## Before you start
 
-- **Privacy Policy URL:** `TODO(user)`: the hosted `docs/privacy/index.html` (same address as `Brand.privacyPolicyURL`). Required.
+- **Privacy Policy URL:** https://nathansimonproj.github.io/cove/privacy/ (same address as `Brand.privacyPolicyURL`). Required.
 - **User Privacy Choices URL:** leave empty (optional). Cove's choices are in the app: Coves › Backup › Delete account.
 
 ## Step 1: Data collection
