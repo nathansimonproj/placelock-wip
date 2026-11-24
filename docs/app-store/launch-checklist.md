@@ -38,7 +38,7 @@ Some of these change setup's wording, the privacy policy and the listing, so ans
 - ~~**Backup on by default?**~~ Decided 2026-11-23: it stays on, and setup's first step now says so.
 - ~~**Setup's "Your location stays on this phone."**~~ Replaced 2026-11-23 with a sentence about backup and where to delete it.
 - **Unreadable Screen Time app list:** show a one-time "Choose them again" message on Home (recommended), or leave it. ("No crashes from bad saved data")
-- **Simulator demo data in the live Supabase project:** delete that account with Coves › Backup › Delete account in the "iPhone 17 Pro Max" Simulator (recommended). ("Draft App Store screenshots")
+- ~~**Simulator demo data in the live Supabase project.**~~ Done 2026-11-23: the eight development accounts (Simulators, scenario runs, the screenshot demo) were deleted with their places and sessions. Two accounts are left, `09565a92…` and `d983f618…`; one of them is probably the iPhone.
 
 ### 1. Build the paid app to the iPhone
 
