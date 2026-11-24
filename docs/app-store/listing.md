@@ -12,7 +12,7 @@ The wording follows the app's own: "blocked", "unblock", "your places", "Cove" f
 
 | Field | Limit | Draft | Length |
 | --- | --- | --- | --- |
-| Name | 30 | Cove | 4 |
+| Name | 30 | Cove: Block Apps by Location | 28 |
 | Subtitle | 30 | Apps unblock where you choose | 29 |
 | Primary category | | Productivity | |
 | Secondary category | | None (optional; Lifestyle would also fit; your call) | |
@@ -22,7 +22,7 @@ The wording follows the app's own: "blocked", "unblock", "your places", "Cove" f
 
 The subtitle is first-run setup's first heading.
 
-**If "Cove" is taken** (Roadmap Phase 0: not checked yet), App Store Connect will say so when you create the app record. The App Store name can differ from the home screen name (`CFBundleDisplayName` stays Cove). Pick one yourself; ideas that fit in 30 characters and keep the home screen name: "Cove: Focus by Place" (20), "Cove: Apps Unblock by Place" (27), "Cove – Place-Based Focus" (24). `TODO(user)` if needed.
+**App Store name (2026-11-23):** the app record is "Cove: Block Apps by Location". The home screen name (`CFBundleDisplayName`) stays Cove.
 
 ## Version 1.0 page
 

@@ -70,7 +70,7 @@ From Roadmap.md. Use the paid build, and keep Console on the Mac open (pick the 
 
 ### 3. App Store Connect app record
 
-- **Check the name and create the app:** App Store Connect › Apps › + › New App: iOS, name "Cove", your primary language, bundle ID `com.nsimon.PlaceLock`, any SKU (e.g. `cove-ios`), Full Access. If "Cove" is taken it says so here; pick a fallback from `docs/app-store/listing.md` (the home screen name stays Cove). Tick Roadmap Phase 0's name item.
+- ~~**Check the name and create the app.**~~ Done 2026-11-23: the record is "Cove: Block Apps by Location", bundle ID `com.nsimon.PlaceLock`. Steps used: App Store Connect › Apps › + › New App: iOS, name "Cove", your primary language, bundle ID `com.nsimon.PlaceLock`, any SKU (e.g. `cove-ios`), Full Access. If "Cove" is taken it says so here; pick a fallback from `docs/app-store/listing.md` (the home screen name stays Cove). Tick Roadmap Phase 0's name item.
 
 ### 4. Family Controls distribution entitlement
 

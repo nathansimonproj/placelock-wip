@@ -49,7 +49,7 @@ The biggest risk is backup. It starts on first launch and sends each place's exa
 The listing, screenshots and App Privacy answers aren't written yet (later tasks in the queue). For those tasks:
 
 - **2.3.3 Screenshots** must show the app in use. **Don't use free-build shots of the app picker**: they show the stand-in list ("Stand-in list. With the paid developer account…") and other companies' app names (Instagram, TikTok…). 2.3.7 rules out "popular app names" used to game search. The real picker needs the paid build on a device.
-- **2.3.7 Name and keywords:** the name must be unique and 30 characters or fewer. "Cove" isn't checked in App Store Connect yet (Roadmap Phase 0). No competitor names (e.g. Opal) in keywords or subtitle.
+- **2.3.7 Name and keywords:** the name must be unique and 30 characters or fewer. The app record is "Cove: Block Apps by Location" (28 characters), created 2026-11-23. No competitor names (e.g. Opal) in keywords or subtitle.
 - **2.3.8:** keep the metadata 4+.
 - **2.3.10:** no other platforms in the metadata.
 - **Privacy information:** the App Privacy answers must match the manifests and [data-inventory.md](data-inventory.md): precise location, user ID, other user content, product interaction.

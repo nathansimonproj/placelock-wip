@@ -41,7 +41,7 @@ Until the paid account, these can't be done: real shields, Apple's app picker, t
 ### Phase 0: Start Apple's clocks (about an hour)
 - [x] Join the Apple Developer Program ($99/yr) (done by 2026-11-19; team `R6W24T35J6` in `project-paid.yml`).
 - [x] Request the Family Controls distribution entitlement (submitted 2026-11-19). Apple reportedly approves per team, covering the app and both extensions. No confirmation email comes: check each App ID in Certificates, Identifiers & Profiles for "Family Controls (Distribution)". Waits of weeks are common. **Approved (checked 2026-11-23):** Certificates, Identifiers & Profiles shows Family Controls (Distribution) as Assigned on both `com.nsimon.PlaceLock` and `com.nsimon.PlaceLock.Shield`, so TestFlight and the App Store can go ahead.
-- [ ] Check that the name "Cove" is available in App Store Connect (renamed from Spots 2026-11-23, and from PlaceLock before that).
+- [x] Check that the name "Cove" is available in App Store Connect (renamed from Spots 2026-11-23, and from PlaceLock before that). Done 2026-11-23: the app record is "Cove: Block Apps by Location" (28 characters). The home screen name stays Cove.
 
 ### Phase 1: Real blocking (code done 2026-11-12, waiting on the paid team to test)
 All of this is written and compiles in the paid build (`CODE_SIGNING_ALLOWED=NO`). None of it has run on a phone yet.
