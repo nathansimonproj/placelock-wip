@@ -62,6 +62,14 @@ PlaceLock/scripts/archive.sh --check    # archive without signing and check what
 
 `--check` makes sure the archive is an app archive with the Shield extension inside, that both have the version and build from `project.yml`, and that both declare the encryption exemption.
 
+**Upload.** `upload.sh` sends the archive for `project.yml`'s version and build to App Store Connect, signed the same way, using Xcode's sign-in. It only uploads: adding the build to a TestFlight group and submitting for review happen in App Store Connect.
+
+```sh
+PlaceLock/scripts/upload.sh
+```
+
+In Claude Code, `/release` runs all of it: checks the change (`verify.sh --release`), raises the build number, archives, uploads, logs the build in `docs/app-store/builds.md` and pushes. `/release 1.0.1` starts a new version.
+
 **Debug launch arguments** (Debug builds):
 
 | Argument | Effect |
@@ -132,7 +140,7 @@ PlaceLock/
   Extensions/
     Shield/                The block screen shown over a blocked app
   PlaceLockTests/          Unit tests
-  scripts/                 verify.sh, geofence-scenario.py (walks in scenarios/), bump-build.sh, archive.sh, night.sh (overnight task runner)
+  scripts/                 verify.sh, geofence-scenario.py (walks in scenarios/), bump-build.sh, archive.sh, upload.sh, night.sh (overnight task runner)
   supabase/
     migrations/            Schema, row-level security, newest-edit-wins trigger, account deletion, 50 m minimum radius
     local-check/           Migration checks against a local Postgres

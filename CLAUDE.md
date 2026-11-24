@@ -33,6 +33,7 @@ Run `/verify` (or `PlaceLock/scripts/verify.sh`) before calling a change done. I
 - The tests use Swift Testing. Read the "Test run with N tests" line. "Executed 0 tests" from xcodebuild is normal.
 - For geofencing, lock rules, places or launch changes, also run `/geofence-scenario` (`PlaceLock/scripts/geofence-scenario.py --all --build`). It walks the Simulator in and out of places and checks unlock and lock.
 - The Simulator can't show: the real Screen Time block screen, iOS relaunching the app after a force-quit, or real geofence exit timing (100–200 m, a few minutes). When a change touches those, end with a short on-iPhone test list instead of saying it works.
+- New TestFlight builds go up with `/release` (bump, archive, upload, log in `docs/app-store/builds.md`). Only run it when the user asks.
 - The Supabase MCP server points at the **live** project. Check migrations locally (`supabase/local-check/run.sh`) and ask before applying anything remotely.
 
 ## Docs and commits
