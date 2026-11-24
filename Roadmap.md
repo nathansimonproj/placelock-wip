@@ -1,14 +1,33 @@
 # PlaceLock Roadmap
 
-Last updated: 2026-11-23. The full design is in [Plan.md](Plan.md). This file tracks the ship plan, what's built, temporary workarounds, and what's next.
+Last updated: 2026-11-24. The full design is in [Plan.md](Plan.md). This file tracks the ship plan, what's built, temporary workarounds, and what's next.
+
+## Where things stand (2026-11-24)
+Apple's side is done: the paid team, Family Controls (Distribution) on the app and the Shield, the App Store record "Cove: Block Apps by Location", and 1.0.0 (2) uploaded (`docs/app-store/builds.md`). The privacy policy and support page are live and linked in About. What's left is mostly on the iPhone and in App Store Connect, and almost none of it is code. The step-by-step list is in `docs/app-store/launch-checklist.md` › Your steps.
+
+**Today, in order:**
+1. **Install build 2 on the iPhone through TestFlight** (Internal Testing doesn't wait for Beta App Review). Run the first checks: the block screen, arrive with Cove closed, leave, and places surviving the switch (Phase 1 and Phase 2 below).
+2. **Decide how to run the location engine test (found 2026-11-24).** Release and TestFlight builds run the new engine in shadow mode, so they track near places and use the battery, but they record no trace and have no Debug screen to export one (`Trace` and the Debug screen are `#if DEBUG`). The 2–3 day shadow test needs a Debug build from Xcode, and installing it replaces the TestFlight build (same bundle ID). Pick one per phone: TestFlight for the launch checks, or Xcode Debug for the trace. Also decide what testers and the App Store build get: shadow (extra battery, nothing learned), or the engine switched off in Release until it goes live.
+3. ~~**Two small fixes before the screenshots and the review video** (Known issues): "Blocking 1 apps" and `-sheet add` not opening Add place.~~ Done 2026-11-24: "1 app" is fixed, and `-sheet add` no longer fails. The fix is in the code but not in build 2, so the screenshots and the review video need the next build (`/release`), or pick two apps for them.
+4. **App Store Connect forms that don't need the iPhone:** App Privacy (`docs/app-store/app-privacy.md`), the age rating (`age-rating.md`), and the listing text (`listing.md`). Also Xcode's privacy report for the archive.
+5. **Open questions to answer** (each says what's recommended):
+   - An unreadable app list: show "Choose them again" on Home, or leave it (Known issues).
+   - Add place's clear button during a direct search, and "location restricted" text (`.night/needs-you.md`).
+   - A place whose 24 h wait ends while you're inside: background refresh, a notification that says to open Cove, or both (Phase 2, new location logic).
+   - Swapping picks at the 50 cap (Known issues).
+   - The location-off backstop: Device Activity option A, or keep accepting it (Known issues).
+
+**After today:** a few days of real use on the iPhone, external TestFlight once Beta App Review passes, screenshots from the paid build, the review recording, then submit build 2 or later.
 
 ## Ship plan (written 2026-11-10)
 The critical path is Apple, not code. Real blocking needs the paid account, and the App Store needs Apple to approve a separate Family Controls **distribution** entitlement, which can take days to weeks. Request it first and do everything else while waiting.
 
 ### Free-account plan (written 2026-11-12)
+Done with by 2026-11-19, when the paid team arrived; kept for the record. The open items moved into the phases below.
+
 Until the paid account, these can't be done: real shields, Apple's app picker, the two extensions, the App Group, Sign in with Apple, push notifications, TestFlight, and filing the distribution request. Everything else can. Work in this order:
 
-1. **Keep both builds compiling.** After any blocking change, run `xcodegen generate --spec project-paid.yml`, build with `CODE_SIGNING_ALLOWED=NO`, then run plain `xcodegen generate` to go back. Last checked 2026-11-22, after the geofence keys and sync-in-reconcile change: paid build succeeds, free build passes all 96 tests. The tests use Swift Testing, so look for "Test run with 96 tests"; xcodebuild's XCTest line always says "Executed 0 tests".
+1. **Keep both builds compiling.** `/verify` does this now (2026-11-22). After any blocking change, run `xcodegen generate --spec project-paid.yml`, build with `CODE_SIGNING_ALLOWED=NO`, then run plain `xcodegen generate` to go back. Last checked 2026-11-22, after the geofence keys and sync-in-reconcile change: paid build succeeds, free build passes all 96 tests. The tests use Swift Testing, so look for "Test run with 96 tests"; xcodebuild's XCTest line always says "Executed 0 tests".
 2. **Test location on the iPhone (Phase 2).** This is the riskiest part, and it works fully on the free account.
    - Real walks, plus Xcode `.gpx` routes for repeatable tests.
    - With the app force-quit, after a restart, in Low Power Mode, and with location briefly off.
@@ -16,12 +35,12 @@ Until the paid account, these can't be done: real shields, Apple's app picker, t
    - The `sessions` rows in Supabase (Backend).
    - The place-search spinner (Known issues).
 3. **Shippable to strangers (Phase 3).**
-   - Build the "Allow Screen Time access" setup step now, behind `#if SCREEN_TIME`. Done 2026-11-12, along with first-run setup and Release-only starter places. Still to do: app icon, ~~Rules tab name~~ (now Settings, 2026-11-23), notification wording, dark mode and large text (large text checked 2026-11-22 and 2026-11-23), and ~~the Plan.md rewrite~~ (done 2026-11-23).
+   - Build the "Allow Screen Time access" setup step now, behind `#if SCREEN_TIME`. Done 2026-11-12, along with first-run setup and Release-only starter places. Still to do: ~~app icon~~ (2026-11-19), ~~Rules tab name~~ (now Settings, 2026-11-23), ~~notification wording~~ (2026-11-19), ~~dark mode~~ (2026-11-23) and large text (large text checked 2026-11-22 and 2026-11-23), and ~~the Plan.md rewrite~~ (done 2026-11-23).
    - Any new UI that shows blocked apps goes through one small view: names in the free build, `Label(token)` in the paid build. Real tokens have no names.
 4. **Backend leftovers.**
    - "Delete account". Done 2026-11-12, along with the `SyncEngine` tests. The rate limit is a dashboard setting (see Backend).
-   - CAPTCHA or rate limits for anonymous sign-ins.
-   - Tests for `SyncEngine`'s I/O with a mocked client.
+   - ~~CAPTCHA or rate limits for anonymous sign-ins.~~ Checked 2026-11-23: 30 an hour per IP address, CAPTCHA off (see Backend).
+   - ~~Tests for `SyncEngine`'s I/O with a mocked client.~~ Done 2026-11-12 (`SyncEngineTests`).
    - Optional: restoring on a new phone by linking an email with a 6-digit Supabase code. It works on the free team, needs no universal links, and doesn't trigger Apple's rule that Google login also requires Sign in with Apple. Sign in with Apple can come later.
 5. **Features that don't need Screen Time.**
    - Study Spots and Lock In, with GPS-only Verified rules while the scan is on hold.
@@ -30,13 +49,13 @@ Until the paid account, these can't be done: real shields, Apple's app picker, t
    - The MobileCLIP webcam check.
    - The social backend (friendships, row-level security, the "locked in now" board over Realtime). It works only while the app is open, since there's no push yet.
    - Skip the shield-tap counter. It's an extension.
-6. **App Store prep (Phase 4), minus submitting.**
+6. **App Store prep (Phase 4), minus submitting.** All drafted 2026-11-23 (see Phase 4); the privacy policy is live and the screenshots wait for the paid build.
    - Privacy policy and privacy label.
    - Listing copy.
    - Review notes and the Always-location recording.
    - Draft screenshots in the Simulator. Redo the ones showing blocking later.
 
-**When to pay:** once step 2 shows location unlocking is reliable. Don't wait for steps 3–6 to finish. Apple's distribution approval only starts after joining, and steps 3–6 (about 2 weeks) fill that wait.
+~~**When to pay:**~~ Paid by 2026-11-19. Was: once step 2 shows location unlocking is reliable. Don't wait for steps 3–6 to finish. Apple's distribution approval only starts after joining, and steps 3–6 (about 2 weeks) fill that wait.
 
 ### Phase 0: Start Apple's clocks (about an hour)
 - [x] Join the Apple Developer Program ($99/yr) (done by 2026-11-19; team `R6W24T35J6` in `project-paid.yml`).
@@ -44,7 +63,7 @@ Until the paid account, these can't be done: real shields, Apple's app picker, t
 - [x] Check that the name "Cove" is available in App Store Connect (renamed from Spots 2026-11-23, and from PlaceLock before that). Done 2026-11-23: the app record is "Cove: Block Apps by Location" (28 characters). The home screen name stays Cove.
 
 ### Phase 1: Real blocking (code done 2026-11-12, waiting on the paid team to test)
-All of this is written and compiles in the paid build (`CODE_SIGNING_ALLOWED=NO`). None of it has run on a phone yet.
+All of this is written and compiles in the paid build (`CODE_SIGNING_ALLOWED=NO`). A paid build first ran on the iPhone 2026-11-19 (Apple's app picker, see Known issues), and 1.0.0 (2) is on TestFlight since 2026-11-23. The checks below are still open.
 - [x] **Paid build switch.** `project-paid.yml` includes `project.yml` and adds the paid team, `SCREEN_TIME`, the entitlements, the App Group and the Shield extension. `xcodegen generate` still makes the free build. See "Switching to real blocking" below.
 - [x] **App Group storage.** `Shared/SharedStore.swift` (compiled into the app and both extensions) and `App/Storage.swift`.
   - Paid builds save to `group.com.nsimon.PlaceLock`. The first paid launch copies everything from `UserDefaults.standard` into the group, and the old copy stays.
@@ -117,6 +136,7 @@ All of this is written and compiles in the paid build (`CODE_SIGNING_ALLOWED=NO`
     - `fast-exit` blocked about 63 m past the edge. iOS's geofence needed about 237 m in `walk-out`.
     - Two bugs were found and fixed on the way: the engine stayed dormant until it got a first fix, and a fix ±5 m wide counted as inside while 19 m past the edge.
   - Battery: shadow mode tracks for real, so expect more battery use near places during the test.
+  - **Release builds (found 2026-11-24, reading the code):** shadow is the default in every build, so TestFlight and App Store builds track near places too. But `Trace` does nothing outside Debug, and the Debug screen that switches modes and exports the trace isn't in Release. So the test below needs a Debug build from Xcode, and a TestFlight install replaces it. What Release builds should do until the engine goes live (shadow, or engine off) is open.
   - **Next, on the iPhone:** 2–3 days of normal use in shadow mode, noting real arrival and departure times. Then export the trace and compare. Check:
     - Unblock and block times.
     - Bad fixes indoors.
@@ -239,12 +259,12 @@ Design is in Plan.md under "Backend". In short: the phone decides blocking, the 
 - [ ] Paid team: link Sign in with Apple so places restore on a new phone.
 
 ### Phase 4: TestFlight, then the App Store (about 1–2 weeks of calendar time)
-- [ ] TestFlight with a few friends walking around campus.
+- [ ] TestFlight with a few friends walking around campus. 1.0.0 (2) uploaded 2026-11-23 and waiting on Beta App Review for external testers; internal testing (you) can start now. Log of builds: `docs/app-store/builds.md`. New builds go up with `/release`.
 - [x] Debug-only code stays out of Release (2026-11-23). Behind `#if DEBUG`: the launch arguments `-tab`, `-sheet`, `-push`, `-scrollTo`, `-pretendAt`, `-onboardingStep`, `-demoHistory` and `-scenario`, the Debug screen and its link in Coves › Settings, Pretend I'm at, Skip 24 h wait, sample visits, scenario mode and the check for running under unit tests. The free build's stand-ins (the stand-in app list and picker, the simulated block screen) aren't compiled into the paid build at all. `-onboarded` stays: it's the real saved setting. `verify.sh --release` now fails if any of these show up in the paid Release binary's symbols. Debug builds behave as before; free Release builds no longer have the Debug screen. Not tried on the iPhone: a Release build there.
 - [x] More screens in `verify.sh --screens` (2026-11-23). It now also takes Home while unlocked (`home-unlocked.png`), Coves scrolled to About (`about.png`), the 24-hour wait sheet (`wait-info.png`) and Backup (`backup.png`). New Debug-only launch arguments open them: `-sheet wait`, `-push backup` and `-scrollTo about` (with `-tab rules`), and `-pretendAt <place name>`, which starts as if Debug's Pretend I'm at had picked that place. The unlocked shot uses a scenario store with one place, Library, so the Simulator's own places don't matter. The screens look the same as before. Test plumbing only, so nothing to try on the iPhone.
 - [x] No crashes from bad saved data (2026-11-23). Saved places, visits, the session, the block list, settings and backup state now load through `SavedData` (`Models/SavedData.swift`, with tests). A damaged place or visit is dropped on its own and the rest still load. A damaged session means locked. A damaged setup-window date ends the first day's instant changes instead of starting a new one. Anything that can't be read is logged and copied to `unreadable.<key>` before the app saves over it. A failed save keeps the last good one instead of erasing it. The app code has no `try!`, `as!`, force unwraps or `fatalError` left. Not tried on the iPhone: a real Screen Time app list that can't be read (see Known issues).
-- [x] Version numbers and export compliance (2026-11-23). `project.yml` sets the version (`MARKETING_VERSION`, 1.0.0) and build number (`CURRENT_PROJECT_VERSION`, 1). The app's and the Shield extension's Info.plists both read them, so the two always match. Both also say `ITSAppUsesNonExemptEncryption = NO`: the only encryption is HTTPS, so App Store Connect won't ask the encryption question on each upload. `scripts/bump-build.sh` raises the build number (and sets the version with `--version 1.1.0`) and regenerates the project. Checked in the paid Release build: app and extension both show 1.0.0 (1). Not tried yet: an actual upload to App Store Connect.
-- [x] Archive script (2026-11-23). `scripts/archive.sh` generates the paid project, archives the Release build and exports it for App Store Connect with `scripts/ExportOptions.plist` (method `app-store-connect`, automatic signing, the team from `project-paid.yml`). Then it regenerates whichever project was open before. It refuses to run if the export options would upload, or if their team doesn't match `project-paid.yml`. It never uploads: it prints the Organizer and `xcrun altool` commands instead (see `docs/app-store/launch-checklist.md`). `archive.sh --check` archives without signing and checks the archive: an app archive (not a "Generic Xcode Archive"), the Shield extension inside, both 1.0.0 (1), both encryption exempt. The check passes. Not tried yet: a signed archive and export with the paid team, and the upload itself.
+- [x] Version numbers and export compliance (2026-11-23). `project.yml` sets the version (`MARKETING_VERSION`, 1.0.0) and build number (`CURRENT_PROJECT_VERSION`, 1). The app's and the Shield extension's Info.plists both read them, so the two always match. Both also say `ITSAppUsesNonExemptEncryption = NO`: the only encryption is HTTPS, so App Store Connect won't ask the encryption question on each upload. `scripts/bump-build.sh` raises the build number (and sets the version with `--version 1.1.0`) and regenerates the project. Checked in the paid Release build: app and extension both show 1.0.0 (1). ~~Not tried yet: an actual upload to App Store Connect.~~ Uploaded 2026-11-23: 1.0.0 (1), then 1.0.0 (2).
+- [x] Archive script (2026-11-23). `scripts/archive.sh` generates the paid project, archives the Release build and exports it for App Store Connect with `scripts/ExportOptions.plist` (method `app-store-connect`, automatic signing, the team from `project-paid.yml`). Then it regenerates whichever project was open before. It refuses to run if the export options would upload, or if their team doesn't match `project-paid.yml`. It never uploads: it prints the Organizer and `xcrun altool` commands instead (see `docs/app-store/launch-checklist.md`). `archive.sh --check` archives without signing and checks the archive: an app archive (not a "Generic Xcode Archive"), the Shield extension inside, both 1.0.0 (1), both encryption exempt. The check passes. ~~Not tried yet: a signed archive and export with the paid team, and the upload itself.~~ Done 2026-11-23 with hand-made App Store profiles that carry Family Controls (d48efed); see `docs/app-store/launch-checklist.md` step 7.
 - [x] Privacy audit of logs and what leaves the phone (2026-11-23). Every log line was checked. Place names, search text, the lock reason ("Left Gym…") and sync errors were logged in the clear; they're now private, so a shared device log shows `<private>`. Sync errors log their type and code publicly (`SyncEngine.logLabel`), because Postgres repeats a rejected row, with its name and coordinates, in the error. `docs/app-store/data-inventory.md` lists everything that leaves the phone (each Supabase column, Apple's geocoder, place search and map tiles; notifications are local only), whether it's linked to the account, and the required-reason APIs: only `UserDefaults` (`CA92.1`, plus `1C8F.1` for the App Group in the paid build). No Screen Time data is synced or logged. All 6 geofence scenarios still pass (they read place names from the log, which the Simulator shows in full). Not checked on the iPhone: that Console really shows `<private>` without a debugger attached.
 - [x] Privacy manifests (2026-11-23). The app and the Shield extension each have a `PrivacyInfo.xcprivacy`, listed in `project.yml` and `project-paid.yml` as resources. Both say no tracking and no tracking domains. The app declares what the backup sends, all linked to the account and only for the app's own features: precise location (places), user ID (the anonymous account), other user content (place names and addresses) and product interaction (unlock history). Its required reasons are `UserDefaults` `CA92.1` and `1C8F.1`; the extension collects nothing and lists `1C8F.1`. Checked in the built app and extension, Debug and Release. supabase-swift ships no manifest of its own; swift-crypto's empty one is in the app. Details in `docs/app-store/data-inventory.md`. Not checked yet: Xcode's privacy report for a signed archive, and App Store Connect's own checks on upload.
 - [x] About section with privacy policy and support links (2026-11-23). Coves › About shows the version and build ("1.0.0 (1)"), a "Privacy policy" link and a "Contact support" link. The addresses live in one place, `Shared/Brand.swift` (`privacyPolicyURL`, `supportURL`, `supportEmail`), and are empty for now, so only the version shows. A link row appears once its address is set and is a real `https` address (or, for support, a plain email). Contact support opens the email if one is set, otherwise the support page. The rules are in `AboutRules` (`Models/AboutRules.swift`, with tests). Apple requires the privacy policy to be reachable in the app, so the real addresses must be filled in before submitting (see `docs/app-store/launch-checklist.md`). Checked in the Simulator with temporary example addresses. Not tried on the iPhone: the links opening Safari and Mail. Filled in 2026-11-23: the privacy policy (https://nathansimonproj.github.io/cove/privacy/) and support page (https://nathansimonproj.github.io/cove/) are on GitHub Pages (repo `nathansimonproj/cove`), and the support email is `nsimon06@uw.edu`.
@@ -253,7 +273,7 @@ Design is in Plan.md under "Backend". In short: the phone decides blocking, the 
   - `verify.sh --release` now also fails if the Release binary contains the stand-in or Debug wording ("Stand-in list", "Pretend I'm at" and so on).
 
   Left for you: ~~backup starts without asking, and setup's "Your location stays on this phone." isn't quite true~~ (setup now says backup is on, 2026-11-23). Also left: the privacy policy link, keeping Supabase from pausing during review, and on-device testing. Not seen on the iPhone: the new wording in iOS's location prompts.
-- [x] Privacy policy draft (2026-11-23). `docs/app-store/privacy-policy.md` is a plain-language draft that follows `docs/app-store/data-inventory.md`. It covers what stays on the phone (live location, blocked apps, notifications), what backup sends to Supabase and why, Apple's place search, map and "Estimated @" lookups, how long backups are kept and Delete account. `docs/privacy/index.html` has the same text as one static page with no scripts or fonts, ready to host. Both are marked DRAFT. Left for you (`TODO(user)`): the effective date, your name, the support email, the Supabase region, how long Supabase keeps request logs and backups, and what to say about children. The draft describes backup as on from first launch, so it changes if the backup consent question in `.night/needs-you.md` does. Not published or linked in the app yet.
+- [x] Privacy policy draft (2026-11-23). `docs/app-store/privacy-policy.md` is a plain-language draft that follows `docs/app-store/data-inventory.md`. It covers what stays on the phone (live location, blocked apps, notifications), what backup sends to Supabase and why, Apple's place search, map and "Estimated @" lookups, how long backups are kept and Delete account. `docs/privacy/index.html` has the same text as one static page with no scripts or fonts, ready to host. Both are marked DRAFT. Left for you (`TODO(user)`): the effective date, your name, the support email, the Supabase region, how long Supabase keeps request logs and backups, and what to say about children. The draft describes backup as on from first launch, so it changes if the backup consent question in `.night/needs-you.md` does. ~~Not published or linked in the app yet.~~ Finished, published on GitHub Pages and linked in About 2026-11-23.
 - [x] Draft App Store screenshots (2026-11-23). Taken in the "iPhone 17 Pro Max" Simulator at 1320 × 2868, Apple's 6.9" size: Home locked and unlocked, Cove, Add place, the 24-hour sheet and three setup steps, with three tidy demo places (Home, Library, Gym). They're drafts and aren't in the repo: they're in `.night/app-store-screens/` in your checkout, with the script that retakes them and notes. The free build shows stand-in symbols instead of real app icons, so Home and Cove should be retaken from the paid build. Shots of the block screen need the paid build on the iPhone. No app code changed: the demo data goes in through launch arguments in scenario mode, so nothing is backed up.
 - [x] README checked against the code (2026-11-23). The limits (20 places, 50–500 m with a warning below 100 m, the 500 m movement wakes), the block screen text, the launch arguments, the build steps and the scripts all match. Fixed: the paid build adds one extension (Shield), not two. Added `-scenario` to the launch arguments, `verify.sh` and `geofence-scenario.py` to Tests, the newer tests, `scripts/` and `docs/` to the project layout, and the launch checklist to Docs. Docs only.
 - [x] Launch checklist (2026-11-23). `docs/app-store/launch-checklist.md` now has two parts. "Ready" lists what's in place, each with its file or commit. "Your steps" lists, in order, what only you can do: tonight's open questions, the paid build on the iPhone, the on-iPhone test list gathered from this file, the app record, the Family Controls distribution check for the app and the Shield, Supabase's rate limit (keep about 30 an hour, the default, since friends on campus Wi-Fi share one address), the privacy policy and links, archive and upload, TestFlight, App Privacy and age rating, the listing and screenshots, and submitting. Docs only; none of the steps has been done yet.
@@ -265,8 +285,8 @@ Design is in Plan.md under "Backend". In short: the phone decides blocking, the 
   - A saved block list whose waiting removals (or the free build's stand-in apps) can't be read is now logged instead of reset silently. Unreadable backup state now logs under `sync`, not `app`.
   - Smaller points that change what people see are questions in `.night/needs-you.md`. Not tried on the iPhone.
 - [ ] App Store Connect listing:
-  - Screenshots, description, Productivity category, support URL.
-  - Privacy policy URL (also goes in `Shared/Brand.swift` for the in-app link).
+  - Screenshots, description, Productivity category, support URL (https://nathansimonproj.github.io/cove/).
+  - ~~Privacy policy URL (also goes in `Shared/Brand.swift` for the in-app link).~~ https://nathansimonproj.github.io/cove/privacy/, in `Brand.swift` since 2026-11-23. Still to enter in App Store Connect.
   - Privacy label: **no longer "Data Not Collected"** once sync ships. Declare as linked to the user and not used for tracking:
     - Precise location: saved places.
     - User ID: the account.
@@ -280,7 +300,9 @@ Design is in Plan.md under "Backend". In short: the phone decides blocking, the 
   - Explain why the app needs "Always" location, with a short screen recording.
   - Explain that a place added in the first 24 h (the setup window) works right away, so the reviewer can test where they are.
   - Drafted 2026-11-23 in `docs/app-store/review-notes.md`: why Cove needs Always, steps to try it at a desk in the setup window (add a place where you are, see apps unblock, delete the place to see them block again and the block screen), that the block screen needs a real iPhone, and a 13-step script for the screen recording. Left for you: contact details and the recording. None of the steps has been tried on the iPhone yet.
-- [ ] Submit once the distribution entitlement is approved.
+- [ ] Submit once the distribution entitlement is approved. Approved 2026-11-23, so submitting now waits on the iPhone tests, the screenshots and the review recording.
+
+As of 2026-11-24, weeks 1 and 2 are done except the iPhone tests, and week 3 (TestFlight) has started.
 
 | Week | Goal |
 | --- | --- |
@@ -290,6 +312,8 @@ Design is in Plan.md under "Backend". In short: the phone decides blocking, the 
 | 4+ | Submit once Apple approves the entitlement. |
 
 ## Temporary: blocking is simulated until the paid developer account
+
+Paid since 2026-11-19. Real blocking is in the paid build (`project-paid.yml`) and on TestFlight; the free build below still simulates it, for the Simulator and tests.
 
 **Why.** Real Screen Time blocking (`FamilyControls` + `ManagedSettings`, the same thing Opal uses for its "pick apps from a list" picker) needs the Family Controls entitlement. Apple doesn't give it to free accounts. Signing with the free Personal Team (R6W24T35J6) fails with:
 
@@ -311,7 +335,7 @@ Everything else is real in both versions: places, GPS unlock, lock on leaving an
 All the switching happens in `PlaceLock/PlaceLock/Blocking/ShieldManager.swift` (`#if SCREEN_TIME`) and the picker modifier in `Views/RootView.swift`. Storage switches in `Shared/SharedStore.swift`.
 
 ### Switching to real blocking (once on the paid program)
-1. In `PlaceLock/project-paid.yml`, replace `PAID_TEAM_ID` with the paid team ID (developer.apple.com › Membership details).
+1. ~~In `PlaceLock/project-paid.yml`, replace `PAID_TEAM_ID` with the paid team ID (developer.apple.com › Membership details).~~ Done: `R6W24T35J6`.
 2. Run `xcodegen generate --spec project-paid.yml` in `PlaceLock/`, then build to the iPhone. Automatic signing registers the App Group and the extension's bundle ID (`com.nsimon.PlaceLock.Shield`). A `com.nsimon.PlaceLock.SessionCap` App ID may exist from before 2026-11-19; it's unused now.
 3. On the phone: Home › "Allow Screen Time access", then pick apps in Rules.
 4. To go back to the free build, run plain `xcodegen generate`. Commit the free project, not the paid one, until the paid team is the default.
@@ -378,8 +402,8 @@ Tried and dropped. It needed a Shortcuts "App Is Opened" automation for each app
 - [x] App's own log lines (`com.nsimon.PlaceLock`) for debugging. See `App/Log.swift`.
 
 ## Known issues (to fix)
-- **"Blocking 1 apps" (seen 2026-11-23, reading the code).** With one app, category or website picked, setup's apps step says "Blocking 1 apps" ("1 categories", "1 websites"): `BlockList.summary` always uses the plural. Fix before the App Store screenshots and the review recording; the review notes pick two apps to avoid it for now.
-- **`-sheet add` doesn't open Add place (seen 2026-11-23).** In the Simulator, launching with `-onboarded YES -sheet add` shows Home without the sheet, so `verify.sh --screens` saves Home as `add-place.png`. It happens on the commit before the VoiceOver labels too, so it's older than them. Not looked into yet.
+- ~~**"Blocking 1 apps" (seen 2026-11-23, reading the code).**~~ **Fixed 2026-11-24:** setup now says "1 app", "1 category" and "1 website". The wording is in `BlockRules.summary`, tested in `DelayRulesTests`. Only the paid build shows counts (the free build lists stand-in names), so it hasn't been seen on screen. Was: With one app, category or website picked, setup's apps step says "Blocking 1 apps" ("1 categories", "1 websites"): `BlockList.summary` always uses the plural. Fix before the App Store screenshots and the review recording; the review notes pick two apps to avoid it for now.
+- ~~**`-sheet add` doesn't open Add place (seen 2026-11-23).**~~ **Doesn't happen any more (checked 2026-11-24).** In the "iPhone 17" Simulator, Add place opened on all 9 launches with `-onboarded YES -sheet add`: in verify's scenario store with its three places, and in the Simulator's own store. The last `verify.sh --screens` run (2026-11-23, 22:00) also saved Add place correctly. Nothing was changed for it, and the cause isn't known; if `add-place.png` shows Home again, look here first. Was: In the Simulator, launching with `-onboarded YES -sheet add` shows Home without the sheet, so `verify.sh --screens` saves Home as `add-place.png`. It happens on the commit before the VoiceOver labels too, so it's older than them. Not looked into yet (still open 2026-11-24). The launch argument is read in `RootView`'s `.onAppear`.
 - **An unreadable app list starts empty (2026-11-23).** If the saved Screen Time selection can't be read (for example after an iOS update changes its format), Cove can't get the apps back: nothing is blocked from the next check of where you are (at launch), Cove shows no blocked apps and Home asks you to choose apps again. The original is kept as `unreadable.blockList`. Cove doesn't say why the list is empty; a message saying so is an open question.
 - **Turning off location while unlocked keeps apps unblocked (accepted for now, 2026-11-22).** With Location set to Never or While Using, or Precise Location off, iOS stops waking Cove. If you're unlocked at the time and Cove isn't open, nothing locks until you open it. The removed 8 h cap was the backstop for this. A Device Activity backstop could bring it back; the decision is open. Options written up 2026-11-23 from Apple's docs and forums, nothing built:
   - **What Device Activity can do.** A Device Activity monitor is an app extension that iOS runs on a schedule Cove sets, even when Cove is closed or force-quit. It can block apps: Apple's `DeviceActivityMonitor` page shows one setting `store.shield.applications`. Through the App Group it can read the picked apps and whether Cove thinks it's unlocked. It can't tell where you are: it gets no geofence events and no location.
@@ -448,4 +472,4 @@ Tried and dropped. It needed a Shortcuts "App Is Opened" automation for each app
 3. **Modes from the original notes:**
    - ~~GPS-only unlock places~~ done, this is now the default. Not built yet: always-blocked study spots (Smith Hall, Gates Hall). Apps are already blocked everywhere else, so these only matter for the Lock In stretch goal.
    - Scan-only unlocks anywhere, e.g. "with friends" unlocks, while notes or a class setting keeps apps blocked.
-4. **Paid program → real Screen Time blocking** (steps above).
+4. ~~**Paid program → real Screen Time blocking** (steps above).~~ Paid since 2026-11-19; build 2 is on TestFlight (2026-11-23).

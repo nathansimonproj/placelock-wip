@@ -204,6 +204,13 @@ struct BlockRulesTests {
         #expect(BlockRules.capped(Set(1...63)).isSubset(of: Set(1...63)))
     }
 
+    @Test func summaryUsesSingularForOne() {
+        #expect(BlockRules.summary(apps: 1, categories: 0, websites: 0) == "1 app")
+        #expect(BlockRules.summary(apps: 0, categories: 1, websites: 1) == "1 category, 1 website")
+        #expect(BlockRules.summary(apps: 3, categories: 2, websites: 50) == "3 apps, 2 categories, 50 websites")
+        #expect(BlockRules.summary(apps: 0, categories: 0, websites: 0) == "")
+    }
+
     @Test func paidBuildDropsLeftoverStandInApps() {
         let leftover = list(["Instagram", "TikTok"], pending: ["Instagram": now])
         let cleaned = leftover.droppingSimulatedApps()

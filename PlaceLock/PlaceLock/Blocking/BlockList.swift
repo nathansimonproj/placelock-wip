@@ -46,12 +46,9 @@ struct BlockList: Codable {
     /// e.g. "3 apps, 1 category" or "Instagram, TikTok".
     var summary: String {
         if ShieldManager.isSimulated { return simulatedApps.joined(separator: ", ") }
-        var parts: [String] = []
         let s = selection
-        if !s.applicationTokens.isEmpty { parts.append("\(s.applicationTokens.count) apps") }
-        if !s.categoryTokens.isEmpty { parts.append("\(s.categoryTokens.count) categories") }
-        if !s.webDomainTokens.isEmpty { parts.append("\(s.webDomainTokens.count) websites") }
-        return parts.joined(separator: ", ")
+        return BlockRules.summary(apps: s.applicationTokens.count, categories: s.categoryTokens.count,
+                                  websites: s.webDomainTokens.count)
     }
 }
 

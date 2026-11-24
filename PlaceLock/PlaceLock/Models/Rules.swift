@@ -220,6 +220,15 @@ enum BlockRules {
         set.count <= maxPerKind ? set : Set(set.prefix(maxPerKind))
     }
 
+    /// What's picked, for "Blocking …": "3 apps, 1 category", "1 website". Kinds with none are
+    /// left out, so nothing picked gives "".
+    static func summary(apps: Int, categories: Int, websites: Int) -> String {
+        [(apps, "app", "apps"), (categories, "category", "categories"), (websites, "website", "websites")]
+            .filter { $0.0 > 0 }
+            .map { "\($0.0) \($0.0 == 1 ? $0.1 : $0.2)" }
+            .joined(separator: ", ")
+    }
+
     /// Called with the block list before and after an edit (swipe, picker). While `delayed`,
     /// anything removed stays blocked and gets a removal date 24 h out instead. Additions are
     /// always instant. Outside the delay, removals are instant and stale pending dates are dropped.
