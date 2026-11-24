@@ -35,8 +35,11 @@ enum Scenario {
         // `-onboarded YES/NO` on the command line also applies to the scenario's store, so
         // `verify.sh --screens` can show first-run setup without leaving scenario mode. Only the
         // launch arguments count, not the Simulator's own saved value.
-        if let onboarded = UserDefaults.standard.volatileDomain(forName: UserDefaults.argumentDomain)["onboarded"] {
-            store.set(onboarded, forKey: "onboarded")
+        // The App Store screenshot script (scripts/app-store-screens.sh) passes its demo data the
+        // same way, so it can run in scenario mode with backup off.
+        let arguments = UserDefaults.standard.volatileDomain(forName: UserDefaults.argumentDomain)
+        for key in ["onboarded", "places", "visits", "blockList", "setupEndsAt", "session"] {
+            if let value = arguments[key] { store.set(value, forKey: key) }
         }
         return store
     }()

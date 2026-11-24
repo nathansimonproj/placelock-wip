@@ -108,7 +108,7 @@ From Roadmap.md. Use the paid build, and keep Console on the Mac open (pick the 
 ### 10. Listing and screenshots
 
 - **Fill in and enter the listing:** fill in each `TODO(user)` in `docs/app-store/listing.md` (support URL, marketing URL or empty, copyright name), then App Information: name, subtitle, Productivity category, privacy policy URL; and on the 1.0 version page: promotional text, description, keywords, support URL. Re-run the length check at the end of `listing.md` after any edit.
-- **Pick and finish the screenshots:** read `.night/app-store-screens/README.md`, retake Home and Settings from the paid build on the iPhone so real app icons show (side button + volume up), then the 1.0 version page › Previews and Screenshots › iPhone 6.9" Display › drag in 3–10 shots, all 1320 × 2868.
+- **Pick and finish the screenshots:** read `docs/app-store/screenshots.md` (drafts: `PlaceLock/scripts/app-store-screens.sh`), retake Home and Settings from the paid build on the iPhone so real app icons show (side button + volume up), then the 1.0 version page › Previews and Screenshots › iPhone 6.9" Display › drag in 3–10 shots, all 1320 × 2868.
 
 ### 11. Submit
 

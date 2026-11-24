@@ -140,7 +140,7 @@ PlaceLock/
   Extensions/
     Shield/                The block screen shown over a blocked app
   PlaceLockTests/          Unit tests
-  scripts/                 verify.sh, geofence-scenario.py (walks in scenarios/), bump-build.sh, archive.sh, upload.sh, night.sh (overnight task runner)
+  scripts/                 verify.sh, geofence-scenario.py (walks in scenarios/), bump-build.sh, archive.sh, upload.sh, app-store-screens.sh, night.sh (overnight task runner)
   supabase/
     migrations/            Schema, row-level security, newest-edit-wins trigger, account deletion, 50 m minimum radius
     local-check/           Migration checks against a local Postgres
