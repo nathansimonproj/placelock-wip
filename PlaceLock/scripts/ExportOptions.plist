@@ -4,6 +4,10 @@
   Export options for scripts/archive.sh (xcodebuild -exportArchive). Keys: `xcodebuild -help`.
   - destination export: writes an .ipa to disk and never uploads. Uploading is a separate step.
   - teamID must match DEVELOPMENT_TEAM in project-paid.yml; archive.sh checks this.
+  - Manual signing (2026-11-23): Xcode's automatic App Store profiles leave out the Family
+    Controls (Distribution) entitlement, so the export fails. These two profiles were made by
+    hand in Certificates, Identifiers & Profiles with that entitlement added, and are looked up
+    by name. archive.sh checks they're installed and include it before exporting.
   - manageAppVersionAndBuildNumber NO: the version and build come from project.yml
     (scripts/bump-build.sh), so the app and the Shield extension always match.
 -->
@@ -16,7 +20,16 @@
 	<key>teamID</key>
 	<string>R6W24T35J6</string>
 	<key>signingStyle</key>
-	<string>automatic</string>
+	<string>manual</string>
+	<key>signingCertificate</key>
+	<string>Apple Distribution</string>
+	<key>provisioningProfiles</key>
+	<dict>
+		<key>com.nsimon.PlaceLock</key>
+		<string>Cove App Store</string>
+		<key>com.nsimon.PlaceLock.Shield</key>
+		<string>Cove Shield App Store</string>
+	</dict>
 	<key>manageAppVersionAndBuildNumber</key>
 	<false/>
 	<key>uploadSymbols</key>
