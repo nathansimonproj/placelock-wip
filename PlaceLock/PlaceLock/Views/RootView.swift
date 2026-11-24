@@ -39,7 +39,7 @@ struct RootView: View {
                 .tabItem { Label("Home", systemImage: "house.fill") }
                 .tag(Tab.home)
             RulesView(placeSheet: $placeSheet, showPicker: $showPicker)
-                .tabItem { Label("Spots", systemImage: "slider.horizontal.3") }
+                .tabItem { Label("Coves", systemImage: "slider.horizontal.3") }
                 .tag(Tab.rules)
         }
         .sheet(item: $placeSheet) { sheet in

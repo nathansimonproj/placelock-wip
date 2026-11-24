@@ -1,6 +1,6 @@
 ---
 name: verify
-description: Check a Spots/PlaceLock change end to end. Runs the unit tests in the Simulator, confirms the paid Screen Time build still compiles, runs the database migration checks when supabase/ changed and, for UI changes, screenshots the main screens. Use before saying a change is done, before committing, or when asked to verify, test or check the app.
+description: Check a Cove/PlaceLock change end to end. Runs the unit tests in the Simulator, confirms the paid Screen Time build still compiles, runs the database migration checks when supabase/ changed and, for UI changes, screenshots the main screens. Use before saying a change is done, before committing, or when asked to verify, test or check the app.
 ---
 
 # Verify a change
@@ -9,7 +9,7 @@ Run the script from the repo root. It takes about 1–2 minutes and leaves the g
 
 ```sh
 PlaceLock/scripts/verify.sh            # tests + paid compile + migrations if supabase/ changed
-PlaceLock/scripts/verify.sh --screens  # also screenshot Home (locked and unlocked), Spots, About, the 24 h sheet, Backup, Debug, Add place and first-run setup
+PlaceLock/scripts/verify.sh --screens  # also screenshot Home (locked and unlocked), Coves, About, the 24 h sheet, Backup, Debug, Add place and first-run setup
 # Screenshots run in a scenario store with three fixed places and backup off, so nothing reaches the live Supabase project.
 PlaceLock/scripts/verify.sh --large-text  # --screens, plus the same screens at the largest accessibility text size (large-*.png)
 PlaceLock/scripts/verify.sh --quick    # unit tests only, for fast checks while working

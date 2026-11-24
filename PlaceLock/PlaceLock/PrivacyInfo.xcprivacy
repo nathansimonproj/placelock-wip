@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <!--
-  Spots' privacy manifest. Keep it matching docs/app-store/data-inventory.md and the App Privacy
+  Cove's privacy manifest. Keep it matching docs/app-store/data-inventory.md and the App Privacy
   answers in App Store Connect. The Shield extension has its own (Extensions/Shield).
   Collected data is what the backup sends to Supabase under the anonymous account, so it's all
   linked to the user, none of it is used for tracking, and it's only for the app's own features.

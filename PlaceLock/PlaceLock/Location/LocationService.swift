@@ -6,7 +6,7 @@ enum LocationError: LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .notAuthorized: "Location access is off. Allow it in Settings › Spots › Location."
+        case .notAuthorized: "Location access is off. Allow it in Settings › Cove › Location."
         case .noAccurateFix: "Couldn't get an accurate location. Try again near a window or outside."
         }
     }

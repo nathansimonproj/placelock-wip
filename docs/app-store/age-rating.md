@@ -2,14 +2,14 @@
 
 > **DRAFT (2026-11-23).** Answers for App Store Connect › the app › App Information › Age Rating › Edit. Not entered yet. Expected result: **4+**.
 
-Apple changed the questionnaire in 2025 (new 13+, 16+ and 18+ ratings and new sections), added social media questions in 2026 (required since September 2026), and added two more declarations on 2026-11-16 (Shared Location, and Dating and Relationships). All of them are below. If App Store Connect shows a question that isn't here, answer it from what Spots does: a solo focus tool with no content, no other people and no web browsing.
+Apple changed the questionnaire in 2025 (new 13+, 16+ and 18+ ratings and new sections), added social media questions in 2026 (required since September 2026), and added two more declarations on 2026-11-16 (Shared Location, and Dating and Relationships). All of them are below. If App Store Connect shows a question that isn't here, answer it from what Cove does: a solo focus tool with no content, no other people and no web browsing.
 
 ## In-App Controls
 
 | Item | Answer | Why |
 | --- | --- | --- |
-| Parental Controls | **No** | Spots is for managing your own phone. It asks Screen Time for individual access (`requestAuthorization(for: .individual)`), not a parent's control over a child's device |
-| Age Assurance | **No** | Spots doesn't check anyone's age |
+| Parental Controls | **No** | Cove is for managing your own phone. It asks Screen Time for individual access (`requestAuthorization(for: .individual)`), not a parent's control over a child's device |
+| Age Assurance | **No** | Cove doesn't check anyone's age |
 
 ## Capabilities
 
@@ -19,7 +19,7 @@ Apple changed the questionnaire in 2025 (new 13+, 16+ and 18+ ratings and new se
 | User-Generated Content | **No** | Place names are typed by the user for themselves and never shown to anyone else |
 | Social Media | **No** | No feed, no sharing, no other users |
 | Messaging and Chat | **No** | None |
-| Shared Location | **No** | Apple: "Sharing of real-world location with another person or group." Spots shares location with no one. Backup keeps saved places on Spots' server under the user's own anonymous account, which nobody else can read (row-level security). The block screen shows the estimate only to the user |
+| Shared Location | **No** | Apple: "Sharing of real-world location with another person or group." Cove shares location with no one. Backup keeps saved places on Cove's server under the user's own anonymous account, which nobody else can read (row-level security). The block screen shows the estimate only to the user |
 | Advertising | **No** | No ads |
 
 ## Mature Themes
@@ -36,7 +36,7 @@ Apple changed the questionnaire in 2025 (new 13+, 16+ and 18+ ratings and new se
 | Item | Answer | Why |
 | --- | --- | --- |
 | Medical or Treatment Information | **None** | No medical content |
-| Health or Wellness Topics | **No** (your call) | Spots blocks distracting apps by place. It has no health or wellness content: no advice, no mood or sleep tracking, no wording about mental health. This item would make it 9+. If you later add copy about "digital wellbeing" or mental health, revisit it. `TODO(user)`: confirm |
+| Health or Wellness Topics | **No** (your call) | Cove blocks distracting apps by place. It has no health or wellness content: no advice, no mood or sleep tracking, no wording about mental health. This item would make it 9+. If you later add copy about "digital wellbeing" or mental health, revisit it. `TODO(user)`: confirm |
 
 ## Sexuality or Nudity
 
@@ -69,11 +69,11 @@ Apple changed the questionnaire in 2025 (new 13+, 16+ and 18+ ratings and new se
 | Setting | Answer | Why |
 | --- | --- | --- |
 | Made for Kids | **No** | Not designed for children; it's a self-control tool for the phone's owner |
-| Higher age rating than calculated | **No** (your call) | Nothing in the app needs it. Pick a higher one only if you want to keep Spots from younger users |
+| Higher age rating than calculated | **No** (your call) | Nothing in the app needs it. Pick a higher one only if you want to keep Cove from younger users |
 
 ## Expected result
 
-4+ in every region. Every item that could raise the rating is No or None. Brazil gives Shared Location an A16 rating, which doesn't apply here because Spots answers No.
+4+ in every region. Every item that could raise the rating is No or None. Brazil gives Shared Location an A16 rating, which doesn't apply here because Cove answers No.
 
 ## Sources and what's unverified
 

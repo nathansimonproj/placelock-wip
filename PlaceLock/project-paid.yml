@@ -40,7 +40,7 @@ targets:
     info:
       path: Extensions/Shield/Info.plist
       properties:
-        CFBundleDisplayName: Spots Shield
+        CFBundleDisplayName: Cove Shield
         # Same version and build as the app (project.yml); App Store Connect rejects a mismatch.
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)

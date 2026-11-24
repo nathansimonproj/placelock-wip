@@ -1,4 +1,4 @@
-# Spots (PlaceLock): apps stay blocked except at the places you choose
+# Cove (PlaceLock): apps stay blocked except at the places you choose
 
 Rewritten 2026-11-23 to match what's built. [Roadmap.md](Roadmap.md) has the dated record of each change, what's untested and what's next. [README.md](README.md) has build steps.
 
@@ -7,13 +7,13 @@ Today you block and unblock apps by hand. The idea (see **Original notes** at th
 
 - You pick the apps that distract you and the places where they're allowed, like the gym or home.
 - The apps are **blocked by default**, everywhere.
-- When you **arrive** at one of your places, they unblock on their own. When you **leave**, they block again. Both happen in the background, even with Spots closed.
+- When you **arrive** at one of your places, they unblock on their own. When you **leave**, they block again. Both happen in the background, even with Cove closed.
 - There's **no unlock button**, and no timer. You stay unlocked until iOS says you've left.
 - After the first day, anything that loosens the rules **waits 24 h**, so you can't add a place where you're standing to get around a block.
 
 The first design (2026-11-10) unlocked only when you tapped Unlock, passed a GPS check and panned the camera around the room. Unlocking became automatic the same day, and the camera scan is on hold (see **On hold: camera scan**).
 
-Platform: iPhone, Swift/SwiftUI, iOS 17+. The app is called Spots; the code, Xcode project, bundle IDs (`com.nsimon.PlaceLock`, `.Shield`) and App Group (`group.com.nsimon.PlaceLock`) keep the PlaceLock name, because renaming them would make iOS treat it as a new app.
+Platform: iPhone, Swift/SwiftUI, iOS 17+. The app is called Cove; the code, Xcode project, bundle IDs (`com.nsimon.PlaceLock`, `.Shield`) and App Group (`group.com.nsimon.PlaceLock`) keep the PlaceLock name, because renaming them would make iOS treat it as a new app.
 
 ## Key platform facts (these shape the design)
 - **Blocking has to use the Screen Time API.** `FamilyControls` gives the permission and Apple's app picker. `ManagedSettings` applies the "shield" that blocks apps.
@@ -21,18 +21,18 @@ Platform: iPhone, Swift/SwiftUI, iOS 17+. The app is called Spots; the code, Xco
   - The App Store needs Apple to approve a separate Family Controls **distribution** request. It was filed 2026-11-19.
   - The real block screen only shows on a real iPhone.
 - **App choices are opaque tokens.** `FamilyActivityPicker` returns tokens, never app names or bundle IDs. They only work on the phone that made them, so they're never synced.
-- **iOS shields at most 50 apps, 50 categories and 50 websites.** Spots keeps 50 of each (`BlockRules.capped`).
-- **Places are watched by Core Location geofencing.** `CLMonitor` (iOS 17+) watches a circle for every saved place, up to 20 (iOS's limit). iOS wakes Spots when you cross one, even if it isn't running.
+- **iOS shields at most 50 apps, 50 categories and 50 websites.** Cove keeps 50 of each (`BlockRules.capped`).
+- **Places are watched by Core Location geofencing.** `CLMonitor` (iOS 17+) watches a circle for every saved place, up to 20 (iOS's limit). iOS wakes Cove when you cross one, even if it isn't running.
   - This needs **Always** location and **Precise Location**. Without Precise, iOS doesn't watch circles at all.
-  - On iOS 18+, Spots holds a `CLServiceSession` asking for Always, recreated on every launch, including background ones. Without it, iOS treats `CLMonitor` events as When In Use and arrivals wait until the app is opened.
+  - On iOS 18+, Cove holds a `CLServiceSession` asking for Always, recreated on every launch, including background ones. Without it, iOS treats `CLMonitor` events as When In Use and arrivals wait until the app is opened.
   - **Leaving is slow.** iOS usually notices once you're 100–200 m past the edge, and it can take a few minutes. Places can be 50–500 m across; below 100 m Add place warns that indoor location fuzz can miss you arriving.
-- **Significant-change wakes are the safety net.** iOS also wakes Spots every time you move about 500 m, even after a force-quit. Spots then re-reads iOS's state for every place, which catches an exit iOS noticed but didn't deliver. A late exit still waits for iOS.
-- **iOS doesn't wake an app for a permission change.** If location is turned off while unlocked and Spots isn't opened, apps stay unblocked. This is accepted for now (Roadmap, Known issues).
+- **Significant-change wakes are the safety net.** iOS also wakes Cove every time you move about 500 m, even after a force-quit. Cove then re-reads iOS's state for every place, which catches an exit iOS noticed but didn't deliver. A late exit still waits for iOS.
+- **iOS doesn't wake an app for a permission change.** If location is turned off while unlocked and Cove isn't opened, apps stay unblocked. This is accepted for now (Roadmap, Known issues).
 
 ## How locking works
-**One decision, one function.** `LockRules.decide` (`Models/Rules.swift`) takes the places, the current unlock (if any), iOS's reading for each place (inside, outside or unknown), whether Spots has Always with Precise, and the time. It returns one of: stay locked, stay unlocked, unlock at a place, move to another place, or lock with a reason.
+**One decision, one function.** `LockRules.decide` (`Models/Rules.swift`) takes the places, the current unlock (if any), iOS's reading for each place (inside, outside or unknown), whether Cove has Always with Precise, and the time. It returns one of: stay locked, stay unlocked, unlock at a place, move to another place, or lock with a reason.
 
-- Without Always and Precise, nothing may stay unlocked: iOS can't wake Spots when you leave.
+- Without Always and Precise, nothing may stay unlocked: iOS can't wake Cove when you leave.
 - Locked: unlock if iOS says you're inside a place that's active (not still waiting out its 24 h).
 - Unlocked: lock only on a definite "outside" for that place. Unknown readings are ignored.
   - If you're still inside another active place, the unlock moves there instead of locking.
@@ -45,13 +45,13 @@ Platform: iPhone, Swift/SwiftUI, iOS 17+. The app is called Spots; the code, Xco
 **What you see.**
 - Notifications: "At Gym, apps unblocked." and "Left Gym, apps blocked." Each replaces the last, and old ones are cleared after 5 minutes.
 - Home shows Locked or Unlocked, the places where apps open, and "Apps block again when you leave." while unlocked.
-- The block screen (the Shield extension): "Instagram is locked", "Estimated @ Suzzallo Library · 2 min ago" and "Opens at Gym, Soccer Field or Home." The block screen can't read location, so Spots saves its last guess for it after each check (`Location/Estimate.swift`). The guess is the saved place you're in, Apple Maps' name for the spot, or "400 m from Gym", and it's hidden after a day.
+- The block screen (the Shield extension): "Instagram is locked", "Estimated @ Suzzallo Library · 2 min ago" and "Opens at Gym, Soccer Field or Home." The block screen can't read location, so Cove saves its last guess for it after each check (`Location/Estimate.swift`). The guess is the saved place you're in, Apple Maps' name for the spot, or "400 m from Gym", and it's hidden after a day.
 - Each unlock is kept as a visit on the phone for two weeks (`Models/Visit.swift`) and as a `sessions` row in the backup.
 
 ## Loosening waits 24 h
 These keep a block from being undone on a whim. The logic is in `PlaceRules` and `BlockRules`, with tests.
 
-- **Setup window.** The first 24 h after install (`setupEndsAt`) has no delays, so setup is instant. "Finish setup now" on the Spots tab ends it early. The end time is backed up, so a reinstall doesn't reopen it; if the phone and server disagree, the earlier end wins.
+- **Setup window.** The first 24 h after install (`setupEndsAt`) has no delays, so setup is instant. "Finish setup now" on the Coves tab ends it early. The end time is backed up, so a reinstall doesn't reopen it; if the phone and server disagree, the earlier end wins.
 - **New places** start working 24 h after they're added (`Place.activeAfter`).
 - **Moving or enlarging a place** waits 24 h (`Place.pendingChange`). The old circle keeps working until then.
 - **Removing a blocked app** keeps it blocked for 24 h, with an "Unblocks in 23 h" badge. Tapping Keep blocked cancels it.
@@ -61,8 +61,8 @@ These keep a block from being undone on a whim. The logic is in `PlaceRules` and
 ## Permissions
 First-run setup (`Views/OnboardingView.swift`) asks for each one after explaining why: location (Always), Screen Time access (paid build), apps, places, notifications. Each step can be skipped, and Home's setup card catches what's left.
 
-- **Location.** Without Always and Precise, apps stay locked. Losing either locks as soon as Spots runs: right away if it's open, otherwise the next time it's opened. Home's banner names the problem and its Fix button shows iOS's prompt or opens Settings (`PermissionRules`).
-- **Screen Time access.** iOS removes every block when it's turned off, so Spots can only warn: a notification and a "Blocking is off" banner on Home.
+- **Location.** Without Always and Precise, apps stay locked. Losing either locks as soon as Cove runs: right away if it's open, otherwise the next time it's opened. Home's banner names the problem and its Fix button shows iOS's prompt or opens Settings (`PermissionRules`).
+- **Screen Time access.** iOS removes every block when it's turned off, so Cove can only warn: a notification and a "Blocking is off" banner on Home.
 - **Notifications** are optional. Blocking works without them.
 
 ## Two builds
@@ -90,7 +90,7 @@ PlaceLock/
     Blocking/   ShieldManager, BlockList
     Shared/     SharedStore (also compiled into the extension), Brand
     Sync/       SyncRules, SyncEngine, SyncBackend, SyncRecords
-    Views/      Home, Spots tab (RulesView), Add place, Onboarding, Backup, Debug, Theme, stand-ins for the free build
+    Views/      Home, Coves tab (RulesView), Add place, Onboarding, Backup, Debug, Theme, stand-ins for the free build
   Extensions/Shield/                  # paid build only: the block screen
   PlaceLockTests/                     # Swift Testing, one file per rules type
   supabase/                           # migrations and the local check
@@ -110,7 +110,7 @@ The schema is in `PlaceLock/supabase/migrations/`. Checks run against a throwawa
 - **First launch:** the app quietly calls `signInAnonymously()`. There's no sign-in screen, and it works on the free team.
 - **Linking Apple (not built):** `linkIdentityWithIdToken` keeps the same `auth.users` id, so nothing has to migrate. It needs the paid team.
 - **Until then:** a reinstall on the same phone usually keeps the account, because the session is stored in the Keychain. A new phone can't restore.
-- **Delete account:** Spots tab › Backup › Delete account calls `delete_my_account()`, which deletes every row. Places and blocked apps stay on the phone, and blocking keeps working.
+- **Delete account:** Coves tab › Backup › Delete account calls `delete_my_account()`, which deletes every row. Places and blocked apps stay on the phone, and blocking keeps working.
 
 **What lives where.**
 | Data | Server | Phone | Notes |
@@ -140,12 +140,12 @@ The schema is in `PlaceLock/supabase/migrations/`. Checks run against a throwawa
 ## Tried and dropped
 - **Tap Unlock and scan the room (2026-11-10).** Replaced by automatic unlock. The scan is on hold below.
 - **Blocking through Shortcuts automations.** One automation per app was too much setup, the app could flash before the block, and turning off the automation got around it.
-- **8 h safety cap and 8 h GPS recheck (removed 2026-11-19).** A Device Activity extension re-blocked apps 8 h after each unlock, and the app took a fresh GPS fix. At home overnight the fix could fail indoors and lock you out until you left and came back. Spots clears any leftover cap schedule at launch.
+- **8 h safety cap and 8 h GPS recheck (removed 2026-11-19).** A Device Activity extension re-blocked apps 8 h after each unlock, and the app took a fresh GPS fix. At home overnight the fix could fail indoors and lock you out until you left and came back. Cove clears any leftover cap schedule at launch.
 - **Lock until I leave (removed 2026-11-22).** A button to lock now and not unlock again until you left. Removed to get automatic unlock and lock solid first; it also had two bugs.
 - **Starter places (2026-11-10 to 2026-11-12).** New installs start with no places and add their own during setup.
 
 ## Later
-- **A backstop for turning location off while unlocked.** A Device Activity schedule that blocks if Spots is unlocked but has lost Always or Precise. Options and costs are in Roadmap, Known issues; the decision is open.
+- **A backstop for turning location off while unlocked.** A Device Activity schedule that blocks if Cove is unlocked but has lost Always or Precise. Options and costs are in Roadmap, Known issues; the decision is open.
 - **Websites.** Whether to block a picked app's website or a category's websites, and whether to use Screen Time's web content filter for plain domains. Questions and findings are in Roadmap, Known issues.
 - **Sign in with Apple**, so places restore on a new phone.
 - **Study Spots and Lock In.** A second kind of place that's always blocked (`places.kind` = `study` in the schema already), like Smith Hall or Gates Hall from the original notes. At one, tapping **Lock In** starts a session that ends when you leave or tap End.
@@ -180,7 +180,7 @@ On hold since 2026-11-10. Unlocking is automatic now, so a scan would only matte
 - **`PlaceLock/scripts/verify.sh`** runs the tests, compiles the paid build and checks migrations when `supabase/` changed. `--screens` takes Simulator screenshots, `--large-text` also at the largest text size, and `--release` checks no Debug code is in the paid Release build.
 - **`PlaceLock/scripts/geofence-scenario.py --all --build`** walks the Simulator in and out of places (arrive and leave, background, moving between places, relaunching inside, a place still waiting, walking out) and checks unlock and lock from the app's log.
 - **Debug builds** have Pretend I'm at (fake inside/outside readings fed into the same `reconcile()`), Skip 24 h wait, and launch arguments to open any screen (listed in README).
-- **Only the iPhone can show** the real block screen, iOS relaunching Spots after a force-quit, real exit timing and indoor GPS drift, and battery use. Roadmap lists what's still to try there.
+- **Only the iPhone can show** the real block screen, iOS relaunching Cove after a force-quit, real exit timing and indoor GPS drift, and battery use. Roadmap lists what's still to try there.
 
 ## Original notes
 **Top level:** app blocking based on user location rather than manual block/unblock.
@@ -198,4 +198,4 @@ Why not build both?
 - Auto-set unblocks/blocks: e.g. the user sets gym and home as unblock, and Smith Hall and Gates Hall as block. No CV pipeline there, just blocked.
 - Additional CV unblocks: e.g. chilling with friends → unblock once CV confirms. If notes, a class setting, etc. are seen → stays blocked.
 
-**Where these stand (2026-11-23):** location-only unblock places are built and are how Spots works. Always-blocked places (Smith Hall, Gates Hall) aren't needed for blocking, since apps are blocked everywhere else already; they'd come back as Study Spots for Lock In. Camera unlocks are on hold.
+**Where these stand (2026-11-23):** location-only unblock places are built and are how Cove works. Always-blocked places (Smith Hall, Gates Hall) aren't needed for blocking, since apps are blocked everywhere else already; they'd come back as Study Spots for Lock In. Camera unlocks are on hold.

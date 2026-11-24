@@ -1,6 +1,6 @@
 # Launch checklist
 
-What's left before Spots goes on the App Store. Last updated 2026-11-23. See [Roadmap.md](../../Roadmap.md) for what's built, and `.night/needs-you.md` in your checkout for tonight's open questions.
+What's left before Cove goes on the App Store. Last updated 2026-11-23. See [Roadmap.md](../../Roadmap.md) for what's built, and `.night/needs-you.md` in your checkout for tonight's open questions.
 
 ## Ready
 
@@ -12,7 +12,7 @@ What's in place for submission, with where to find it. Everything here was check
 - **Damaged saved data doesn't crash or unblock.** `PlaceLock/PlaceLock/Models/SavedData.swift`, with tests. (ae0eb0c)
 - **Privacy manifests** for the app and the Shield extension (`PrivacyInfo.xcprivacy`), matching `docs/app-store/data-inventory.md`. (242ef8a)
 - **Private logs and a list of what leaves the phone:** `docs/app-store/data-inventory.md`. No Screen Time data is synced or logged. (e09708d)
-- **About section** in Spots with the version, and privacy policy and support rows that appear once `PlaceLock/PlaceLock/Shared/Brand.swift` has addresses. (f839cca)
+- **About section** in the Coves tab with the version, and privacy policy and support rows that appear once `PlaceLock/PlaceLock/Shared/Brand.swift` has addresses. (f839cca)
 - **Location purpose strings** name every use of location. (4a52129)
 - **Permission problems** say what's wrong and link to Settings; apps stay blocked. (72162df)
 - **Place search fallback** when suggestions don't arrive. (642cbd0)
@@ -24,7 +24,7 @@ What's in place for submission, with where to find it. Everything here was check
 - **Privacy policy draft:** `docs/app-store/privacy-policy.md` and the page `docs/privacy/index.html`. (97c428d)
 - **Listing, App Privacy, age rating and review notes drafts:** `docs/app-store/listing.md`, `app-privacy.md`, `age-rating.md`, `review-notes.md`. (c2ef3e8)
 - **Draft screenshots** at 1320 × 2868: `.night/app-store-screens/` in your checkout, not in the repo. (fc2d747)
-- **Backend:** Supabase project with row-level security and the 50 m radius migration applied; Delete account in Spots › Backup (Roadmap › Backend).
+- **Backend:** Supabase project with row-level security and the 50 m radius migration applied; Delete account in Coves › Backup (Roadmap › Backend).
 - **README and Plan** match the code. (8f6f787, e681169)
 
 ## Your steps
@@ -38,7 +38,7 @@ Some of these change setup's wording, the privacy policy and the listing, so ans
 - ~~**Backup on by default?**~~ Decided 2026-11-23: it stays on, and setup's first step now says so.
 - ~~**Setup's "Your location stays on this phone."**~~ Replaced 2026-11-23 with a sentence about backup and where to delete it.
 - **Unreadable Screen Time app list:** show a one-time "Choose them again" message on Home (recommended), or leave it. ("No crashes from bad saved data")
-- **Simulator demo data in the live Supabase project:** delete that account with Spots › Backup › Delete account in the "iPhone 17 Pro Max" Simulator (recommended). ("Draft App Store screenshots")
+- **Simulator demo data in the live Supabase project:** delete that account with Coves › Backup › Delete account in the "iPhone 17 Pro Max" Simulator (recommended). ("Draft App Store screenshots")
 
 ### 1. Build the paid app to the iPhone
 
@@ -49,28 +49,28 @@ Some of these change setup's wording, the privacy policy and the listing, so ans
 From Roadmap.md. Use the paid build, and keep Console on the Mac open (pick the iPhone, filter on `com.nsimon.PlaceLock`) for the log checks.
 
 - **Block screen:** open a blocked app; it should say it's blocked, show "Estimated @ …" and name the places that unblock it. (Phase 1, Phase 3 "Estimated @")
-- **Screen Time turned off:** Settings › Screen Time › turn off access for Spots; Spots should show "Blocking is off" and send a notification. (Phase 1)
+- **Screen Time turned off:** Settings › Screen Time › turn off access for Cove; Cove should show "Blocking is off" and send a notification. (Phase 1)
 - **Places survive the paid build:** places from the free build are still there after the first paid launch. (Phase 1)
-- **Arrive with Spots closed:** close Spots, walk to a saved place, and apps unblock without opening it (can take a minute or two). (Phase 2)
+- **Arrive with Cove closed:** close Cove, walk to a saved place, and apps unblock without opening it (can take a minute or two). (Phase 2)
 - **Leave:** walk about 300 m away and apps block again within a few minutes. (Next, item 1)
-- **Leave after a force-quit:** swipe Spots away, walk out of a place, and check apps block without opening it. (Known issues)
-- **Location off while open:** with Spots open and unlocked, set Location to Never in Settings and come back; apps block. (Phase 2 on-iPhone checks)
+- **Leave after a force-quit:** swipe Cove away, walk out of a place, and check apps block without opening it. (Known issues)
+- **Location off while open:** with Cove open and unlocked, set Location to Never in Settings and come back; apps block. (Phase 2 on-iPhone checks)
 - **Restart:** restart the phone, don't unlock it, walk more than 500 m, then unlock; the log shows "Launched before first unlock; waiting for protected data" and the places are still there. (Phase 2 on-iPhone checks)
 - **Geofence log lines:** a plain relaunch logs no "Geofence … added" or "removed"; the first launch of the new build logs one "removed (old identifier)" and one "added" per place; renaming a place logs neither. (Phase 2 on-iPhone checks)
-- **Battery and notices:** after a day of normal use, check Settings › Battery for Spots, and that Notification Center has at most one recent Spots notice. (Phase 2)
-- **Permission fixes:** Home's Fix and setup's Open Settings land on Spots' page in Settings; Precise Location and notification switches show the right banner. (Phase 3)
-- **Links in About:** once `Brand.swift` is filled in, Spots › About › Privacy policy opens Safari and Contact support opens Mail. (Phase 4)
+- **Battery and notices:** after a day of normal use, check Settings › Battery for Cove, and that Notification Center has at most one recent Cove notice. (Phase 2)
+- **Permission fixes:** Home's Fix and setup's Open Settings land on Cove's page in Settings; Precise Location and notification switches show the right banner. (Phase 3)
+- **Links in About:** once `Brand.swift` is filled in, Coves › About › Privacy policy opens Safari and Contact support opens Mail. (Phase 4)
 - **Private logs:** with no Xcode debugger attached, add a place and walk out of one; place names, search text and coordinates show as `<private>` in Console. (Phase 4)
 - **Sync:** an unlock then leave writes a `sessions` row; check it in Supabase dashboard › Table Editor › `sessions`. (Backend)
-- **Delete account on the live project:** Spots › Backup › Delete account › Delete account; no "Couldn't delete your account" alert, and no `places` or `sessions` rows left for that account in the Table Editor. App Review checks this (5.1.1(v)).
+- **Delete account on the live project:** Coves › Backup › Delete account › Delete account; no "Couldn't delete your account" alert, and no `places` or `sessions` rows left for that account in the Table Editor. App Review checks this (5.1.1(v)).
 - **VoiceOver:** Settings › Accessibility › VoiceOver on; Home's lock says blocked or unblocked and countdowns read as words. (Phase 3)
 - **Location prompts:** the two iOS location prompts show the new purpose wording. (Phase 4, App Review audit)
 - **Place search:** search works on normal Wi-Fi; if it ever spins, press Search and send the log. (Known issues)
-- **50-website cap (optional):** Spots › Blocked apps › Add or remove apps, pick more than 50 websites; Spots says "Kept 50 of each" and a kept site shows the block screen in Safari. (Known issues, question 3)
+- **50-website cap (optional):** Coves › Blocked apps › Add or remove apps, pick more than 50 websites; Cove says "Kept 50 of each" and a kept site shows the block screen in Safari. (Known issues, question 3)
 
 ### 3. App Store Connect app record
 
-- **Check the name and create the app:** App Store Connect › Apps › + › New App: iOS, name "Spots", your primary language, bundle ID `com.nsimon.PlaceLock`, any SKU (e.g. `spots-ios`), Full Access. If "Spots" is taken it says so here; pick a fallback from `docs/app-store/listing.md` (the home screen name stays Spots). Tick Roadmap Phase 0's name item.
+- **Check the name and create the app:** App Store Connect › Apps › + › New App: iOS, name "Cove", your primary language, bundle ID `com.nsimon.PlaceLock`, any SKU (e.g. `cove-ios`), Full Access. If "Cove" is taken it says so here; pick a fallback from `docs/app-store/listing.md` (the home screen name stays Cove). Tick Roadmap Phase 0's name item.
 
 ### 4. Family Controls distribution entitlement
 
@@ -89,9 +89,9 @@ From Roadmap.md. Use the paid build, and keep Console on the Mac open (pick the 
 
 ### 7. Archive and upload
 
-- **Archive and export a signed build:** with Xcode signed in to the paid team (Xcode › Settings › Accounts), run `PlaceLock/scripts/bump-build.sh` if this build number was already uploaded, then `PlaceLock/scripts/archive.sh`. It prints the `.ipa` path, e.g. `PlaceLock/build/archive/Spots-1.0.0-1-export/PlaceLock.ipa`. The first signed run may ask to create a distribution certificate and App Store profiles for the app and the Shield.
+- **Archive and export a signed build:** with Xcode signed in to the paid team (Xcode › Settings › Accounts), run `PlaceLock/scripts/bump-build.sh` if this build number was already uploaded, then `PlaceLock/scripts/archive.sh`. It prints the `.ipa` path, e.g. `PlaceLock/build/archive/Cove-1.0.0-1-export/PlaceLock.ipa`. The first signed run may ask to create a distribution certificate and App Store profiles for the app and the Shield.
 - **Check the privacy report:** Xcode › Window › Organizer › right-click the archive › Generate Privacy Report; it should list precise location, user ID, other user content and product interaction (linked, not tracking, app functionality) and `UserDefaults` with `CA92.1` and `1C8F.1`, as in `docs/app-store/data-inventory.md`.
-- **Upload (pick one):** in Xcode, `open PlaceLock/build/archive/Spots-1.0.0-1.xcarchive`, then Organizer › Distribute App › App Store Connect › Upload; or save an app-specific password (appleid.apple.com › Sign-In and Security › App-Specific Passwords) with `xcrun altool --store-password-in-keychain-item SPOTS_ASC -u <your Apple ID> -p <app-specific password>`, then `xcrun altool --validate-app -f PlaceLock/build/archive/Spots-1.0.0-1-export/PlaceLock.ipa -t ios -p @keychain:SPOTS_ASC` and `xcrun altool --upload-app -f PlaceLock/build/archive/Spots-1.0.0-1-export/PlaceLock.ipa -t ios -p @keychain:SPOTS_ASC`. The Transporter app (drag in the `.ipa`, click Deliver) works too.
+- **Upload (pick one):** in Xcode, `open PlaceLock/build/archive/Cove-1.0.0-1.xcarchive`, then Organizer › Distribute App › App Store Connect › Upload; or save an app-specific password (appleid.apple.com › Sign-In and Security › App-Specific Passwords) with `xcrun altool --store-password-in-keychain-item SPOTS_ASC -u <your Apple ID> -p <app-specific password>`, then `xcrun altool --validate-app -f PlaceLock/build/archive/Cove-1.0.0-1-export/PlaceLock.ipa -t ios -p @keychain:SPOTS_ASC` and `xcrun altool --upload-app -f PlaceLock/build/archive/Cove-1.0.0-1-export/PlaceLock.ipa -t ios -p @keychain:SPOTS_ASC`. The Transporter app (drag in the `.ipa`, click Deliver) works too.
 
 ### 8. TestFlight with friends
 
@@ -107,11 +107,11 @@ From Roadmap.md. Use the paid build, and keep Console on the Mac open (pick the 
 ### 10. Listing and screenshots
 
 - **Fill in and enter the listing:** fill in each `TODO(user)` in `docs/app-store/listing.md` (support URL, marketing URL or empty, copyright name), then App Information: name, subtitle, Productivity category, privacy policy URL; and on the 1.0 version page: promotional text, description, keywords, support URL. Re-run the length check at the end of `listing.md` after any edit.
-- **Pick and finish the screenshots:** read `.night/app-store-screens/README.md`, retake Home and Spots from the paid build on the iPhone so real app icons show (side button + volume up), then the 1.0 version page › Previews and Screenshots › iPhone 6.9" Display › drag in 3–10 shots, all 1320 × 2868.
+- **Pick and finish the screenshots:** read `.night/app-store-screens/README.md`, retake Home and Cove from the paid build on the iPhone so real app icons show (side button + volume up), then the 1.0 version page › Previews and Screenshots › iPhone 6.9" Display › drag in 3–10 shots, all 1320 × 2868.
 
 ### 11. Submit
 
-- **Keep Supabase awake:** just before submitting, open the Supabase dashboard › the project; if it says Paused, click Resume project (Free plan projects pause after 7 days of low activity, and Delete account then fails for the reviewer). Then check Spots › Backup on the iPhone says "Backed up".
+- **Keep Supabase awake:** just before submitting, open the Supabase dashboard › the project; if it says Paused, click Resume project (Free plan projects pause after 7 days of low activity, and Delete account then fails for the reviewer). Then check Coves › Backup on the iPhone says "Backed up".
 - **Fill in App Review Information:** 1.0 version page › App Review Information: untick sign-in required, add your name, phone and email, paste the notes from `docs/app-store/review-notes.md` (replace `Screen recording: TODO(user)`), and attach the video.
 - **Submit:** only once step 4 shows Family Controls (Distribution) on both App IDs: 1.0 version page › Build › pick the build, choose manual or automatic release, Add for Review, then Submit to App Review.
 

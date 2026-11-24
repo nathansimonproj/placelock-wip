@@ -12,7 +12,7 @@ enum PermissionRules {
         case askScreenTime
         /// Show iOS's location prompt. iOS only shows it before the first answer.
         case askLocation
-        /// iOS won't ask again, so open Spots in the Settings app.
+        /// iOS won't ask again, so open Cove in the Settings app.
         case openSettings
     }
 

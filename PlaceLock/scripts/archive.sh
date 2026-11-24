@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Builds the App Store version of Spots: generates the paid project (Screen Time, Shield
+# Builds the App Store version of Cove: generates the paid project (Screen Time, Shield
 # extension, App Group), archives the Release build and exports a signed .ipa for App Store
 # Connect. It never uploads; it prints the upload command at the end.
 #
@@ -58,13 +58,13 @@ trap restore EXIT
 
 out=build/archive
 mkdir -p "$out"
-if [[ $check == 1 ]]; then name="Spots-$version-$build-unsigned"; else name="Spots-$version-$build"; fi
+if [[ $check == 1 ]]; then name="Cove-$version-$build-unsigned"; else name="Cove-$version-$build"; fi
 archive="$out/$name.xcarchive"
 export_dir="$out/$name-export"
 log="$out/$name.log"
 rm -rf "$archive" "$export_dir"
 
-echo "==> Archiving Spots $version ($build), paid Release build, team $team"
+echo "==> Archiving Cove $version ($build), paid Release build, team $team"
 xcodegen generate --spec project-paid.yml --quiet
 if [[ $check == 1 ]]; then signing=(CODE_SIGNING_ALLOWED=NO); else signing=(-allowProvisioningUpdates); fi
 if ! xcodebuild -project PlaceLock.xcodeproj -scheme PlaceLock -configuration Release \

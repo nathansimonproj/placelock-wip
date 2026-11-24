@@ -121,7 +121,7 @@ struct HomeView: View {
                         AppBubble { Label(token).labelStyle(.iconOnly) }
                     }
                 }
-                // Only the first six, as pictures. VoiceOver reads the count below; Spots lists
+                // Only the first six, as pictures. VoiceOver reads the count below; Cove lists
                 // every blocked app by name.
                 .accessibilityHidden(true)
                 Text(unlocked ? "\(model.blockedCount) apps open here" : "\(model.blockedCount) apps resting")

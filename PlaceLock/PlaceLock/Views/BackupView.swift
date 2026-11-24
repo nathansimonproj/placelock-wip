@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Backup status and account deletion. Reached from Spots › Settings.
+/// Backup status and account deletion. Reached from Coves › Settings.
 struct BackupView: View {
     @ObservedObject private var sync = SyncEngine.shared
     @State private var confirmDelete = false
@@ -62,7 +62,7 @@ struct BackupView: View {
         }
     }
 
-    /// "Backed up 5 min ago", also shown on the Settings row in Spots.
+    /// "Backed up 5 min ago", also shown on the Settings row in Coves.
     static func statusText(_ sync: SyncEngine) -> String {
         let pending = sync.pendingCount > 0 ? " · \(sync.pendingCount) waiting" : ""
         switch sync.status {

@@ -411,7 +411,7 @@ final class AppModel: ObservableObject {
         guard access != screenTimeAccess else { return }
         if access == .turnedOff {
             Log.app.error("Screen Time access was turned off")
-            notify("Screen Time access is off, so Spots can't block apps. Open Spots to turn it back on.",
+            notify("Screen Time access is off, so Cove can't block apps. Open Cove to turn it back on.",
                    id: Self.screenTimeNoticeID)
         } else {
             UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: [Self.screenTimeNoticeID])
@@ -555,7 +555,7 @@ final class AppModel: ObservableObject {
         return allowed
     }
 
-    /// Notifications were turned off in Settings. Blocking works without them, so only the Spots
+    /// Notifications were turned off in Settings. Blocking works without them, so only the Cove
     /// tab and setup's notifications step mention it.
     @Published private(set) var notificationsOff = false
 
@@ -587,7 +587,7 @@ final class AppModel: ObservableObject {
 
     private func notify(_ text: String, id: String = AppModel.statusNoticeID) {
         let content = UNMutableNotificationContent()
-        content.title = "Spots"
+        content.title = "Cove"
         content.body = text
         let request = UNNotificationRequest(identifier: id, content: content, trigger: nil)
         UNUserNotificationCenter.current().add(request)
@@ -614,7 +614,7 @@ final class AppModel: ObservableObject {
     /// A heads-up when a waiting place or change turns on.
     private func scheduleActivationNotice(id: UUID, at date: Date, text: String, change: Bool = false) {
         let content = UNMutableNotificationContent()
-        content.title = "Spots"
+        content.title = "Cove"
         content.body = text
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: max(1, date.timeIntervalSinceNow), repeats: false)
         UNUserNotificationCenter.current().add(

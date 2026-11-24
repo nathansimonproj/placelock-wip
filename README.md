@@ -1,19 +1,19 @@
-# Spots
+# Cove
 
-*Formerly PlaceLock. The app is called Spots; the code, Xcode project, bundle IDs (`com.nsimon.PlaceLock`) and App Group still say PlaceLock, because changing them would make iOS treat it as a new app.*
+*Formerly PlaceLock. The app is called Cove; the code, Xcode project, bundle IDs (`com.nsimon.PlaceLock`) and App Group still say PlaceLock, because changing them would make iOS treat it as a new app.*
 
 An iPhone app that keeps distracting apps blocked everywhere except the places you choose.
 
 Pick the apps that distract you and the places where they're allowed, like the gym or home. The apps stay blocked by default. When you arrive at one of your places they unblock on their own, and when you leave they block again. There's no unlock button.
 
-> **Work in progress.** Spots isn't on the App Store. The default build only *simulates* blocking. Real blocking uses Apple's Screen Time API, which needs a paid Apple Developer account. That code is written and compiles but hasn't run on a phone yet. See [Roadmap.md](Roadmap.md) for what works and what's next.
+> **Work in progress.** Cove isn't on the App Store. The default build only *simulates* blocking. Real blocking uses Apple's Screen Time API, which needs a paid Apple Developer account. That code is written and compiles but hasn't run on a phone yet. See [Roadmap.md](Roadmap.md) for what works and what's next.
 
 ## How it works
 
 - **Blocked by default.** Your chosen apps are blocked unless you're inside one of your saved places.
 - **Automatic unlock and lock.** iOS watches each saved place (`CLMonitor` geofences, up to 20). It wakes the app when you arrive or leave, even if the app is closed. Leaving can take a few minutes and 100–200 m to register. Places can be 50–500 m across, and Add place warns below 100 m, where indoor location fuzz can miss you arriving.
 - **No quick loopholes.** After the first 24 hours, a new place takes 24 h to start working, and so does moving or enlarging one. Removing an app from the block list also takes 24 h. Changes that only make things stricter apply right away.
-- **Safety net.** iOS also wakes the app every time you move about 500 m, even after a force-quit, and the app re-reads iOS's state for every place. That catches an exit iOS noticed but didn't deliver; a late exit still waits for iOS. Losing Always or Precise Location access locks right away while Spots is running, and otherwise the next time it runs. If you turn location off while unlocked and never open Spots, apps stay unblocked (a known issue). There's no time limit: you stay unlocked until iOS reports you've left.
+- **Safety net.** iOS also wakes the app every time you move about 500 m, even after a force-quit, and the app re-reads iOS's state for every place. That catches an exit iOS noticed but didn't deliver; a late exit still waits for iOS. Losing Always or Precise Location access locks right away while Cove is running, and otherwise the next time it runs. If you turn location off while unlocked and never open Cove, apps stay unblocked (a known issue). There's no time limit: you stay unlocked until iOS reports you've left.
 - **Block screen.** Opening a blocked app shows where the app last estimated you were and where the app opens: "Estimated @ Suzzallo Library · 2 min ago" and "Opens at Gym or Home."
 - **Backup.** Places and unlock history sync to Supabase under an anonymous account, so a reinstall can restore them. Blocking decisions are made on the phone and never wait on the network.
 
@@ -66,12 +66,12 @@ PlaceLock/scripts/archive.sh --check    # archive without signing and check what
 
 | Argument | Effect |
 | --- | --- |
-| `-tab rules` | Open on the Spots tab |
+| `-tab rules` | Open on the Coves tab |
 | `-sheet add` | Open Add place |
 | `-tab rules -sheet wait` | Open the "How the 24-hour wait works" sheet |
 | `-tab rules -push backup` | Open Backup, even when backup is off |
 | `-tab rules -push debug` | Open Debug |
-| `-tab rules -scrollTo about` | Scroll Spots down to About |
+| `-tab rules -scrollTo about` | Scroll Cove down to About |
 | `-pretendAt Library` | Start as if Debug's Pretend I'm at had picked the place with that name |
 | `-onboardingStep apps` | Open first-run setup on a step (`location`, `screenTime`, `apps`, `places`, `notifications`) |
 | `-demoHistory YES` | Fill today with two sample visits, for screenshots |
@@ -79,7 +79,7 @@ PlaceLock/scripts/archive.sh --check    # archive without signing and check what
 | `-notificationsOff YES` | Read notifications as turned off in Settings, which `simctl privacy` can't set |
 | `-scenario <name>` | Scenario mode (free build only): its own settings store and no backup. `geofence-scenario.py` uses it |
 
-Debug builds also have a **Debug** screen under Spots › Settings. Its **Pretend I'm at** list feeds fake inside and outside readings through the same logic the real geofences use, and **Skip 24 h wait** applies waiting changes at once. `-onboarded YES` is different: it sets the real saved setting.
+Debug builds also have a **Debug** screen under Coves › Settings. Its **Pretend I'm at** list feeds fake inside and outside readings through the same logic the real geofences use, and **Skip 24 h wait** applies waiting changes at once. `-onboarded YES` is different: it sets the real saved setting.
 
 None of this is in Release builds: the launch arguments, the Debug screen, sample visits and scenario mode (`-scenario`) are behind `#if DEBUG`, and the free build's stand-ins for Screen Time aren't compiled into the paid build. `scripts/verify.sh --release` checks the paid Release build for them.
 
@@ -128,7 +128,7 @@ PlaceLock/
     Blocking/              The block list and ShieldManager (Screen Time, or simulated)
     Sync/                  Supabase backup: engine, merge rules, records, server calls
     Shared/                Code shared with the Shield extension: brand colors and text, SharedStore
-    Views/                 SwiftUI screens: Home, Spots (`RulesView`), Add place, first-run setup, Backup, Debug, the free build's stand-in block screen
+    Views/                 SwiftUI screens: Home, Coves (`RulesView`), Add place, first-run setup, Backup, Debug, the free build's stand-in block screen
   Extensions/
     Shield/                The block screen shown over a blocked app
   PlaceLockTests/          Unit tests
@@ -148,9 +148,9 @@ Decisions live in pure functions (`LockRules`, `PlaceRules`, `BlockRules`, `Sync
 - Your location stays on the phone. The server stores your saved places (with coordinates), your unlock history and your setup window, under an anonymous account.
 - The Supabase URL and publishable key are in `project.yml` on purpose: publishable keys are meant to ship inside apps. Row-level security protects the data, so each account can only read and write its own rows.
 - Remove `SupabaseURL` and `SupabaseKey` from `project.yml` to turn sync off.
-- Spots › Backup › **Delete account** removes every row on the server. Places and blocking keep working on the phone.
+- Coves › Backup › **Delete account** removes every row on the server. Places and blocking keep working on the phone.
 - To name your location on the block screen, the app looks up its coordinates with Apple Maps (`CLGeocoder`).
-- Spots › About shows the version and, once they're set in `Shared/Brand.swift`, links to the privacy policy and support.
+- Coves › About shows the version and, once they're set in `Shared/Brand.swift`, links to the privacy policy and support.
 - Logs never show place names, addresses, coordinates or search text: they're marked private. [docs/app-store/data-inventory.md](docs/app-store/data-inventory.md) lists everything that leaves the phone.
 
 ## Docs

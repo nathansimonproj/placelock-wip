@@ -1,6 +1,6 @@
 # Data inventory
 
-What Spots sends off the phone, what it logs, and which "required reason" APIs it uses. Checked against the code on 2026-11-23 (after commit 829f375 plus the log fixes in the same commit as this file). The privacy manifests, the App Privacy answers and the privacy policy should match this page.
+What Cove sends off the phone, what it logs, and which "required reason" APIs it uses. Checked against the code on 2026-11-23 (after commit 829f375 plus the log fixes in the same commit as this file). The privacy manifests, the App Privacy answers and the privacy policy should match this page.
 
 Blocking decisions never use the network. Everything below is either backup, or Apple's own services that the app asks for a name or a map.
 
@@ -8,7 +8,7 @@ Blocking decisions never use the network. Everything below is either backup, or 
 
 ### Supabase (backup)
 
-Sent to the project in `project.yml` (`SupabaseURL`) over HTTPS, under an anonymous account the app creates on first launch with no sign-in screen. Backup is on by default whenever the URL and key are in the build. Spots › Backup › Delete account removes the account and every row (`delete_my_account()`), and turns backup off. Row-level security lets each account read and write only its own rows.
+Sent to the project in `project.yml` (`SupabaseURL`) over HTTPS, under an anonymous account the app creates on first launch with no sign-in screen. Backup is on by default whenever the URL and key are in the build. Coves › Backup › Delete account removes the account and every row (`delete_my_account()`), and turns backup off. Row-level security lets each account read and write only its own rows.
 
 "Linked to the user" below means linked to the anonymous account's ID. The app sends no name, email, phone number, contacts or device ID. The account ID still ties the rows together, so for Apple's purposes this is data linked to the user.
 
@@ -41,7 +41,7 @@ The account's session token is saved on the phone in the Keychain by the Supabas
 - **What:** the phone's location (accurate to about 200 m), from `Location/Estimate.swift`.
 - **When:** after a lock or unlock check, at most once a minute with the app open and every 5 minutes in the background, only while apps are blocked and only when the last answer was more than 100 m away. Not in Low Power Mode unless a recent location is already on hand.
 - **Why:** to name where you are on the block screen ("Estimated @ Suzzallo Library").
-- **Linked to the user:** Apple's service; Spots sends no account ID with it. Apple's own privacy terms apply.
+- **Linked to the user:** Apple's service; Cove sends no account ID with it. Apple's own privacy terms apply.
 
 ### Apple Maps: place search (`MKLocalSearchCompleter`, `MKLocalSearch`)
 
@@ -108,7 +108,7 @@ The Shield extension reads the App Group through `SharedStore.defaults`. Its fal
 
 Packages (Supabase 2.55.6 and what it pulls in: swift-crypto, swift-asn1, swift-clocks, swift-concurrency-extras, swift-http-types, xctest-dynamic-overlay), searched in `build/free/SourcePackages/checkouts`:
 
-- None of them calls a boot-time, disk-space or file-timestamp API, or `UserDefaults`. The only near miss is Supabase Storage's `MultipartFormData`, which reads a file's size with `FileManager.attributesOfItem` for uploads. That method isn't on Apple's list, and Spots never uploads files.
+- None of them calls a boot-time, disk-space or file-timestamp API, or `UserDefaults`. The only near miss is Supabase Storage's `MultipartFormData`, which reads a file's size with `FileManager.attributesOfItem` for uploads. That method isn't on Apple's list, and Cove never uploads files.
 - swift-crypto ships its own `PrivacyInfo.xcprivacy` (empty: no tracking, no data, no APIs), and it ends up in the app as `swift-crypto_Crypto.bundle`. supabase-swift ships none. That fits what it does: it collects nothing for itself, and what it sends is the app's data, declared in the app's manifest.
 
 ## Privacy manifests
@@ -136,7 +136,7 @@ The app's collected data is what the backup sends to Supabase (the tables above)
 
 The app's manifest has one file for both builds, so it lists `1C8F.1` in the free build too, which doesn't use the App Group. The free build can't go on the App Store, so that only matters for the paid build, where both reasons are true.
 
-Apple's own services (the geocoder, place search, map tiles) aren't declared: Spots sends them nothing tied to the account, and Apple handles that data under its own terms. The App Privacy answers should list the same four types, so the label and the manifest agree.
+Apple's own services (the geocoder, place search, map tiles) aren't declared: Cove sends them nothing tied to the account, and Apple handles that data under its own terms. The App Privacy answers should list the same four types, so the label and the manifest agree.
 
 Packages: supabase-swift 2.55.6 ships no privacy manifest (none in its checkout, none in the built app). swift-crypto ships empty ones; one ends up in the app as `swift-crypto_Crypto.bundle/PrivacyInfo.xcprivacy`. Checked in the paid Release build (`build/release/Build/Products/Release-iphoneos/PlaceLock.app`): `PrivacyInfo.xcprivacy` in the app, in `PlugIns/PlaceLockShield.appex`, and in the swift-crypto bundle. The free Simulator build has the app's.
 

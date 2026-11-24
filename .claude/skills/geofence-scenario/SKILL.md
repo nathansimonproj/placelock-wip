@@ -1,6 +1,6 @@
 ---
 name: geofence-scenario
-description: Drive the Spots/PlaceLock app through scripted location walks in the Simulator (arrive at a place, leave, move between places, background, relaunch) and check that apps unlock and lock when they should. Use after changing geofencing, lock rules, places, the 24 h delays or launch/relaunch code, when asked to test arriving or leaving, or to reproduce a location bug.
+description: Drive the Cove/PlaceLock app through scripted location walks in the Simulator (arrive at a place, leave, move between places, background, relaunch) and check that apps unlock and lock when they should. Use after changing geofencing, lock rules, places, the 24 h delays or launch/relaunch code, when asked to test arriving or leaving, or to reproduce a location bug.
 ---
 
 # Geofence scenarios

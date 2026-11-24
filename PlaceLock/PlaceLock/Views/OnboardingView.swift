@@ -99,17 +99,17 @@ struct OnboardingView: View {
     private var locationStep: some View {
         StepPage(symbol: "location.fill",
                  title: "Apps unblock where you choose",
-                 text: "Spots keeps distracting apps blocked everywhere except the places you pick, like the gym or home.\n\nTo notice when you arrive and leave, even with the app closed, it needs your location set to **Always**. Where you are is checked on this phone.\n\nYour saved places and unlock history are backed up under an anonymous account, with no sign-in. You can delete the backup anytime in Spots › Backup.") {
+                 text: "Cove keeps distracting apps blocked everywhere except the places you pick, like the gym or home.\n\nTo notice when you arrive and leave, even with the app closed, it needs your location set to **Always**. Where you are is checked on this phone.\n\nYour saved places and unlock history are backed up under an anonymous account, with no sign-in. You can delete the backup anytime in Coves › Backup.") {
             if location.canWatchPlaces {
                 Done("Location is set to Always")
             } else if location.needsPrecise {
-                Text("Turn on **Precise Location** in Settings › Spots › Location. Without it, iOS can't tell when you arrive.")
+                Text("Turn on **Precise Location** in Settings › Cove › Location. Without it, iOS can't tell when you arrive.")
                     .font(.footnote).foregroundStyle(.secondary).multilineTextAlignment(.center)
             } else if location.authorization == .authorizedWhenInUse {
-                Text("Location is set to While Using. Choose **Always** in Settings › Spots › Location.")
+                Text("Location is set to While Using. Choose **Always** in Settings › Cove › Location.")
                     .font(.footnote).foregroundStyle(.secondary).multilineTextAlignment(.center)
             } else if location.authorization != .notDetermined {
-                Text("Location access is off. Choose **Always** in Settings › Spots › Location.")
+                Text("Location access is off. Choose **Always** in Settings › Cove › Location.")
                     .font(.footnote).foregroundStyle(.secondary).multilineTextAlignment(.center)
             }
         } actions: {
@@ -130,7 +130,7 @@ struct OnboardingView: View {
     private var screenTimeStep: some View {
         StepPage(symbol: "hourglass",
                  title: "Allow Screen Time access",
-                 text: "Spots blocks apps through Screen Time, the same way iOS's own limits work. Apple asks you to confirm with Face ID or your passcode.") {
+                 text: "Cove blocks apps through Screen Time, the same way iOS's own limits work. Apple asks you to confirm with Face ID or your passcode.") {
             if model.screenTimeAccess == .approved {
                 Done("Screen Time access is on")
             } else if let screenTimeError {
@@ -220,7 +220,7 @@ struct OnboardingView: View {
                  title: "Know when apps lock",
                  text: "Get a heads-up when you arrive and apps unblock, when you leave and they lock again, and when a new place starts working.") {
             if model.notificationsOff {
-                Text("Notifications are off. Turn them on in Settings › Spots › Notifications.")
+                Text("Notifications are off. Turn them on in Settings › Cove › Notifications.")
                     .font(.footnote).foregroundStyle(.secondary).multilineTextAlignment(.center)
             }
         } actions: {

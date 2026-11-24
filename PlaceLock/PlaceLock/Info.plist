@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Spots</string>
+	<string>Cove</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -23,9 +23,9 @@
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>With Always, Spots notices when you arrive at or leave one of your places, even when it's closed, so apps unblock while you're there and block again when you go. The block screen also shows roughly where you are.</string>
+	<string>With Always, Cove notices when you arrive at or leave one of your places, even when it's closed, so apps unblock while you're there and block again when you go. The block screen also shows roughly where you are.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Spots checks whether you're at one of your places to decide if apps unblock, and finds places near you when you add one.</string>
+	<string>Cove checks whether you're at one of your places to decide if apps unblock, and finds places near you when you add one.</string>
 	<key>SupabaseKey</key>
 	<string>sb_publishable_i-zjtTV_7B-8THYGmG2agA_9XXez0BI</string>
 	<key>SupabaseURL</key>

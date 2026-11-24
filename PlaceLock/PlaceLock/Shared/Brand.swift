@@ -16,7 +16,7 @@ enum Brand {
     /// app, so the app picker steps suggest picking it too.
     static let websiteTip = "Also pick each app's website (like youtube.com), so the browser isn't a way around."
 
-    // MARK: About links (Spots tab › About)
+    // MARK: About links (Coves tab › About)
 
     // TODO(user): fill these in once the privacy policy and support page are hosted
     // (docs/app-store/launch-checklist.md › Your steps). While one is nil, its row is hidden,
@@ -36,7 +36,7 @@ enum Brand {
 
     /// "Opens at Library, Gym or Home."
     static func opensAt(_ places: [String]) -> String {
-        places.isEmpty ? "Add a place in Spots to open it there." : "Opens at \(list(places))."
+        places.isEmpty ? "Add a place in Cove to open it there." : "Opens at \(list(places))."
     }
 
     /// The block screen's subtitle, two lines:

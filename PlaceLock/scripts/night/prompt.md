@@ -1,4 +1,4 @@
-You are running unattended overnight on the Spots (PlaceLock) repo. Nobody will read your questions until morning, so never ask; park them instead (see below). Tonight's goal is getting Spots ready to ship on the App Store.
+You are running unattended overnight on the Cove (PlaceLock) repo. Nobody will read your questions until morning, so never ask; park them instead (see below). Tonight's goal is getting Cove ready to ship on the App Store.
 
 ## Your task
 

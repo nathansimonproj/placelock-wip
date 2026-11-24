@@ -5,7 +5,7 @@
 ## Before you start
 
 - **Privacy Policy URL:** `TODO(user)`: the hosted `docs/privacy/index.html` (same address as `Brand.privacyPolicyURL`). Required.
-- **User Privacy Choices URL:** leave empty (optional). Spots' choices are in the app: Spots › Backup › Delete account.
+- **User Privacy Choices URL:** leave empty (optional). Cove's choices are in the app: Coves › Backup › Delete account.
 
 ## Step 1: Data collection
 
@@ -19,7 +19,7 @@ Why: backup sends places and unlock history to Supabase and keeps them, under an
 
 Tick exactly these four:
 
-| Section in App Store Connect | Data type | What it covers in Spots |
+| Section in App Store Connect | Data type | What it covers in Cove |
 | --- | --- | --- |
 | Location | **Precise Location** | Each saved place's center and radius, and moves waiting out their 24 h (`places` table, full precision) |
 | Identifiers | **User ID** | The anonymous account ID that owns every row |
@@ -32,8 +32,8 @@ The Roadmap's earlier list said "Usage history" for sessions; App Store Connect 
 
 | Data type | Why not |
 | --- | --- |
-| Coarse Location | Spots keeps no rough location. The "Estimated @" lookup sends a location (about 200 m) to Apple's geocoder, not to Spots' server. Apple's page: "You are not responsible for disclosing data collected by Apple." |
-| Search History | Place search text goes to Apple (MapKit), not to Spots' server, and isn't kept by Spots |
+| Coarse Location | Cove keeps no rough location. The "Estimated @" lookup sends a location (about 200 m) to Apple's geocoder, not to Cove's server. Apple's page: "You are not responsible for disclosing data collected by Apple." |
+| Search History | Place search text goes to Apple (MapKit), not to Cove's server, and isn't kept by Cove |
 | Device ID | No advertising ID, no vendor ID, no device ID is sent |
 | Contact Info (name, email, phone…) | Not asked for. The account is anonymous. A support email the user writes is outside the app |
 | Health, Fitness, Financial, Sensitive Info, Contacts, Browsing History, Purchases | Not collected |
@@ -41,7 +41,7 @@ The Roadmap's earlier list said "Usage history" for sessions; App Store Connect 
 | Diagnostics (Crash Data, Performance Data, Other Diagnostic Data) | No crash or analytics SDK. Crash reports users share through Apple go to Apple (App Analytics), which Apple covers |
 | Other Data | Nothing else |
 
-**Your call: IP addresses in Supabase's logs.** Every backup request reaches Supabase with the phone's IP address, and Supabase's API and Auth logs may keep it for a while ([data-inventory.md](data-inventory.md) › Not checked). Apple says an IP address that's "sent on a server call and not retained" needn't be declared, and otherwise to declare it "based on how you use IP address". Spots doesn't use it for anything. Recommended: don't declare it, and say in the privacy policy that Supabase's logs keep it for a short time. If the dashboard shows Supabase keeps it for a long time, consider adding Coarse Location (App Functionality, linked, not tracking). Check the retention first (Your steps, "Check what Supabase keeps about each request").
+**Your call: IP addresses in Supabase's logs.** Every backup request reaches Supabase with the phone's IP address, and Supabase's API and Auth logs may keep it for a while ([data-inventory.md](data-inventory.md) › Not checked). Apple says an IP address that's "sent on a server call and not retained" needn't be declared, and otherwise to declare it "based on how you use IP address". Cove doesn't use it for anything. Recommended: don't declare it, and say in the privacy policy that Supabase's logs keep it for a short time. If the dashboard shows Supabase keeps it for a long time, consider adding Coarse Location (App Functionality, linked, not tracking). Check the retention first (Your steps, "Check what Supabase keeps about each request").
 
 ## Step 3: For each of the four types
 
@@ -79,4 +79,4 @@ Not verified:
 
 - The exact on-screen wording and order of the per-type questions in App Store Connect. The help page only says to "answer the questions that follow".
 - The label's section titles, as above.
-- Whether App Review expects Coarse Location for the geocoder lookup. Apple's page says Apple's own collection isn't the developer's to declare, and Spots doesn't keep the result off the phone.
+- Whether App Review expects Coarse Location for the geocoder lookup. Apple's page says Apple's own collection isn't the developer's to declare, and Cove doesn't keep the result off the phone.

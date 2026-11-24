@@ -274,7 +274,7 @@ say "Worktree $wt on $branch. $(count ' ') open tasks. Checking the starting poi
 if ! gate "$state/runs/$today-baseline.log" --release; then
   say "The starting point fails verify.sh --release; nothing was run. See $state/runs/$today-baseline.log"
   log "— | baseline | failed verify --release | $(git -C "$wt" rev-parse --short HEAD) | see runs/$today-baseline.log"
-  notify "Spots night run didn't start" "The starting branch fails verify. See .night/runs."
+  notify "Cove night run didn't start" "The starting branch fails verify. See .night/runs."
   exit 1
 fi
 say "Starting point passes."
@@ -411,4 +411,4 @@ asked=$(( $(grep -c '^## ' "$state/needs-you.md") - asked_before ))
 } >"$state/report.md"
 summary="$done_n done, $parked_n parked, $rejected_n rejected, $asked questions. Final check $final."
 say "$summary Report: $state/report.md"
-notify "Spots night run finished" "$summary"
+notify "Cove night run finished" "$summary"

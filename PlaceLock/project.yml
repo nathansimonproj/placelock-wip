@@ -35,7 +35,7 @@ targets:
     info:
       path: PlaceLock/Info.plist
       properties:
-        CFBundleDisplayName: Spots
+        CFBundleDisplayName: Cove
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         # Export compliance: the only encryption is HTTPS (Supabase over URLSession), which is exempt.
@@ -50,8 +50,8 @@ targets:
         # Purpose strings (App Review 5.1.1(ii), 5.1.5): say every use of location. It decides
         # unblocking, finds nearby places in Add place, and names where you are on the block screen
         # ("Estimated @", Location/Estimate.swift). See docs/app-store/review-audit.md.
-        NSLocationWhenInUseUsageDescription: Spots checks whether you're at one of your places to decide if apps unblock, and finds places near you when you add one.
-        NSLocationAlwaysAndWhenInUseUsageDescription: With Always, Spots notices when you arrive at or leave one of your places, even when it's closed, so apps unblock while you're there and block again when you go. The block screen also shows roughly where you are.
+        NSLocationWhenInUseUsageDescription: Cove checks whether you're at one of your places to decide if apps unblock, and finds places near you when you add one.
+        NSLocationAlwaysAndWhenInUseUsageDescription: With Always, Cove notices when you arrive at or leave one of your places, even when it's closed, so apps unblock while you're there and block again when you go. The block screen also shows roughly where you are.
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.nsimon.PlaceLock

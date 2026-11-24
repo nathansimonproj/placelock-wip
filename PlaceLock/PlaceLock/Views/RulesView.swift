@@ -29,7 +29,7 @@ struct RulesView: View {
                 .onAppear { openForScreenshot(scroller) }
                 #endif
             }
-            .navigationTitle("Spots")
+            .navigationTitle("Coves")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("How the 24-hour wait works", systemImage: "info.circle") { showInfo = true }
@@ -220,7 +220,7 @@ struct RulesView: View {
             Text("Settings")
         } footer: {
             if model.notificationsOff {
-                Text("Spots can't tell you when apps unblock or lock. Apps still block and unblock as usual.")
+                Text("Cove can't tell you when apps unblock or lock. Apps still block and unblock as usual.")
             }
         }
         .calmRows()

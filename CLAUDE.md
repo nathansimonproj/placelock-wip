@@ -1,10 +1,10 @@
-# Spots (code name PlaceLock)
+# Cove (code name PlaceLock)
 
 iPhone app (SwiftUI, iOS 17+) that keeps chosen apps blocked everywhere except saved places. [README.md](README.md) explains what it does and how to build it. [Roadmap.md](Roadmap.md) is the most up-to-date record of what's built, known issues and what's next. [Plan.md](Plan.md) is the design as built, with ideas for later (rewritten 2026-11-23).
 
 ## Don't break these
 
-- **Names.** The app is called Spots, but the code, Xcode project, bundle IDs (`com.nsimon.PlaceLock`, `.Shield`) and the App Group (`group.com.nsimon.PlaceLock`) stay PlaceLock. Renaming any of them makes iOS treat it as a new app.
+- **Names.** The app is called Cove, but the code, Xcode project, bundle IDs (`com.nsimon.PlaceLock`, `.Shield`) and the App Group (`group.com.nsimon.PlaceLock`) stay PlaceLock. Renaming any of them makes iOS treat it as a new app.
 - **The project is generated.** XcodeGen writes `PlaceLock.xcodeproj`, `PlaceLock/Info.plist`, the entitlements files and `Extensions/Shield/Info.plist` from `project.yml` and `project-paid.yml`. Edit the specs, never the generated files.
 - **Two builds.**
   - Free (`xcodegen generate`): blocking is simulated, and it runs on the free Personal Team.
@@ -17,7 +17,7 @@ iPhone app (SwiftUI, iOS 17+) that keeps chosen apps blocked everywhere except s
 
 - Apps are blocked by default and unblock only inside a saved place. There's no unlock button.
 - After the first 24 h, anything that loosens the rules waits 24 h: adding a place, moving or enlarging one, removing an app. Changes that only make things stricter apply at once.
-- Losing Always or Precise Location access locks as soon as Spots runs: right away if it's open, otherwise the next time it's opened. iOS doesn't wake the app for a permission change, so apps stay unblocked until then (accepted for now, 2026-11-22; see Roadmap Known issues).
+- Losing Always or Precise Location access locks as soon as Cove runs: right away if it's open, otherwise the next time it's opened. iOS doesn't wake the app for a permission change, so apps stay unblocked until then (accepted for now, 2026-11-22; see Roadmap Known issues).
 - Blocking decisions are made on the phone and never wait on the network. Sync is backup only.
 
 ## Code layout
