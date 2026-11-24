@@ -26,7 +26,7 @@ Each item is marked:
 
 The biggest risk is backup. It starts on first launch and sends each place's exact coordinates, plus when you were at each one, to Supabase. No screen asks first, and setup says "Your location stays on this phone." Guidelines 5.1.1(ii), 5.1.2(i) and 5.1.5 all ask for consent before location data is sent. See the questions in `.night/needs-you.md` ("Privacy audit…" and "App Review guideline audit").
 
-**Decided 2026-11-23:** backup stays on by default. Setup's first step, before any place is saved, now says: "Where you are is checked on this phone. Your saved places and unlock history are backed up under an anonymous account, with no sign-in. You can delete the backup anytime in Coves › Backup." Setup never asks a yes or no question about backup, so a reviewer could still want an explicit choice. If App Review rejects it under 5.1.1(ii) or 5.1.5, the fallback is to make backup opt-in.
+**Decided 2026-11-23:** backup stays on by default. Setup's first step, before any place is saved, now says: "Where you are is checked on this phone. Your saved places and unlock history are backed up under an anonymous account, with no sign-in. You can delete the backup anytime in Settings › Backup." Setup never asks a yes or no question about backup, so a reviewer could still want an explicit choice. If App Review rejects it under 5.1.1(ii) or 5.1.5, the fallback is to make backup opt-in.
 
 ## 2.1 App completeness
 
@@ -37,7 +37,7 @@ The biggest risk is backup. It starts on first launch and sends each place's exa
 - **OK: icon and launch screen.** 1024 × 1024 icon with no transparency; a system launch screen.
 - **OK: no login.** The backup account is anonymous and made without a sign-in screen, so a reviewer needs no demo account.
 - **OK: no in-app purchases** (2.1(b)).
-- **Your call: the privacy policy link.** Coves › About hides the link while `Brand.privacyPolicyURL` is `nil`, so nothing made-up ships. Apple requires it, though (5.1.1(i)), so the app can't be submitted until it's filled in. Already in Your steps.
+- **Your call: the privacy policy link.** Settings › About hides the link while `Brand.privacyPolicyURL` is `nil`, so nothing made-up ships. Apple requires it, though (5.1.1(i)), so the app can't be submitted until it's filled in. Already in Your steps.
 - **Your call: not tested on a device.** Apple asks for on-device testing. Real blocking, the block screen and a Release build have never run on the iPhone (Roadmap Phase 1). That's the "Launch checklist (final)" task's on-iPhone test list.
 - **Your call: the backend must be awake during review.** Supabase pauses Free plan projects after 7 days of low activity (Supabase docs, "Free plan project pausing"). Blocking would still work, but Backup would show "Not backed up" and Delete account would fail with "Couldn't delete your account". A reviewer checking 5.1.1(v) would see that. Added to Your steps.
 - **Your call: review notes.** 2.1 and 2.3.1 ask for "detailed explanations of non-obvious features". The first 24 h setup window, Always location and the block screen needing a real device all count. That's the "Draft the App Store listing, App Privacy answers and review notes" task.
@@ -81,10 +81,10 @@ The listing, screenshots and App Privacy answers aren't written yet (later tasks
   - New strings in `project.yml` (checked in the Release build's Info.plist):
     - When In Use: "Cove checks whether you're at one of your places to decide if apps unblock, and finds places near you when you add one."
     - Always: "With Always, Cove notices when you arrive at or leave one of your places, even when it's closed, so apps unblock while you're there and block again when you go. The block screen also shows roughly where you are."
-  - **Your call:** "Apps that collect user or usage data must secure user consent for the collection." Backup starts with no consent and needs a decision (needs-you, "Privacy audit…"). Withdrawing consent works: Coves › Backup › Delete account turns backup off and deletes the data.
+  - **Your call:** "Apps that collect user or usage data must secure user consent for the collection." Backup starts with no consent and needs a decision (needs-you, "Privacy audit…"). Withdrawing consent works: Settings › Backup › Delete account turns backup off and deletes the data.
 - **(iii) Data minimisation. Your call.** Location, notifications and Screen Time are the only permissions, all core. The app picker is Apple's out-of-process picker. The one extra is `places.address`, which isn't needed to restore a place's circle (needs-you, "Privacy audit…" option 3).
 - **(iv) Access. OK.** Every permission step in setup can be skipped. Without location, apps simply stay blocked: the safe fallback, and the app says what's missing and links to Settings.
-- **(v) Account sign-in and deletion. OK.** No login. The anonymous account is account creation, so in-app deletion is required, and Cove has it: Coves › Backup › Delete account, with a confirmation, runs `delete_my_account()` and turns backup off. Not tried against the live project tonight (needs the live database). Needs the backend awake during review (see 2.1).
+- **(v) Account sign-in and deletion. OK.** No login. The anonymous account is account creation, so in-app deletion is required, and Cove has it: Settings › Backup › Delete account, with a confirmation, runs `delete_my_account()` and turns backup off. Not tried against the live project tonight (needs the live database). Needs the backend awake during review (see 2.1).
 - **(vi)–(x) OK.** No passwords, no SafariViewController, no data from outside sources, not a regulated field, no contact info requested.
 
 ## 5.1.2 Data use and sharing

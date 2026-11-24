@@ -20,10 +20,10 @@ enum Theme {
     /// Only for countdowns ("Starts in 18 h", "Unblocks in 3 h").
     static let waiting = Color.orange
 
-    /// The one background: a deep evening green. It's the same whether apps are locked or not;
-    /// only the words and the lock icon change.
+    /// The one background: near black at the top, fading to a very dark green. It's the same
+    /// whether apps are locked or not; only the words and the lock icon change.
     static let gradient = LinearGradient(
-        colors: [Color(red: 0.09, green: 0.13, blue: 0.12), Color(red: 0.18, green: 0.29, blue: 0.25)],
+        colors: [Color(red: 0.02, green: 0.03, blue: 0.03), Color(red: 0.06, green: 0.11, blue: 0.09)],
         startPoint: .top, endPoint: .bottom)
 
     /// Glass behind list rows on the gradient.

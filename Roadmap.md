@@ -16,7 +16,7 @@ Until the paid account, these can't be done: real shields, Apple's app picker, t
    - The `sessions` rows in Supabase (Backend).
    - The place-search spinner (Known issues).
 3. **Shippable to strangers (Phase 3).**
-   - Build the "Allow Screen Time access" setup step now, behind `#if SCREEN_TIME`. Done 2026-11-12, along with first-run setup and Release-only starter places. Still to do: app icon, Rules tab name, notification wording, dark mode and large text (large text checked 2026-11-22 and 2026-11-23), and ~~the Plan.md rewrite~~ (done 2026-11-23).
+   - Build the "Allow Screen Time access" setup step now, behind `#if SCREEN_TIME`. Done 2026-11-12, along with first-run setup and Release-only starter places. Still to do: app icon, ~~Rules tab name~~ (now Settings, 2026-11-23), notification wording, dark mode and large text (large text checked 2026-11-22 and 2026-11-23), and ~~the Plan.md rewrite~~ (done 2026-11-23).
    - Any new UI that shows blocked apps goes through one small view: names in the free build, `Label(token)` in the paid build. Real tokens have no names.
 4. **Backend leftovers.**
    - "Delete account". Done 2026-11-12, along with the `SyncEngine` tests. The rate limit is a dashboard setting (see Backend).
@@ -152,6 +152,8 @@ All of this is written and compiles in the paid build (`CODE_SIGNING_ALLOWED=NO`
   - Notifications are no longer requested at launch.
   - **The location prompt no longer appears at launch.** Watching places (`CLMonitor`) made iOS show it immediately, before any explanation. On a new install, `startUp` now waits until the prompt is answered.
   - Debug builds: launch with `-onboardingStep apps` (or `location`, `screenTime`, `places`, `notifications`) to open on a step.
+- [x] **Darker, and dark everywhere (2026-11-23).** The gradient is now near black at the top, fading to a very dark green, so the glass rows and cards stand out more. First-run setup and Add place were still light; they now use the same dark gradient and glass rows. The app is dark whatever the phone's setting (`UIUserInterfaceStyle: Dark` in `project.yml`), so sheets, alerts, the keyboard and the app picker match. Setup's buttons are light sage with dark text.
+  - The second tab is now **Settings** (was Coves), with a gear icon. Its old "Settings" section (Backup, notifications, Debug) is now "General". The docs, privacy policy and support page say Settings › Backup, with "in Cove" where it could be mistaken for the iPhone's Settings.
 - [x] **One dark look, iOS tab bar (2026-11-19).** The app is always the dark green: one gradient (`Theme.gradient`) and dark mode on every screen, whether apps are locked or not. Unlocking only changes the words and the lock icon, not any colors. Accent is a darker sage (#3E5F51 light, #95B0A2 dark).
   - iOS's own tab bar, forced dark by `calmBackground()`. Left to pick its own colors on the gradient it drew dark icons on a dark pill.
   - Home sits in a `NavigationStack` (bar hidden) like Rules. Without it the tab bar's glass came out pale on Home only.

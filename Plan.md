@@ -51,7 +51,7 @@ Platform: iPhone, Swift/SwiftUI, iOS 17+. The app is called Cove; the code, Xcod
 ## Loosening waits 24 h
 These keep a block from being undone on a whim. The logic is in `PlaceRules` and `BlockRules`, with tests.
 
-- **Setup window.** The first 24 h after install (`setupEndsAt`) has no delays, so setup is instant. "Finish setup now" on the Coves tab ends it early. The end time is backed up, so a reinstall doesn't reopen it; if the phone and server disagree, the earlier end wins.
+- **Setup window.** The first 24 h after install (`setupEndsAt`) has no delays, so setup is instant. "Finish setup now" on the Settings tab ends it early. The end time is backed up, so a reinstall doesn't reopen it; if the phone and server disagree, the earlier end wins.
 - **New places** start working 24 h after they're added (`Place.activeAfter`).
 - **Moving or enlarging a place** waits 24 h (`Place.pendingChange`). The old circle keeps working until then.
 - **Removing a blocked app** keeps it blocked for 24 h, with an "Unblocks in 23 h" badge. Tapping Keep blocked cancels it.
@@ -90,7 +90,7 @@ PlaceLock/
     Blocking/   ShieldManager, BlockList
     Shared/     SharedStore (also compiled into the extension), Brand
     Sync/       SyncRules, SyncEngine, SyncBackend, SyncRecords
-    Views/      Home, Coves tab (RulesView), Add place, Onboarding, Backup, Debug, Theme, stand-ins for the free build
+    Views/      Home, Settings tab (RulesView), Add place, Onboarding, Backup, Debug, Theme, stand-ins for the free build
   Extensions/Shield/                  # paid build only: the block screen
   PlaceLockTests/                     # Swift Testing, one file per rules type
   supabase/                           # migrations and the local check
@@ -110,7 +110,7 @@ The schema is in `PlaceLock/supabase/migrations/`. Checks run against a throwawa
 - **First launch:** the app quietly calls `signInAnonymously()`. There's no sign-in screen, and it works on the free team.
 - **Linking Apple (not built):** `linkIdentityWithIdToken` keeps the same `auth.users` id, so nothing has to migrate. It needs the paid team.
 - **Until then:** a reinstall on the same phone usually keeps the account, because the session is stored in the Keychain. A new phone can't restore.
-- **Delete account:** Coves tab › Backup › Delete account calls `delete_my_account()`, which deletes every row. Places and blocked apps stay on the phone, and blocking keeps working.
+- **Delete account:** Settings tab › Backup › Delete account calls `delete_my_account()`, which deletes every row. Places and blocked apps stay on the phone, and blocking keeps working.
 
 **What lives where.**
 | Data | Server | Phone | Notes |

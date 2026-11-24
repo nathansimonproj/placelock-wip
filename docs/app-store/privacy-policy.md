@@ -23,7 +23,7 @@ Cove is made by Nathanael Simon.
 - Your saved places and unlock history are backed up to our server under an anonymous account. There's no sign-in, and we never ask for your name, email or phone number.
 - The apps you block stay on your iPhone. Cove never sends that list anywhere.
 - No ads, no analytics, no tracking, and we don't sell or share your data.
-- You can delete everything we have at any time: Coves › Backup › Delete account.
+- You can delete everything we have at any time: in Cove, open Settings › Backup › Delete account.
 
 ## What stays on your iPhone
 
@@ -75,7 +75,7 @@ If you delete Cove from your iPhone without deleting your account first, the bac
 
 ## Deleting your data
 
-- **Everything on our server:** open Coves › Backup › Delete account. This permanently deletes your account, your backed-up places and your unlock history straight away, and turns backup off. Your places and blocked apps stay on your iPhone, and blocking keeps working. You can turn backup back on later; it starts a new account.
+- **Everything on our server:** in Cove, open Settings › Backup › Delete account. This permanently deletes your account, your backed-up places and your unlock history straight away, and turns backup off. Your places and blocked apps stay on your iPhone, and blocking keeps working. You can turn backup back on later; it starts a new account.
 - **Everything on your iPhone:** delete Cove from your iPhone. iOS keeps only Cove's anonymous sign-in, so a reinstall can reconnect to your backup.
 - **Location access:** you can turn it off any time in iOS Settings › Privacy & Security › Location Services › Cove. Without it, Cove keeps your apps blocked, because it can't tell that you're at one of your places.
 

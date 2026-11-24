@@ -3,7 +3,7 @@ import SwiftUI
 #if DEBUG
 /// Developer tools (Debug builds only, so never in the App Store build), kept off Home: pretend
 /// to be somewhere, skip the 24 h waits, and try the simulated block screen (free developer
-/// account). Reached from Coves › Settings.
+/// account). Reached from Settings › General.
 struct DebugView: View {
     @EnvironmentObject private var model: AppModel
     @State private var shieldPreviewApp: String?

@@ -8,7 +8,7 @@ Blocking decisions never use the network. Everything below is either backup, or 
 
 ### Supabase (backup)
 
-Sent to the project in `project.yml` (`SupabaseURL`) over HTTPS, under an anonymous account the app creates on first launch with no sign-in screen. Backup is on by default whenever the URL and key are in the build. Coves › Backup › Delete account removes the account and every row (`delete_my_account()`), and turns backup off. Row-level security lets each account read and write only its own rows.
+Sent to the project in `project.yml` (`SupabaseURL`) over HTTPS, under an anonymous account the app creates on first launch with no sign-in screen. Backup is on by default whenever the URL and key are in the build. Settings › Backup › Delete account removes the account and every row (`delete_my_account()`), and turns backup off. Row-level security lets each account read and write only its own rows.
 
 "Linked to the user" below means linked to the anonymous account's ID. The app sends no name, email, phone number, contacts or device ID. The account ID still ties the rows together, so for Apple's purposes this is data linked to the user.
 

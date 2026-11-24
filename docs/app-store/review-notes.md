@@ -21,13 +21,13 @@ The notes field takes up to 4,000 characters. This text is 3,413 (checked 2026-1
 Cove keeps the apps a person chooses blocked everywhere except places they save, like the gym or home. Apps unblock on their own on arriving at a saved place and block again on leaving. There is no unlock button. Cove is for managing your own phone: it asks Screen Time for individual access, not parental controls.
 
 NO LOGIN
-No account or demo login is needed. Backup makes an anonymous account on its own. Coves > Backup > Delete account removes it and everything stored with it.
+No account or demo login is needed. Backup makes an anonymous account on its own. In Cove, Settings > Backup > Delete account removes it and everything stored with it.
 
 WHY ALWAYS LOCATION
 Cove has to notice arriving at and leaving a saved place while it is closed, which is the whole product: apps unblock while you're at the place and block again when you go. It uses iOS region monitoring (CLMonitor) for the saved places, significant-change updates, and short one-off location fixes for lock checks and for the block screen's "Estimated @" line. It never runs continuous GPS in the background. Precise Location is needed because places can be as small as 50 m. Losing Always or Precise Location blocks apps again as soon as Cove runs, and Home explains how to fix it.
 
 HOW TO TRY IT (needs a real iPhone; about 3 minutes)
-The first 24 hours after setup are a setup window: every change applies right away, so a place added where you are works at once. After that, adding or enlarging a place and removing a blocked app wait 24 hours. Please don't tap Finish on the Setup row in the Coves tab, which ends the window early.
+The first 24 hours after setup are a setup window: every change applies right away, so a place added where you are works at once. After that, adding or enlarging a place and removing a blocked app wait 24 hours. Please don't tap Finish on the Setup row in the Settings tab, which ends the window early.
 
 1. Open Cove and follow setup. Allow location, then choose Always (Settings > Cove > Location if iOS only offers While Using). Keep Precise Location on.
 2. Allow Screen Time access and confirm with Face ID or the passcode.
@@ -35,7 +35,7 @@ The first 24 hours after setup are a setup window: every change applies right aw
 4. Add a place: tap Add a place. The map starts where you are. Type a name (for example Desk) and tap Save. The default area is 150 m across.
 5. Allow notifications (optional).
 6. Home now says Unlocked, "at Desk for 0m". The chosen app opens normally. iOS may take a few seconds to report that you're inside.
-7. To see blocking without walking away: in the Coves tab, swipe left on Desk and delete it. Removing a place only makes things stricter, so it applies at once. Home says Locked.
+7. To see blocking without walking away: in the Settings tab, swipe left on Desk and delete it. Removing a place only makes things stricter, so it applies at once. Home says Locked.
 8. Open the blocked app. The Screen Time block screen says "<app> is locked", then roughly where you are ("Estimated @ ..."), then "Add a place in Cove to open it there.", with a Back to focus button.
 9. Walking out of a saved place also blocks again. iOS reports leaving after a few minutes and 100-200 m.
 
@@ -43,7 +43,7 @@ THE BLOCK SCREEN NEEDS A REAL DEVICE
 Screen Time's block screen (a ShieldConfiguration extension) only appears on a real iPhone, not in the Simulator. The attached screen recording shows the whole flow on a device.
 
 THE 24-HOUR WAIT
-Coves > "How the 24-hour wait works" explains it. After setup, a new place shows "Starts in 24 h" until it starts working. Changes that only make things stricter (deleting a place, shrinking one, blocking another app) always apply at once. The wait is the point of the app: it stops someone from adding a place on a whim to unblock their apps.
+In Cove's Settings tab, the ⓘ button ("How the 24-hour wait works") explains it. After setup, a new place shows "Starts in 24 h" until it starts working. Changes that only make things stricter (deleting a place, shrinking one, blocking another app) always apply at once. The wait is the point of the app: it stops someone from adding a place on a whim to unblock their apps.
 
 BACKUP
 Places and unlock history are backed up to our Supabase project, under the anonymous account, so a reinstall restores them and can't skip the 24-hour waits. Blocking never waits on the network. The blocked-app list and anything from Screen Time stay on the phone.
@@ -67,11 +67,11 @@ Before recording: delete Cove, install the build from TestFlight, turn on Do Not
 | 6 | Turn on notifications | iOS's notification prompt |
 | 7 | Wait on Home until it says Unlocked | "Unlocked", "at Desk for 0m", "Apps block again when you leave." The "At Desk, apps unblocked." notification if it arrives |
 | 8 | Open one of the blocked apps, then go back to Cove | The app opens normally |
-| 9 | Coves tab: swipe left on Desk, Delete | The place goes away |
+| 9 | Settings tab: swipe left on Desk, Delete | The place goes away |
 | 10 | Home | "Locked" |
 | 11 | Open the same app again | The block screen: "<app> is locked", the "Estimated @" line, "Add a place in Cove to open it there.", Back to focus. Tap Back to focus |
-| 12 | Coves tab: tap "How the 24-hour wait works" | The sheet that explains the wait |
-| 13 | Coves › Backup | The Backup screen, with Delete account |
+| 12 | Settings tab: tap "How the 24-hour wait works" | The sheet that explains the wait |
+| 13 | Settings › Backup | The Backup screen, with Delete account |
 
 Then stop the recording. If step 7 takes long, trim the wait out. Attach the video in App Review Information, or upload it and replace `Screen recording: TODO(user)` in the notes with its link.
 

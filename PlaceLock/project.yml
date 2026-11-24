@@ -42,6 +42,8 @@ targets:
         # Saying so here skips App Store Connect's encryption question on every upload.
         ITSAppUsesNonExemptEncryption: false
         UILaunchScreen: {}
+        # Always dark (Views/Theme.swift), so sheets, alerts, the keyboard and the app picker match.
+        UIUserInterfaceStyle: Dark
         UIBackgroundModes: [location]
         # Backup and sync (Sync/SyncEngine.swift). The publishable key is meant to ship in apps:
         # row-level security, not the key, protects the data. Remove both to turn sync off.

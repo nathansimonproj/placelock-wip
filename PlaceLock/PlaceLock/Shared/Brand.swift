@@ -16,7 +16,7 @@ enum Brand {
     /// app, so the app picker steps suggest picking it too.
     static let websiteTip = "Also pick each app's website (like youtube.com), so the browser isn't a way around."
 
-    // MARK: About links (Coves tab › About)
+    // MARK: About links (Settings tab › About)
 
     // Hosted on GitHub Pages (repo nathansimonproj/cove) since 2026-11-23; the pages' source is
     // docs/privacy and docs/support. While one is nil, its row is hidden, so nothing made-up

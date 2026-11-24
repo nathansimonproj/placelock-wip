@@ -34,7 +34,7 @@ struct BlockList: Codable {
 
     /// The list without stand-in names (and their pending removals), or nil if it had none.
     /// The paid build drops them on load: they come over from the free build's saved data,
-    /// block nothing there, and would still be listed in Coves and on Home.
+    /// block nothing there, and would still be listed in Settings and on Home.
     func droppingSimulatedApps() -> BlockList? {
         guard !simulatedApps.isEmpty || !pendingRemovals.simulated.isEmpty else { return nil }
         var list = self

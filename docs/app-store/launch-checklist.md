@@ -12,7 +12,7 @@ What's in place for submission, with where to find it. Everything here was check
 - **Damaged saved data doesn't crash or unblock.** `PlaceLock/PlaceLock/Models/SavedData.swift`, with tests. (ae0eb0c)
 - **Privacy manifests** for the app and the Shield extension (`PrivacyInfo.xcprivacy`), matching `docs/app-store/data-inventory.md`. (242ef8a)
 - **Private logs and a list of what leaves the phone:** `docs/app-store/data-inventory.md`. No Screen Time data is synced or logged. (e09708d)
-- **About section** in the Coves tab with the version, and privacy policy and support rows that appear once `PlaceLock/PlaceLock/Shared/Brand.swift` has addresses. (f839cca)
+- **About section** in the Settings tab with the version, and privacy policy and support rows that appear once `PlaceLock/PlaceLock/Shared/Brand.swift` has addresses. (f839cca)
 - **Location purpose strings** name every use of location. (4a52129)
 - **Permission problems** say what's wrong and link to Settings; apps stay blocked. (72162df)
 - **Place search fallback** when suggestions don't arrive. (642cbd0)
@@ -24,7 +24,7 @@ What's in place for submission, with where to find it. Everything here was check
 - **Privacy policy draft:** `docs/app-store/privacy-policy.md` and the page `docs/privacy/index.html`. (97c428d)
 - **Listing, App Privacy, age rating and review notes drafts:** `docs/app-store/listing.md`, `app-privacy.md`, `age-rating.md`, `review-notes.md`. (c2ef3e8)
 - **Draft screenshots** at 1320 × 2868: `.night/app-store-screens/` in your checkout, not in the repo. (fc2d747)
-- **Backend:** Supabase project with row-level security and the 50 m radius migration applied; Delete account in Coves › Backup (Roadmap › Backend).
+- **Backend:** Supabase project with row-level security and the 50 m radius migration applied; Delete account in Settings › Backup (Roadmap › Backend).
 - **README and Plan** match the code. (8f6f787, e681169)
 
 ## Your steps
@@ -59,14 +59,14 @@ From Roadmap.md. Use the paid build, and keep Console on the Mac open (pick the 
 - **Geofence log lines:** a plain relaunch logs no "Geofence … added" or "removed"; the first launch of the new build logs one "removed (old identifier)" and one "added" per place; renaming a place logs neither. (Phase 2 on-iPhone checks)
 - **Battery and notices:** after a day of normal use, check Settings › Battery for Cove, and that Notification Center has at most one recent Cove notice. (Phase 2)
 - **Permission fixes:** Home's Fix and setup's Open Settings land on Cove's page in Settings; Precise Location and notification switches show the right banner. (Phase 3)
-- **Links in About:** once `Brand.swift` is filled in, Coves › About › Privacy policy opens Safari and Contact support opens Mail. (Phase 4)
+- **Links in About:** once `Brand.swift` is filled in, Settings › About › Privacy policy opens Safari and Contact support opens Mail. (Phase 4)
 - **Private logs:** with no Xcode debugger attached, add a place and walk out of one; place names, search text and coordinates show as `<private>` in Console. (Phase 4)
 - **Sync:** an unlock then leave writes a `sessions` row; check it in Supabase dashboard › Table Editor › `sessions`. (Backend)
-- **Delete account on the live project:** Coves › Backup › Delete account › Delete account; no "Couldn't delete your account" alert, and no `places` or `sessions` rows left for that account in the Table Editor. App Review checks this (5.1.1(v)).
+- **Delete account on the live project:** Settings › Backup › Delete account › Delete account; no "Couldn't delete your account" alert, and no `places` or `sessions` rows left for that account in the Table Editor. App Review checks this (5.1.1(v)).
 - **VoiceOver:** Settings › Accessibility › VoiceOver on; Home's lock says blocked or unblocked and countdowns read as words. (Phase 3)
 - **Location prompts:** the two iOS location prompts show the new purpose wording. (Phase 4, App Review audit)
 - **Place search:** search works on normal Wi-Fi; if it ever spins, press Search and send the log. (Known issues)
-- **50-website cap (optional):** Coves › Blocked apps › Add or remove apps, pick more than 50 websites; Cove says "Kept 50 of each" and a kept site shows the block screen in Safari. (Known issues, question 3)
+- **50-website cap (optional):** Settings › Blocked apps › Add or remove apps, pick more than 50 websites; Cove says "Kept 50 of each" and a kept site shows the block screen in Safari. (Known issues, question 3)
 
 ### 3. App Store Connect app record
 
@@ -85,7 +85,7 @@ From Roadmap.md. Use the paid build, and keep Console on the Mac open (pick the 
 
 - ~~**Finish the privacy policy.**~~ Done 2026-11-23: name, support email (`nsimon06@uw.edu`), Children section, Supabase facts, effective date November 23, 2026; draft banner and `noindex` removed.
 - ~~**Host it and a support page.**~~ Done 2026-11-23: public repo `nathansimonproj/cove` on GitHub Pages, holding only the two pages. Support: https://nathansimonproj.github.io/cove/. Privacy policy: https://nathansimonproj.github.io/cove/privacy/. Sources: `docs/support/index.html` and `docs/privacy/index.html`; copy them to that repo after any change.
-- ~~**Link them in the app.**~~ Done 2026-11-23: `Brand.swift` has both addresses and the support email, so Coves › About shows Privacy policy and Contact support (opens Mail).
+- ~~**Link them in the app.**~~ Done 2026-11-23: `Brand.swift` has both addresses and the support email, so Settings › About shows Privacy policy and Contact support (opens Mail).
 
 ### 7. Archive and upload
 
@@ -112,7 +112,7 @@ From Roadmap.md. Use the paid build, and keep Console on the Mac open (pick the 
 
 ### 11. Submit
 
-- **Keep Supabase awake:** just before submitting, open the Supabase dashboard › the project; if it says Paused, click Resume project (Free plan projects pause after 7 days of low activity, and Delete account then fails for the reviewer). Then check Coves › Backup on the iPhone says "Backed up".
+- **Keep Supabase awake:** just before submitting, open the Supabase dashboard › the project; if it says Paused, click Resume project (Free plan projects pause after 7 days of low activity, and Delete account then fails for the reviewer). Then check Settings › Backup on the iPhone says "Backed up".
 - **Fill in App Review Information:** 1.0 version page › App Review Information: untick sign-in required, add your name, phone and email, paste the notes from `docs/app-store/review-notes.md` (replace `Screen recording: TODO(user)`), and attach the video.
 - **Submit:** only once step 4 shows Family Controls (Distribution) on both App IDs: 1.0 version page › Build › pick the build, choose manual or automatic release, Add for Review, then Submit to App Review.
 

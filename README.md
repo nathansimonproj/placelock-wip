@@ -66,7 +66,7 @@ PlaceLock/scripts/archive.sh --check    # archive without signing and check what
 
 | Argument | Effect |
 | --- | --- |
-| `-tab rules` | Open on the Coves tab |
+| `-tab rules` | Open on the Settings tab |
 | `-sheet add` | Open Add place |
 | `-tab rules -sheet wait` | Open the "How the 24-hour wait works" sheet |
 | `-tab rules -push backup` | Open Backup, even when backup is off |
@@ -79,7 +79,7 @@ PlaceLock/scripts/archive.sh --check    # archive without signing and check what
 | `-notificationsOff YES` | Read notifications as turned off in Settings, which `simctl privacy` can't set |
 | `-scenario <name>` | Scenario mode (free build only): its own settings store and no backup. `geofence-scenario.py` uses it |
 
-Debug builds also have a **Debug** screen under Coves › Settings. Its **Pretend I'm at** list feeds fake inside and outside readings through the same logic the real geofences use, and **Skip 24 h wait** applies waiting changes at once. `-onboarded YES` is different: it sets the real saved setting.
+Debug builds also have a **Debug** screen under Settings › General. Its **Pretend I'm at** list feeds fake inside and outside readings through the same logic the real geofences use, and **Skip 24 h wait** applies waiting changes at once. `-onboarded YES` is different: it sets the real saved setting.
 
 None of this is in Release builds: the launch arguments, the Debug screen, sample visits and scenario mode (`-scenario`) are behind `#if DEBUG`, and the free build's stand-ins for Screen Time aren't compiled into the paid build. `scripts/verify.sh --release` checks the paid Release build for them.
 
@@ -128,7 +128,7 @@ PlaceLock/
     Blocking/              The block list and ShieldManager (Screen Time, or simulated)
     Sync/                  Supabase backup: engine, merge rules, records, server calls
     Shared/                Code shared with the Shield extension: brand colors and text, SharedStore
-    Views/                 SwiftUI screens: Home, Coves (`RulesView`), Add place, first-run setup, Backup, Debug, the free build's stand-in block screen
+    Views/                 SwiftUI screens: Home, Settings (`RulesView`), Add place, first-run setup, Backup, Debug, the free build's stand-in block screen
   Extensions/
     Shield/                The block screen shown over a blocked app
   PlaceLockTests/          Unit tests
@@ -148,9 +148,9 @@ Decisions live in pure functions (`LockRules`, `PlaceRules`, `BlockRules`, `Sync
 - Your location stays on the phone. The server stores your saved places (with coordinates), your unlock history and your setup window, under an anonymous account.
 - The Supabase URL and publishable key are in `project.yml` on purpose: publishable keys are meant to ship inside apps. Row-level security protects the data, so each account can only read and write its own rows.
 - Remove `SupabaseURL` and `SupabaseKey` from `project.yml` to turn sync off.
-- Coves › Backup › **Delete account** removes every row on the server. Places and blocking keep working on the phone.
+- Settings › Backup › **Delete account** removes every row on the server. Places and blocking keep working on the phone.
 - To name your location on the block screen, the app looks up its coordinates with Apple Maps (`CLGeocoder`).
-- Coves › About shows the version and, once they're set in `Shared/Brand.swift`, links to the privacy policy and support.
+- Settings › About shows the version and, once they're set in `Shared/Brand.swift`, links to the privacy policy and support.
 - Logs never show place names, addresses, coordinates or search text: they're marked private. [docs/app-store/data-inventory.md](docs/app-store/data-inventory.md) lists everything that leaves the phone.
 
 ## Docs

@@ -61,7 +61,7 @@ Can be changed at any time without a new build.
 >
 > BACKUP
 >
-> Your places and unlock history are backed up under an anonymous account, with no sign-in, so they come back after a reinstall. Delete account in Coves › Backup removes them.
+> Your places and unlock history are backed up under an anonymous account, with no sign-in, so they come back after a reinstall. Delete account in Cove's Settings › Backup removes them.
 
 1,790 characters (counting line breaks).
 

@@ -2,7 +2,7 @@ import Foundation
 
 // MARK: - The About section: version and links
 
-/// What the About section in the Coves tab shows. Rows whose value is missing or not usable
+/// What the About section in the Settings tab shows. Rows whose value is missing or not usable
 /// are hidden, so an unset link in `Brand` never shows up as a dead row.
 enum AboutRules {
     struct Links: Equatable {

@@ -39,7 +39,7 @@ struct OnboardingView: View {
                     .combined(with: .opacity))
         }
         .animation(.default, value: step)
-        .background(Color(.systemGroupedBackground))
+        .calmBackground()
         .blockedAppPicker(isPresented: $showPicker, model: model)
         .sheet(item: $placeSheet) { sheet in
             Group {
@@ -65,7 +65,7 @@ struct OnboardingView: View {
             HStack(spacing: 6) {
                 ForEach(steps.indices, id: \.self) { i in
                     Capsule()
-                        .fill(i <= index ? Color.accentColor : Color(.tertiarySystemFill))
+                        .fill(i <= index ? AnyShapeStyle(.tint) : AnyShapeStyle(.quaternary))
                         .frame(width: i == index ? 20 : 8, height: 8)
                 }
             }
@@ -99,7 +99,7 @@ struct OnboardingView: View {
     private var locationStep: some View {
         StepPage(symbol: "location.fill",
                  title: "Apps unblock where you choose",
-                 text: "Cove keeps distracting apps blocked everywhere except the places you pick, like the gym or home.\n\nTo notice when you arrive and leave, even with the app closed, it needs your location set to **Always**. Where you are is checked on this phone.\n\nYour saved places and unlock history are backed up under an anonymous account, with no sign-in. You can delete the backup anytime in Coves › Backup.") {
+                 text: "Cove keeps distracting apps blocked everywhere except the places you pick, like the gym or home.\n\nTo notice when you arrive and leave, even with the app closed, it needs your location set to **Always**. Where you are is checked on this phone.\n\nYour saved places and unlock history are backed up under an anonymous account, with no sign-in. You can delete the backup anytime in Settings › Backup.") {
             if location.canWatchPlaces {
                 Done("Location is set to Always")
             } else if location.needsPrecise {
@@ -298,7 +298,8 @@ private struct PrimaryButton: View {
 
     var body: some View {
         Button(action: action) {
-            Text(title).font(.headline).frame(maxWidth: .infinity)
+            // Dark text: white on the light sage is hard to read.
+            Text(title).font(.headline).foregroundStyle(.black).frame(maxWidth: .infinity)
         }
         .buttonStyle(.borderedProminent)
         .controlSize(.large)
@@ -356,7 +357,7 @@ private struct PlaceLine: View {
                     .accessibilityHidden(true)
             }
             .padding(12)
-            .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: Theme.radius))
+            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: Theme.radius))
         }
         .buttonStyle(.plain)
     }

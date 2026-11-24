@@ -63,6 +63,7 @@ struct AddPlaceView: View {
                     details
                 }
             }
+            .calmBackground()
             .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
             // No auto-focus on search: on a phone the keyboard would open over the map before you've seen it.
@@ -121,6 +122,7 @@ struct AddPlaceView: View {
                     ProgressView()
                     Text("Searching…").foregroundStyle(.secondary)
                 }
+                .listRowBackground(Color.clear)
             }
             ForEach(search.suggestions) { suggestion in
                 Button { pick(suggestion) } label: {
@@ -132,8 +134,10 @@ struct AddPlaceView: View {
                     }
                 }
             }
+            .listRowBackground(Color.clear)
         }
         .listStyle(.plain)
+        .scrollContentBackground(.hidden)
     }
 
     private var mapArea: some View {
@@ -193,6 +197,7 @@ struct AddPlaceView: View {
             } footer: {
                 Text("Search above, or drag the map so the pin sits on your spot.")
             }
+            .calmRows()
             Section {
                 TextField("Name (required, e.g. Library)", text: $name)
                     .focused($nameFocused)
@@ -202,6 +207,7 @@ struct AddPlaceView: View {
                         .font(.footnote).foregroundStyle(.secondary)
                 }
             }
+            .calmRows()
             Section {
                 VStack(alignment: .leading) {
                     Text("Radius: \(Int(radius)) m")
@@ -226,8 +232,10 @@ struct AddPlaceView: View {
                     Text("iOS notices you've left about 100–200 m past the edge, so keep the circle snug.")
                 }
             }
+            .calmRows()
         }
         .scrollDismissesKeyboard(.interactively)
+        .scrollContentBackground(.hidden)
     }
 
     /// Tells you up front whether saving will wait 24 h.
