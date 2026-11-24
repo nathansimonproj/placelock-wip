@@ -144,7 +144,7 @@ Sources (fetched 2026-11-23): Apple's "Describing data use in privacy manifests"
 
 ## Not checked
 
-- What Supabase keeps on its side: the IP address and user agent in its API and Auth logs, and how long. Look in the Supabase dashboard (Logs, and the project's region) before writing the privacy policy. Listed in the launch checklist.
+- ~~What Supabase keeps on its side.~~ Checked 2026-11-23: the project is in East US (North Virginia, `us-east-1`). Auth logs record the IP address (`remote_addr`) with the account ID (`actor_id`); the entry checked had no user agent. On the Free plan, logs are kept 1 day ("Log retention (API & Database): 1 day", supabase.com/pricing) and there are no automatic backups ("Not included"). On Pro both become 7 days. The API Gateway logs weren't opened.
 - Whether Apple counts the MapKit and geocoder requests as data the app "collects" for App Privacy. Most apps don't declare Apple's own services; decide in the App Privacy task.
 - Xcode's privacy report for a signed archive (Organizer › right-click the archive › Generate Privacy Report). It merges the app's, the extension's and the packages' manifests the way App Store Connect will. Needs a signed archive; listed in the launch checklist.
 - Whether App Review agrees that unlock history is product interaction rather than only location. It's declared both ways (sessions name a place and a time), which is the safer side.

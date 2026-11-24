@@ -2,7 +2,8 @@
 
 > **DRAFT, not published.** Written 2026-11-23 from [data-inventory.md](data-inventory.md) (checked against the code at commit 4a52129). Before hosting it:
 >
-> - Fill in every `TODO(user)`: the effective date, the contact email, who runs Cove, and the Supabase region and log retention (Supabase dashboard; see [launch-checklist.md](launch-checklist.md)).
+> - Fill in every `TODO(user)`: the effective date, the contact email, who runs Cove, and the Children section.
+> - The Supabase facts (region, 1-day logs, no backups) were checked 2026-11-23 for the **Free plan**. On Pro, logs are kept 7 days and backups 7 days: update "What we collect" and "How long we keep it" if you upgrade.
 > - It describes the app as it is today: **backup is on from first launch**, and setup's first step says so (decided 2026-11-23). If that ever changes (opt-in backup, or no `address`), update "Backup" and "What we collect" here and in `docs/privacy/index.html`.
 > - It's a plain-language draft, not legal advice. If you expect users in places with specific privacy laws (the EU, the UK, California), have it checked against those.
 > - The same text is in [`docs/privacy/index.html`](../privacy/index.html), ready to host. Keep the two in step.
@@ -45,11 +46,11 @@ We store, linked to that anonymous account:
 
 Together, your places and unlock history show when you were at each of your saved places. We use this only to back up and restore Cove on your phone. We don't use it for anything else.
 
-Like any internet service, our server also sees your phone's IP address and basic connection details (such as the app and iOS version) when Cove connects. TODO(user): say how long Supabase keeps its request logs (IP address, user agent) for your project, from the Supabase dashboard › Logs.
+Like any internet service, our server also sees your phone's IP address and basic connection details (such as the app and iOS version) when Cove connects. Supabase's request logs record that IP address with your anonymous account ID, and are deleted after 1 day.
 
 ## Where it's stored
 
-Backups are stored with Supabase, a database hosting company, in TODO(user): your project's region (Supabase dashboard › Project Settings › General). Supabase stores the data for us. Data is sent over an encrypted (HTTPS) connection, and each account can read and change only its own data.
+Backups are stored with Supabase, a database hosting company, in the eastern United States (North Virginia). Supabase stores the data for us. Data is sent over an encrypted (HTTPS) connection, and each account can read and change only its own data.
 
 ## Apple services Cove uses
 
@@ -69,7 +70,7 @@ Some features ask Apple for information. These requests don't include your Cove 
 
 ## How long we keep it
 
-Your backup stays until you delete your account. TODO(user): if your Supabase plan keeps database backups, say how long a deleted account can remain in them (Supabase dashboard › Database › Backups). Places you delete in the app are kept in the backup, marked as deleted, so a reinstall doesn't bring them back; they're removed for good when you delete your account.
+Your backup stays until you delete your account. Our hosting plan doesn't keep separate database backups, so when you delete your account, your data is gone from our server straight away. Only the request logs above can still hold your IP address and account ID, for up to 1 day. Places you delete in the app are kept in the backup, marked as deleted, so a reinstall doesn't bring them back; they're removed for good when you delete your account.
 
 If you delete Cove from your iPhone without deleting your account first, the backup stays on our server. iOS keeps Cove's sign-in on the iPhone, so reinstalling Cove on the same iPhone reconnects to the same account, and you can delete it from there.
 

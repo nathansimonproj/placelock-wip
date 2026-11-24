@@ -52,9 +52,9 @@
   <li><strong>Timing for the rules.</strong> When your first 24-hour setup window ends, when each place starts working, when places were deleted, and when each item was last changed.</li>
 </ul>
 <p>Together, your places and unlock history show when you were at each of your saved places. We use this only to back up and restore Cove on your phone. We don't use it for anything else.</p>
-<p>Like any internet service, our server also sees your phone's IP address and basic connection details (such as the app and iOS version) when Cove connects. <mark>TODO(user)</mark>: say how long Supabase keeps its request logs (IP address, user agent) for your project, from the Supabase dashboard › Logs.</p>
+<p>Like any internet service, our server also sees your phone's IP address and basic connection details (such as the app and iOS version) when Cove connects. Supabase's request logs record that IP address with your anonymous account ID, and are deleted after 1 day.</p>
 <h2>Where it's stored</h2>
-<p>Backups are stored with Supabase, a database hosting company, in <mark>TODO(user)</mark>: your project's region (Supabase dashboard › Project Settings › General). Supabase stores the data for us. Data is sent over an encrypted (HTTPS) connection, and each account can read and change only its own data.</p>
+<p>Backups are stored with Supabase, a database hosting company, in the eastern United States (North Virginia). Supabase stores the data for us. Data is sent over an encrypted (HTTPS) connection, and each account can read and change only its own data.</p>
 <h2>Apple services Cove uses</h2>
 <p>Some features ask Apple for information. These requests don't include your Cove account ID, and Apple handles them under <a href="https://www.apple.com/legal/privacy/">Apple's privacy policy</a>:</p>
 <ul>
@@ -71,7 +71,7 @@
   <li>We don't ask for your name, email, phone number or contacts.</li>
 </ul>
 <h2>How long we keep it</h2>
-<p>Your backup stays until you delete your account. <mark>TODO(user)</mark>: if your Supabase plan keeps database backups, say how long a deleted account can remain in them (Supabase dashboard › Database › Backups). Places you delete in the app are kept in the backup, marked as deleted, so a reinstall doesn't bring them back; they're removed for good when you delete your account.</p>
+<p>Your backup stays until you delete your account. Our hosting plan doesn't keep separate database backups, so when you delete your account, your data is gone from our server straight away. Only the request logs above can still hold your IP address and account ID, for up to 1 day. Places you delete in the app are kept in the backup, marked as deleted, so a reinstall doesn't bring them back; they're removed for good when you delete your account.</p>
 <p>If you delete Cove from your iPhone without deleting your account first, the backup stays on our server. iOS keeps Cove's sign-in on the iPhone, so reinstalling Cove on the same iPhone reconnects to the same account, and you can delete it from there.</p>
 <h2>Deleting your data</h2>
 <ul>
