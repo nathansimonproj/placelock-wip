@@ -1,0 +1,11 @@
+# Walking out blocks within about a minute (new engine deciding), not iOS's few minutes.
+option engineMode live
+place Gym 37.7694 -122.4862 100
+
+at Gym
+launch
+expect unlock Gym
+wait 10
+walk Gym +250 speed 3        # a brisk walk out, about 2 minutes
+expect lock "Left Gym" within 150
+expect locked

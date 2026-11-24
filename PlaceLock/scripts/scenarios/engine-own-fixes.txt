@@ -1,0 +1,16 @@
+# The new engine decides from its own fixes. iOS's geofence readings are pinned to "outside"
+# (-geofenceReading) and its events never reach the engine, so only Cove's tracking can
+# unblock and block here. This is the case where iOS never notices you arrived.
+option engineMode live
+option geofenceReading outside
+place Gym 37.7694 -122.4862 100
+
+at Gym +400                  # 400 m out: approach tracking
+launch
+expect locked
+walk Gym speed 10            # arrive
+expect unlock Gym within 45
+expect-no lock for 30        # iOS's pinned "outside" must not undo it
+walk Gym +300 speed 10       # leave
+expect lock "Left Gym" within 90
+expect locked

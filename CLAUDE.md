@@ -22,9 +22,9 @@ iPhone app (SwiftUI, iOS 17+) that keeps chosen apps blocked everywhere except s
 
 ## Code layout
 
-- Decisions are pure functions with unit tests: `LockRules`, `PlaceRules`, `BlockRules` and `SyncRules`, under `PlaceLock/PlaceLock/Models` and `Sync`. `AppModel` only gathers their inputs and applies the results. Put new decision logic in a rules type and test it there, not in `AppModel` or views.
+- Decisions are pure functions with unit tests: `LockRules`, `PlaceRules`, `BlockRules`, `PresenceRules`, `TrackingPolicy` and `SyncRules`, under `PlaceLock/PlaceLock/Models` and `Sync`. `AppModel` only gathers their inputs and applies the results. Put new decision logic in a rules type and test it there, not in `AppModel` or views.
 - Logging: `Log.app` and `Log.sync` (subsystem `com.nsimon.PlaceLock`).
-- Debug launch arguments: `-tab rules`, `-sheet add`, and with `-tab rules` also `-sheet wait` (the 24-hour wait sheet), `-push backup`, `-push debug` and `-scrollTo about`; `-pretendAt <place name>` (Debug's Pretend I'm at), `-onboardingStep <step>`, `-demoHistory YES`, `-preciseOff YES` and `-notificationsOff YES` (permissions `simctl privacy` can't set), and `-onboarded YES` to skip first-run setup. `-scenario <name>` starts scenario mode (`App/Scenario.swift`): a separate settings store and no backup, used by `/geofence-scenario`.
+- Debug launch arguments: `-tab rules`, `-sheet add`, and with `-tab rules` also `-sheet wait` (the 24-hour wait sheet), `-push backup`, `-push debug` and `-scrollTo about`; `-pretendAt <place name>` (Debug's Pretend I'm at), `-onboardingStep <step>`, `-demoHistory YES`, `-preciseOff YES` and `-notificationsOff YES` (permissions `simctl privacy` can't set), and `-onboarded YES` to skip first-run setup. `-scenario <name>` starts scenario mode (`App/Scenario.swift`): a separate settings store and no backup, used by `/geofence-scenario`. `-engineMode live` (or `shadow`) picks which location logic decides, and `-geofenceReading outside` pins iOS's geofence readings to outside and keeps them from the new engine; scenarios set these with `option NAME VALUE`.
 
 ## Checking a change
 

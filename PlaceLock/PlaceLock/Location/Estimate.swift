@@ -60,7 +60,9 @@ extension AppModel {
         // already that good, use it instead of turning on GPS; in Low Power Mode never turn it on.
         // Otherwise ask for a fix, and after 5 s (a background wake is short) fall back to the move.
         let lowPower = ProcessInfo.processInfo.isLowPowerModeEnabled
-        let recentMove = lastMove.flatMap { -$0.timestamp.timeIntervalSinceNow < 300 ? $0 : nil }
+        // The engine's latest fix (tracking near places) or the last ~500 m move, whichever is newer.
+        let newest = [engine.lastLocation, lastMove].compactMap { $0 }.max { $0.timestamp < $1.timestamp }
+        let recentMove = newest.flatMap { -$0.timestamp.timeIntervalSinceNow < 300 ? $0 : nil }
         var here = recentMove.flatMap { $0.horizontalAccuracy >= 0 && ($0.horizontalAccuracy <= 200 || lowPower) ? $0 : nil }
         if here == nil, !lowPower {
             here = try? await location.currentLocation(maxAccuracy: 200, timeout: 5)

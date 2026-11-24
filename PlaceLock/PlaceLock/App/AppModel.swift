@@ -19,6 +19,7 @@ final class AppModel: ObservableObject {
             save(places, key: Keys.places)
             shareAllowedPlaces()
             if !applyingRemote { SyncEngine.shared.placesChanged(old: oldValue, new: places) }
+            engine.placesChanged(places)
             Task { await reconcile() } // reconcile syncs the watched circles first
         }
     }
@@ -101,6 +102,20 @@ final class AppModel: ObservableObject {
     #endif
 
     let location = LocationService()
+    /// The new location logic, in shadow mode until the iPhone recordings check out.
+    let engine = LocationEngine()
+    /// What the shadow engine would have unlocked (shadow mode only, never applied).
+    private var shadowSession: UnlockSession? {
+        didSet { save(shadowSession, key: Keys.shadowSession) }
+    }
+
+    #if DEBUG
+    /// `-geofenceReading outside` (Debug): the current logic reads every place as outside, and
+    /// iOS's events don't reach the engine, so scenarios can show the engine deciding on its own.
+    static let pinnedGeofence: Presence? = UserDefaults.standard.string(forKey: "geofenceReading").flatMap(Presence.init)
+    #else
+    static let pinnedGeofence: Presence? = nil
+    #endif
 
     private var reconcileTask: Task<Void, Never>?
     /// True once `startWatchingPlaces` ran. Until then nothing touches CLMonitor's circles, since
@@ -112,6 +127,7 @@ final class AppModel: ObservableObject {
         static let places = "places", session = "session", blockList = "blockList", paused = "pausedPlaces"
         static let slots = "placeSlots", seeded = "seededDefaultPlaces", setupEnds = "setupEndsAt"
         static let screenTime = "screenTimeAccess", onboarded = "onboarded", visits = "visits"
+        static let shadowSession = "shadowSession"
     }
 
     /// First-run setup (`OnboardingView`) is done or skipped.
@@ -145,6 +161,7 @@ final class AppModel: ObservableObject {
         // No session (or an unreadable one) means locked; reconcile unlocks again if you're at a place.
         _session = Published(initialValue: load(UnlockSession.self, key: Keys.session))
         _visits = Published(initialValue: loadList(Visit.self, key: Keys.visits))
+        shadowSession = load(UnlockSession.self, key: Keys.shadowSession)
         #if DEBUG
         // Launch with `-demoHistory YES` to fill today with two sample visits (for screenshots).
         if UserDefaults.standard.bool(forKey: "demoHistory"), visits.isEmpty, places.count >= 2 {
@@ -170,7 +187,11 @@ final class AppModel: ObservableObject {
         shareAllowedPlaces()
         // Losing Always or Precise while the app is running locks right away, not at the next wake.
         location.onAuthorizationChange = { [weak self] in
+            self?.engine.permissionChanged()
             Task { await self?.reconcileWhileAwake() }
+        }
+        engine.onChange = { [weak self] in
+            Task { await self?.reconcileWhileAwake() } // shadow mode: reconcile runs the shadow pass
         }
     }
 
@@ -266,9 +287,24 @@ final class AppModel: ObservableObject {
     }
 
     private func startWatchingPlaces() async {
-        await GeofenceMonitor.shared.start { await AppModel.shared.reconcileWhileAwake() }
+        await GeofenceMonitor.shared.start { event in await AppModel.shared.geofenceEvent(event) }
         watchingPlaces = true // the caller's reconcile syncs the circles
         startWatchingMovement()
+        engine.start(places: places) { [weak self] in self?.location.canWatchPlaces ?? false }
+        if Self.pinnedGeofence == nil {
+            engine.seed(await GeofenceMonitor.shared.readings(for: places))
+        }
+    }
+
+    private func geofenceEvent(_ event: GeofenceMonitor.Event) async {
+        // The pin hides iOS's readings of the places themselves; approach rings still wake the engine.
+        if Self.pinnedGeofence == nil || event.ring { engine.geofence(event) }
+        await reconcileWhileAwake()
+    }
+
+    /// Cove came to the front: a short best-accuracy look (the engine decides from it).
+    func cameToFront() {
+        engine.check("opened Cove")
     }
 
     /// Backstop for the geofences: iOS wakes the app every time you move about 500 m, even if it
@@ -280,6 +316,7 @@ final class AppModel: ObservableObject {
             guard let self else { return }
             self.lastMove = here
             self.lastEstimateAttempt = .distantPast // estimate again right away
+            self.engine.fix(here, source: "move")
             Task {
                 await self.logMove(here)
                 await self.reconcileWhileAwake()
@@ -343,10 +380,15 @@ final class AppModel: ObservableObject {
         if hasAlways {
             if let simulated = simulatedPresence() {
                 presence = simulated
+            } else if engine.mode == .live {
+                presence = engine.presence
+            } else if let pinned = Self.pinnedGeofence {
+                presence = Dictionary(uniqueKeysWithValues: watched.map { ($0.id, pinned) })
             } else {
                 presence = await GeofenceMonitor.shared.states(for: watched).mapValues(Presence.init)
             }
         }
+        if engine.mode == .shadow { runShadow(hasAlways: hasAlways) }
         let action = LockRules.decide(.init(
             places: places, session: session, presence: presence, hasAlways: hasAlways, now: .now))
 
@@ -386,8 +428,31 @@ final class AppModel: ObservableObject {
         #endif
     }
 
+    /// Shadow mode: what the new engine would do, recorded and logged, never applied.
+    private func runShadow(hasAlways: Bool) {
+        let action = LockRules.decide(.init(places: places, session: shadowSession, presence: engine.presence,
+                                            hasAlways: hasAlways, now: .now))
+        switch action {
+        case .unlock(let id):
+            shadowSession = UnlockSession(placeID: id, startedAt: .now)
+            let place = places.first { $0.id == id }
+            Trace.decision("shadow", "unlock", place: place)
+            Log.app.notice("Shadow: would unblock at \(place?.name ?? "?", privacy: .private) (current: \(self.session == nil ? "blocked" : "unblocked", privacy: .public))")
+        case .move(_, let to):
+            shadowSession = UnlockSession(placeID: to, startedAt: .now)
+            Trace.decision("shadow", "move", place: places.first { $0.id == to })
+        case .lock(let reason):
+            Trace.decision("shadow", "lock", place: places.first { $0.id == shadowSession?.placeID })
+            Log.app.notice("Shadow: would block: \(reason, privacy: .private) (current: \(self.session == nil ? "blocked" : "unblocked", privacy: .public))")
+            shadowSession = nil
+        case .stayLocked, .stayUnlocked:
+            break
+        }
+    }
+
     private func unlock(at place: Place) {
         Log.app.notice("Auto-unlock at \(place.name, privacy: .private)")
+        Trace.decision(engine.mode == .live ? "live" : "current", "unlock", place: place)
         ShieldManager.unlock()
         let started = UnlockSession(placeID: place.id, startedAt: .now)
         session = started
@@ -426,6 +491,7 @@ final class AppModel: ObservableObject {
         // The reason can name the place ("Left Gym, apps blocked."), so only `end` is public.
         Log.app.notice("Lock (was unlocked: \(wasUnlocked)): \(reason ?? "manual", privacy: .private) [\(end.rawValue, privacy: .public)]")
         ShieldManager.lock(blockList)
+        if wasUnlocked { Trace.decision(engine.mode == .live ? "live" : "current", "lock", place: activePlace) }
         if let session { SyncEngine.shared.sessionEnded(session, reason: end) }
         session = nil
         if let reason {

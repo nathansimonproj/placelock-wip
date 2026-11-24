@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """Play a scripted walk through saved places in the Simulator and check that apps lock and unlock.
 
-Usage: scripts/geofence-scenario.py SCENARIO... [--build] [--sim NAME]
+Usage: scripts/geofence-scenario.py SCENARIO... [--build] [--sim NAME] [--engine shadow|live]
        scripts/geofence-scenario.py --all
 
   SCENARIO  a file, or a name in scripts/scenarios/ (".txt" optional)
   --all     run every scenario in scripts/scenarios/
+  --engine  which location logic decides (-engineMode), unless a scenario sets its own option
   --build   build the free app first (scripts/verify.sh --quick), then install it
   --sim     Simulator to use (default "Spots Scenarios", created on first use as an iPhone 17
             on the newest iOS). Keep it to itself: anything else that launches the app on it
@@ -18,6 +19,7 @@ screenshots) goes to build/scenarios/<name>/.
 Scenario file, one step per line (# starts a comment):
 
   place NAME LAT LON RADIUS [inactive]   a saved place; "inactive" = still waiting out its 24 h
+  option NAME VALUE        pass -NAME VALUE on every launch (e.g. option engineMode live)
   at NAME [+M|-M]          stand at a place's center, or M meters north of its edge (+ outside, - inside)
   at LAT LON               stand at a coordinate
   walk NAME [+M|-M] [speed S]   walk there in a straight line from the current spot (default 1.4 m/s)
@@ -146,14 +148,18 @@ def strip_comment(line):
 
 
 def parse(path):
-    places, steps = {}, []
+    places, steps, options = {}, [], {}
     with open(path) as f:
         for n, line in enumerate(f, 1):
             line = strip_comment(line)
             if not line:
                 continue
             cmd, *args = shlex.split(line)
-            if cmd == "place":
+            if cmd == "option":
+                if len(args) != 2:
+                    raise ScenarioError(f"{path}:{n}: option NAME VALUE")
+                options[args[0]] = args[1]
+            elif cmd == "place":
                 if len(args) not in (4, 5) or (len(args) == 5 and args[4] != "inactive"):
                     raise ScenarioError(f"{path}:{n}: place NAME LAT LON RADIUS [inactive]")
                 places[args[0]] = {
@@ -166,7 +172,7 @@ def parse(path):
                 steps.append((n, cmd, args))
     if not places:
         raise ScenarioError(f"{path}: no places")
-    return places, steps
+    return places, steps, options
 
 
 def point(places, args, n):
@@ -193,8 +199,9 @@ def distance(a, b):
 # --- Running ---------------------------------------------------------------------------------
 
 class Runner:
-    def __init__(self, udid, name, places, out):
+    def __init__(self, udid, name, places, out, options=None):
         self.udid, self.name, self.places, self.out = udid, name, places, out
+        self.options = options or {}
         self.by_id = {p["id"]: p["name"] for p in places.values()}
         self.launched = False
         self.restart_next = False
@@ -221,6 +228,8 @@ class Runner:
         if self.here is None:
             raise ScenarioError("Set a location (at …) before launch")
         args = ["-scenario", self.name]
+        for key, value in self.options.items():
+            args += [f"-{key}", value]
         first = not self.launched
         if first:
             now_ref = time.time() - REF_EPOCH
@@ -304,8 +313,9 @@ class Runner:
     def step(self, n, cmd, args):
         if cmd == "at":
             lat, lon, _ = point(self.places, args, n)
-            self.set_location(lat, lon)
+            # Mark first: the app can react before simctl returns, and expects look from the mark.
             self.act()
+            self.set_location(lat, lon)
         elif cmd == "walk":
             lat, lon, rest = point(self.places, args, n)
             speed = float(rest[1]) if len(rest) == 2 and rest[0] == "speed" else 1.4
@@ -399,7 +409,7 @@ class Runner:
         print(f"      {'PASS' if ok else 'FAIL'}  {detail}")
 
 
-def run_scenario(path, udid):
+def run_scenario(path, udid, engine=None):
     name = os.path.splitext(os.path.basename(path))[0]
     out = os.path.join(OUT, name)
     os.makedirs(out, exist_ok=True)
@@ -408,9 +418,11 @@ def run_scenario(path, udid):
     print(f"\n==> {name}")
     error, runner = None, None
     try:
-        places, steps = parse(path)
+        places, steps, options = parse(path)
+        if engine and "engineMode" not in options:
+            options["engineMode"] = engine
         simctl("terminate", udid, BUNDLE, check=False)
-        runner = Runner(udid, name, places, out)
+        runner = Runner(udid, name, places, out, options)
         t0 = time.monotonic()
         for n, cmd, args in steps:
             print(f"  {time.monotonic() - t0:6.1f}s  {cmd} {' '.join(args)}")
@@ -433,7 +445,7 @@ def run_scenario(path, udid):
 
 
 def main(argv):
-    sim, build, names = DEFAULT_SIM, False, []
+    sim, build, names, engine = DEFAULT_SIM, False, [], None
     i = 0
     while i < len(argv):
         a = argv[i]
@@ -441,6 +453,8 @@ def main(argv):
             sim, i = argv[i + 1], i + 1
         elif a == "--build":
             build = True
+        elif a == "--engine":
+            engine, i = argv[i + 1], i + 1
         elif a == "--all":
             folder = os.path.join(HERE, "scenarios")
             names += sorted(os.path.join(folder, f) for f in os.listdir(folder) if f.endswith(".txt"))
@@ -487,7 +501,7 @@ def main(argv):
         return 1
     print(f"Simulator: {sim} ({udid})")
 
-    results = [run_scenario(p, udid) for p in paths]
+    results = [run_scenario(p, udid, engine) for p in paths]
     print(f"\n==> {sum(results)}/{len(results)} scenarios passed")
     return 0 if all(results) else 1
 

@@ -98,6 +98,32 @@ All of this is written and compiles in the paid build (`CODE_SIGNING_ALLOWED=NO`
   - Renaming a place logs no add or remove.
   - With Cove open and unlocked, set Location to Never in Settings and come back: apps lock.
   - Restart the phone, don't unlock it, walk more than 500 m, then unlock: the log shows "Launched before first unlock; waiting for protected data" and the places are all still there.
+- [ ] **New location logic, in shadow mode (built 2026-11-23, not yet on the iPhone).** Cove sometimes stayed blocked at an allowed place. iOS's geofences were the only judge, and they're slow (exits take 100–200 m and minutes), can miss small places indoors, and fire nothing when a place's 24 h wait ends while you're already there. The new engine decides from Cove's own fixes, in both directions, so a later pass can't undo an unblock on older evidence. iOS's geofences, approach rings, ~500 m moves and visits only wake it up, and serve as a fallback.
+  - Rules (pure, tested): `Models/PresenceRules.swift` and `Models/TrackingPolicy.swift`.
+    - **Unblock:** one fix with its center and accuracy circle inside, or two fixes 5 s apart with their centers inside.
+    - **Block:** two GPS-grade fixes (±30 m or better) at least 10 s apart, clearly past the edge, at a believable speed. An indoor Wi-Fi fix can't block on its own.
+    - **iOS's events:** they apply unless they're older than the last change, or a fix from within a minute says otherwise.
+  - Tracking (Balanced):
+    - Nothing far from your places.
+    - Coarse within 1 km.
+    - Best accuracy near an edge.
+    - Inside a place, cheap fixes with a 25 m filter. Moving, a fix near the edge (40 m for a 100 m place) or iOS's exit starts a best-accuracy burst, which ends when you're still or after 2 min. So a small place doesn't keep GPS on.
+    - Opening Cove, a launch, a ring or a visit runs a 20 s best-accuracy check.
+  - Approach rings (radius + 1 km) use the conditions the places leave free. That's 10 rings with 10 places and none with 20; rotating them is for later.
+  - `Location/LocationEngine.swift` runs it. Debug › Location engine switches between shadow (the current logic decides, and the engine records what it would do) and the new engine, shows each place's state and exports the trace (`Location/TraceRecorder.swift`, Debug builds only). Launch arguments: `-engineMode live|shadow`, and `-geofenceReading outside` to hide iOS's place readings from both.
+  - **Simulator (2026-11-23):**
+    - 9 scenarios pass with the current logic deciding and with the new engine deciding: the 6 old ones, plus `edge-jitter`, `fast-exit` and `engine-own-fixes`.
+    - With iOS's readings pinned to outside, the engine alone unblocked 2 m inside the edge and blocked 23 s after leaving.
+    - `fast-exit` blocked about 63 m past the edge. iOS's geofence needed about 237 m in `walk-out`.
+    - Two bugs were found and fixed on the way: the engine stayed dormant until it got a first fix, and a fix ±5 m wide counted as inside while 19 m past the edge.
+  - Battery: shadow mode tracks for real, so expect more battery use near places during the test.
+  - **Next, on the iPhone:** 2–3 days of normal use in shadow mode, noting real arrival and departure times. Then export the trace and compare. Check:
+    - Unblock and block times.
+    - Bad fixes indoors.
+    - Bursts at your smallest place.
+    - Battery.
+    - Whether tracking starts from a background wake, and whether a blue pill shows.
+  - Then tune the thresholds with replay tests and switch to the new engine.
 - [ ] Fix the place-search spinner (Known issues). The spinner now stops when the "slow connection" message shows (2026-11-12). The cause is still unconfirmed.
 
 ### Phase 3: Make it shippable to strangers (about 3–4 days)

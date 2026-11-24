@@ -78,4 +78,41 @@ struct GeofenceKeysTests {
         let after = current.filter { !plan.remove.contains($0) } + plan.add.map(key)
         #expect(GeofenceKeys.diff(current: after, places: places, max: max).isEmpty)
     }
+
+    // MARK: Approach rings
+
+    func ring(_ place: Place) -> String { GeofenceKeys.ringKey(for: place) }
+
+    @Test func ringsUseOnlyTheConditionsPlacesLeave() {
+        let many = (0..<25).map { Place(name: "P\($0)", latitude: 47 + Double($0) / 100, longitude: -122, radius: 100) }
+        #expect(GeofenceKeys.ringed(Array(many.prefix(2)), max: max).count == 2)
+        #expect(GeofenceKeys.ringed(Array(many.prefix(10)), max: max).count == 10)
+        #expect(GeofenceKeys.ringed(Array(many.prefix(15)), max: max).count == 5)
+        #expect(GeofenceKeys.ringed(many, max: max).isEmpty)
+    }
+
+    @Test func diffAddsRingsAndThenLeavesThemAlone() {
+        let plan = GeofenceKeys.diff(current: [key(gym), key(home)], places: [gym, home], max: max, rings: true)
+        #expect(plan.remove.isEmpty && plan.add.isEmpty)
+        #expect(plan.addRings == [gym, home])
+        let after = [key(gym), key(home), ring(gym), ring(home)]
+        #expect(GeofenceKeys.diff(current: after, places: [gym, home], max: max, rings: true).isEmpty)
+    }
+
+    @Test func diffDropsTheRingOfADeletedPlace() {
+        let plan = GeofenceKeys.diff(current: [key(gym), key(home), ring(gym), ring(home)], places: [gym], max: max, rings: true)
+        #expect(Set(plan.remove) == [key(home), ring(home)])
+    }
+
+    @Test func withoutRingsTheDiffRemovesThem() {
+        let plan = GeofenceKeys.diff(current: [key(gym), ring(gym)], places: [gym], max: max)
+        #expect(plan.remove == [ring(gym)])
+    }
+
+    @Test func ringsAndCirclesNameTheirPlace() {
+        #expect(GeofenceKeys.placeID(from: key(gym)) == gym.id)
+        #expect(GeofenceKeys.placeID(from: ring(gym)) == gym.id)
+        #expect(GeofenceKeys.isRing(ring(gym)) && !GeofenceKeys.isRing(key(gym)))
+        #expect(GeofenceKeys.placeID(from: "nonsense") == nil)
+    }
 }

@@ -1,0 +1,18 @@
+# Fixes hopping back and forth across the edge don't flip the lock (new engine deciding).
+option engineMode live
+place Gym 37.7694 -122.4862 100
+
+at Gym
+launch
+expect unlock Gym
+at Gym +10
+wait 4
+at Gym -10
+wait 4
+at Gym +15
+wait 4
+at Gym -5
+wait 4
+at Gym +10
+expect-no lock for 30
+expect unlocked Gym

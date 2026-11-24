@@ -56,6 +56,7 @@ struct PlaceLockApp: App {
         }
         .onChange(of: scenePhase) { _, phase in
             if phase == .active {
+                AppModel.shared.cameToFront()
                 Task {
                     await AppModel.shared.clearOldNotices(all: true) // the app shows the same thing
                     await AppModel.shared.reconcile()

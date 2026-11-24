@@ -5,7 +5,7 @@ import Foundation
 // `AppModel` gathers the inputs and applies the results. Unit tests call these directly.
 
 /// What iOS (or the location simulator) says about one place.
-enum Presence: Equatable {
+enum Presence: String, Codable, Equatable {
     case inside, outside, unknown
 }
 
@@ -77,22 +77,51 @@ enum GeofenceKeys {
         return Array(places.filter { seen.insert($0.id).inserted }.prefix(max))
     }
 
+    // MARK: Approach rings
+
+    /// A wider circle around a place (`ringExtra` past its edge). Entering it wakes Cove so it
+    /// can start tracking before you reach the place. Rings never decide inside or outside.
+    static let ringExtra = 1_000.0
+    static let ringPrefix = "ring:"
+
+    static func ringKey(for place: Place) -> String { ringPrefix + key(for: place) }
+
+    static func isRing(_ identifier: String) -> Bool { identifier.hasPrefix(ringPrefix) }
+
+    /// The place a circle or ring belongs to.
+    static func placeID(from identifier: String) -> UUID? {
+        let bare = isRing(identifier) ? String(identifier.dropFirst(ringPrefix.count)) : identifier
+        return UUID(uuidString: String(bare.prefix(36)))
+    }
+
+    /// Places that get a ring: place circles come first, so rings use only what's left of the
+    /// `max` conditions iOS allows (10 rings with 10 places, none with 20).
+    static func ringed(_ places: [Place], max: Int) -> [Place] {
+        let watched = watched(places, max: max)
+        return Array(watched.prefix(Swift.max(0, max - watched.count)))
+    }
+
     struct Plan: Equatable {
         /// Identifiers to stop watching: deleted, moved or resized places, and old-style ids.
         var remove: [String]
         /// Places to start watching, each under `key(for:)`.
         var add: [Place]
+        /// Places whose approach ring to start watching, each under `ringKey(for:)`.
+        var addRings: [Place] = []
 
-        var isEmpty: Bool { remove.isEmpty && add.isEmpty }
+        var isEmpty: Bool { remove.isEmpty && add.isEmpty && addRings.isEmpty }
     }
 
-    /// What to remove and add so iOS watches exactly `watched(places, max:)`.
-    static func diff(current: [String], places: [Place], max: Int) -> Plan {
+    /// What to remove and add so iOS watches exactly `watched(places, max:)`, plus, with `rings`,
+    /// the approach rings of `ringed(places, max:)`.
+    static func diff(current: [String], places: [Place], max: Int, rings: Bool = false) -> Plan {
         let wanted = watched(places, max: max)
-        let wantedKeys = Set(wanted.map(key(for:)))
+        let ringPlaces = rings ? ringed(places, max: max) : []
+        let wantedKeys = Set(wanted.map(key(for:)) + ringPlaces.map(ringKey(for:)))
         let have = Set(current)
         return Plan(remove: current.filter { !wantedKeys.contains($0) },
-                    add: wanted.filter { !have.contains(key(for: $0)) })
+                    add: wanted.filter { !have.contains(key(for: $0)) },
+                    addRings: ringPlaces.filter { !have.contains(ringKey(for: $0)) })
     }
 }
 

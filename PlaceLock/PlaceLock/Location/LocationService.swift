@@ -142,8 +142,9 @@ final class LocationService: NSObject, ObservableObject, CLLocationManagerDelega
         return try await withThrowingTaskGroup(of: CLLocation?.self) { group in
             group.addTask {
                 for try await update in CLLocationUpdate.liveUpdates() {
+                    // Skip a cached fix: Core Location may hand out an old one first.
                     if let loc = update.location, loc.horizontalAccuracy >= 0,
-                       loc.horizontalAccuracy <= maxAccuracy {
+                       loc.horizontalAccuracy <= maxAccuracy, -loc.timestamp.timeIntervalSinceNow <= 15 {
                         return loc
                     }
                 }

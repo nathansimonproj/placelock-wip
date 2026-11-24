@@ -11,6 +11,7 @@ struct DebugView: View {
 
     var body: some View {
         List {
+            engineSection
             simulate
             #if !SCREEN_TIME
             testMode
@@ -28,6 +29,44 @@ struct DebugView: View {
             Text("You're unlocked at \(model.activePlace?.name ?? "an allowed place").")
         }
         #endif
+    }
+
+    // MARK: Location engine (shadow mode)
+
+    @State private var engineMode = AppModel.shared.engine.mode
+    @State private var traceCleared = false
+
+    private var engineSection: some View {
+        Section {
+            Picker("Decides", selection: $engineMode) {
+                Text("Current (engine in shadow)").tag(LocationEngine.Mode.shadow)
+                Text("New engine").tag(LocationEngine.Mode.live)
+            }
+            .onChange(of: engineMode) { _, mode in model.engine.mode = mode }
+            TimelineView(.periodic(from: .now, by: 2)) { _ in
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Tracking: \(model.engine.tracking.rawValue)")
+                    ForEach(model.places) { place in
+                        let state = model.engine.state(for: place)
+                        Text("\(place.name): \(state?.presence.rawValue ?? "unknown")\(state?.reason.map { " (\($0.rawValue))" } ?? "")")
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .font(.footnote.monospaced())
+            }
+            ShareLink(item: Trace.url) {
+                Label("Export location trace (\(traceCleared ? "0 bytes" : Trace.sizeDescription))", systemImage: "square.and.arrow.up")
+            }
+            Button("Clear location trace", systemImage: "trash", role: .destructive) {
+                Trace.clear()
+                traceCleared = true
+            }
+        } header: {
+            Text("Location engine")
+        } footer: {
+            Text("In shadow, the new engine tracks and records what it would do, and the current logic still blocks and unblocks. The trace stays on this phone unless you share it.")
+        }
+        .calmRows()
     }
 
     // MARK: Simulate location
