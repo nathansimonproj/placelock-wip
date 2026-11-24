@@ -404,6 +404,7 @@ final class AppModel: ObservableObject {
             let moved = UnlockSession(placeID: to, startedAt: .now)
             session = moved
             SyncEngine.shared.sessionStarted(moved)
+            Trace.decision(engine.mode == .live ? "live" : "current", "move", place: places.first { $0.id == to })
             Log.app.notice("Moved session from \(from.uuidString, privacy: .public) to \(to.uuidString, privacy: .public)")
         case .lock(let reason):
             // LockRules locks a running session for one of three reasons; name it for history.

@@ -18,7 +18,8 @@ screenshots) goes to build/scenarios/<name>/.
 
 Scenario file, one step per line (# starts a comment):
 
-  place NAME LAT LON RADIUS [inactive]   a saved place; "inactive" = still waiting out its 24 h
+  place NAME LAT LON RADIUS [inactive [SECONDS]]   a saved place; "inactive" = still waiting out its
+                           24 h, or SECONDS from the first launch
   option NAME VALUE        pass -NAME VALUE on every launch (e.g. option engineMode live)
   at NAME [+M|-M]          stand at a place's center, or M meters north of its edge (+ outside, - inside)
   at LAT LON               stand at a coordinate
@@ -160,14 +161,15 @@ def parse(path):
                     raise ScenarioError(f"{path}:{n}: option NAME VALUE")
                 options[args[0]] = args[1]
             elif cmd == "place":
-                if len(args) not in (4, 5) or (len(args) == 5 and args[4] != "inactive"):
-                    raise ScenarioError(f"{path}:{n}: place NAME LAT LON RADIUS [inactive]")
+                if len(args) not in (4, 5, 6) or (len(args) >= 5 and args[4] != "inactive"):
+                    raise ScenarioError(f"{path}:{n}: place NAME LAT LON RADIUS [inactive [SECONDS]]")
                 places[args[0]] = {
                     # New IDs every run: iOS keeps a geofence's last reading per ID, so reusing
                     # one carries "inside" over from the previous scenario (seen 2026-11-22).
                     "id": str(uuid.uuid4()).upper(),
                     "name": args[0], "latitude": float(args[1]), "longitude": float(args[2]),
-                    "radius": float(args[3]), "inactive": len(args) == 5}
+                    "radius": float(args[3]),
+                    "inactive": (float(args[5]) if len(args) == 6 else 24 * 3600) if len(args) >= 5 else None}
             else:
                 steps.append((n, cmd, args))
     if not places:
@@ -237,7 +239,7 @@ class Runner:
             for p in self.places.values():
                 entry = {k: p[k] for k in ("id", "name", "latitude", "longitude", "radius")}
                 if p["inactive"]:
-                    entry["activeAfter"] = now_ref + 24 * 3600
+                    entry["activeAfter"] = now_ref + p["inactive"]
                 fixture.append(entry)
             args += ["-scenarioPlaces", base64.b64encode(json.dumps(fixture).encode()).decode()]
         # iOS may have relaunched the app in the background for a geofence event (a leftover

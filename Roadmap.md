@@ -124,6 +124,25 @@ All of this is written and compiles in the paid build (`CODE_SIGNING_ALLOWED=NO`
     - Battery.
     - Whether tracking starts from a background wake, and whether a blue pill shows.
   - Then tune the thresholds with replay tests and switch to the new engine.
+  - **Trace tools and replay (2026-11-23, evening):**
+    - The trace now also records every place's circle, the place ID with each decision, the current logic's moves between places, and a heartbeat while Cove is awake in the background (at most once a minute).
+    - `scripts/trace-report.py TRACE [--truth NOTES] [--since …] [--until …]` summarizes a trace:
+      - The engine's unblock and block times against the current logic, and against your notes.
+      - Time in each tracking mode, bursts per hour inside a place, and whether tracking started from the background.
+      - Fix accuracy, and GPS-grade fixes clearly outside a place the engine had you inside.
+      - Battery drain per hour by mode.
+    - `scripts/trace-fixture.py` turns a trace into a replay fixture for `PlaceLockTests/Traces/`. It moves every coordinate to Golden Gate Park, renames places "Place 1", "Place 2" and so on, makes times relative, and adds truth from your notes (or, for Simulator traces, from the fixes).
+    - `TraceReplayTests` replays every fixture through `PresenceRules`. Each arrival must unblock within 60 s and each departure block within 2 min, with no block while inside and no unblock while outside.
+    - It also runs a made-up 3-hour indoor stay with Wi-Fi noise, fixes kilometers off and GPS by a window, at a 100 m and a 50 m place, over 20 seeds. All pass. The first fixture is a Simulator walk-out.
+    - The scenario runner takes `inactive SECONDS` for a short wait.
+    - Fixed:
+      - A stale fix handed over by a movement wake (33 min old in the Simulator) counted as "you just moved".
+      - The engine saved its state on every fix (once a second during a burst). It now saves on a change of presence, otherwise at most every 30 s.
+      - The trace cap went from 8 MB to 64 MB, so a 3-day test isn't trimmed. The file stays open between writes.
+  - **Found 2026-11-23: inside mode doesn't keep Cove running in the background (Simulator).** With ~100 m accuracy and a 25 m filter, iOS suspended Cove within seconds: no heartbeat in 3+ minutes. A best-accuracy burst kept it running. Leaving still works: moving 25 m delivers a fix, which wakes Cove and starts a burst, and iOS's exit and the ~500 m moves are backups. But **a place whose 24 h wait ends while you're already inside still isn't unblocked until something wakes Cove**, the same as with the current logic. A test with a 75 s wait passed only when Cove happened to be in a burst, so it's kept out of the scenario suite. This may be the "stayed blocked at an allowed place" seen on the iPhone (add Home at home, and be home again 24 h later). The heartbeat will show whether the iPhone behaves like the Simulator. Options, not built (your call):
+    - A background refresh (`BGAppRefreshTask`) scheduled for when the wait ends. iOS runs it when it likes, usually within minutes for an app you use often. It needs the "fetch" background mode, which App Review sees.
+    - Change the "now on your allowlist" notification to say "If you're there, open Cove to unblock", and reconcile when it's tapped.
+    - Both.
 - [ ] Fix the place-search spinner (Known issues). The spinner now stops when the "slow connection" message shows (2026-11-12). The cause is still unconfirmed.
 
 ### Phase 3: Make it shippable to strangers (about 3–4 days)

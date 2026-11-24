@@ -6,7 +6,7 @@ In shadow mode the current logic still blocks and unblocks. The new engine track
 
 ## Before day 1 (about 10 minutes)
 
-1. **Install a Debug build from Xcode.** The recorder only exists in Debug builds. TestFlight and Release builds record nothing.
+1. **Install a Debug build from Xcode, from 2026-11-23 evening or later.** The recorder only exists in Debug builds. TestFlight and Release builds record nothing. The build installed on 2026-11-23 at about 19:20 doesn't record your places or the background heartbeat, and the report needs both, so reinstall if that's the one you have.
    - In `PlaceLock/`, run `xcodegen generate --spec project-paid.yml`.
    - Open `PlaceLock.xcodeproj`, pick your iPhone and run. The app keeps working after you unplug.
 2. **Check permissions.** Settings › Cove › Location: Always, with Precise Location on.
@@ -14,7 +14,12 @@ In shadow mode the current logic still blocks and unblocks. The new engine track
    - Check that "Decides" says **Current (engine in shadow)**.
    - Tap **Clear location trace**.
 4. **Note the battery.** Settings › Battery: Cove's share of the last 24 hours.
-5. **Start a note** for times, using the log below.
+5. **Start a note** for times. Write each arrival and departure as its own line, like this, so `scripts/trace-report.py --truth` can read it:
+   ```
+   2026-11-24 17:10 Gym arrive
+   2026-11-24 18:25 Gym leave
+   ```
+   Use the place's name as it appears in Cove. Anything else (whether apps unblocked, Cove closed or force-quit) can go in the log table below.
 
 ## Every day
 
@@ -32,6 +37,7 @@ In shadow mode the current logic still blocks and unblocks. The new engine track
 - **Force-quit, then arrive:** swipe Cove up in the app switcher, then walk into a place. Note whether apps unblock, and when.
 - **Your smallest place:** stay a while and move around inside. This shows whether walking around starts too many GPS bursts.
 - **Low Power Mode:** turn it on for part of one day. Note whether arriving and leaving still work, and how late.
+- **A place whose 24 h wait ends while you're there** (if it comes up, say you add a place at home): note when the wait ends, and whether apps unblocked without opening Cove. This is a known weak spot (see Roadmap.md, 2026-11-23). The trace's background heartbeat will show whether Cove was awake at that moment.
 
 ## Log
 

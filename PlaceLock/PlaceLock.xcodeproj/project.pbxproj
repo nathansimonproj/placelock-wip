@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		0F554471DD25FFB93BCD67B0 /* GeofenceKeysTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23D9164E8462A6B598013E6F /* GeofenceKeysTests.swift */; };
 		1856E7311F2A4112319A5CBE /* PresenceRulesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4F1BD168DC6DBC72319CC91 /* PresenceRulesTests.swift */; };
+		1CBBCEA7339E53B0DCEEF90C /* simulator-fast-exit.jsonl in Resources */ = {isa = PBXBuildFile; fileRef = DE55ABD481585DBF5A6F4212 /* simulator-fast-exit.jsonl */; };
 		1CD9A4CFD47812FBD86875B9 /* SyncRecords.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12C3158076D6AC19C3ADC719 /* SyncRecords.swift */; };
 		1EFD4877BD0067223D2F31F5 /* AboutRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FCB932DA3017B792A8C6FA8 /* AboutRules.swift */; };
 		1FF550F0C17DC28A7D1CD4D9 /* PlaceLockApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F59A484B78A348C5262E7870 /* PlaceLockApp.swift */; };
@@ -39,6 +40,7 @@
 		88FF662A430BDF12D22A8574 /* RulesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79A33188D87631FAFE8F0BB4 /* RulesView.swift */; };
 		97E8FF93D4E72335FD8AF7B1 /* TraceRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A629984130BAF9A823D84B9 /* TraceRecorder.swift */; };
 		A7E918B024542DA7E905CDE6 /* Log.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1A758279946CD369E3E785D /* Log.swift */; };
+		A9462E056BCDA726983E9E55 /* TraceReplayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 777EDE95104D8B7B6142BF27 /* TraceReplayTests.swift */; };
 		A99140E7BA3244546725BE50 /* LocationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BB4FF5F9AC07525CD9DB78A /* LocationService.swift */; };
 		ABB57E998D3642FF343F184E /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 66C4D3934EB0622241E048E9 /* PrivacyInfo.xcprivacy */; };
 		ABCED47A3AAD75F2D0C479B3 /* PermissionRulesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDECA7D442F8F28BBA5DDA38 /* PermissionRulesTests.swift */; };
@@ -107,6 +109,7 @@
 		66C4D3934EB0622241E048E9 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		6E62CA27720DE486B022456D /* Place.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Place.swift; sourceTree = "<group>"; };
 		715077721C039440761D2ABB /* SpokenRulesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpokenRulesTests.swift; sourceTree = "<group>"; };
+		777EDE95104D8B7B6142BF27 /* TraceReplayTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TraceReplayTests.swift; sourceTree = "<group>"; };
 		79A33188D87631FAFE8F0BB4 /* RulesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RulesView.swift; sourceTree = "<group>"; };
 		7CAF9493EEA45E820E20FF7B /* SyncEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncEngine.swift; sourceTree = "<group>"; };
 		84BCCF8FECCE10B619F2CF08 /* SyncBackend.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncBackend.swift; sourceTree = "<group>"; };
@@ -130,6 +133,7 @@
 		CC2205ACC9F22D561AD5A326 /* Storage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Storage.swift; sourceTree = "<group>"; };
 		DB733067CFB69085810F8572 /* PlaceSearchRulesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaceSearchRulesTests.swift; sourceTree = "<group>"; };
 		DDECA7D442F8F28BBA5DDA38 /* PermissionRulesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionRulesTests.swift; sourceTree = "<group>"; };
+		DE55ABD481585DBF5A6F4212 /* simulator-fast-exit.jsonl */ = {isa = PBXFileReference; path = "simulator-fast-exit.jsonl"; sourceTree = "<group>"; };
 		E1779E7DF2B48787081442EA /* GeofenceMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeofenceMonitor.swift; sourceTree = "<group>"; };
 		EF53E2F264303957289C9D30 /* SavedData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedData.swift; sourceTree = "<group>"; };
 		F59A484B78A348C5262E7870 /* PlaceLockApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaceLockApp.swift; sourceTree = "<group>"; };
@@ -149,6 +153,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		1FF4CBCEB60BEE0430385F48 /* Traces */ = {
+			isa = PBXGroup;
+			children = (
+				DE55ABD481585DBF5A6F4212 /* simulator-fast-exit.jsonl */,
+			);
+			path = Traces;
+			sourceTree = "<group>";
+		};
 		46E4F1BF106330744280CE09 /* Sync */ = {
 			isa = PBXGroup;
 			children = (
@@ -194,7 +206,9 @@
 				715077721C039440761D2ABB /* SpokenRulesTests.swift */,
 				02D01B76D7B72477A1CB4908 /* SyncEngineTests.swift */,
 				AF41772D465AFA76B4DD0F62 /* SyncRulesTests.swift */,
+				777EDE95104D8B7B6142BF27 /* TraceReplayTests.swift */,
 				AC92638547C2BFE6498EBA38 /* TrackingPolicyTests.swift */,
+				1FF4CBCEB60BEE0430385F48 /* Traces */,
 			);
 			path = PlaceLockTests;
 			sourceTree = "<group>";
@@ -302,6 +316,7 @@
 			buildConfigurationList = A4A4A04DEA316CDACF470827 /* Build configuration list for PBXNativeTarget "PlaceLockTests" */;
 			buildPhases = (
 				DD72DA6CBBF8824A9847DE1B /* Sources */,
+				5B6EEE15ED93F60518E6915F /* Resources */,
 			);
 			buildRules = (
 			);
@@ -387,6 +402,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		5B6EEE15ED93F60518E6915F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1CBBCEA7339E53B0DCEEF90C /* simulator-fast-exit.jsonl in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -453,6 +476,7 @@
 				55AE9EEB3DACFE6A31FF4EC6 /* SpokenRulesTests.swift in Sources */,
 				443AFBC3553E2DA5961B5B35 /* SyncEngineTests.swift in Sources */,
 				D903CB3682F9B462AF4763B9 /* SyncRulesTests.swift in Sources */,
+				A9462E056BCDA726983E9E55 /* TraceReplayTests.swift in Sources */,
 				C6309D5D3EAAB7ADBCED4FB5 /* TrackingPolicyTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

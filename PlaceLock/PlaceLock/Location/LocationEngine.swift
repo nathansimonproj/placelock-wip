@@ -86,6 +86,7 @@ final class LocationEngine: NSObject, CLLocationManagerDelegate {
     }
 
     func placesChanged(_ newPlaces: [Place]) {
+        if newPlaces != places { Trace.places(newPlaces) }
         places = newPlaces
         let keys = Set(newPlaces.map(GeofenceKeys.key(for:)))
         let before = states.count
@@ -159,8 +160,10 @@ final class LocationEngine: NSObject, CLLocationManagerDelegate {
         let fix = Fix(location)
         Trace.fix(fix, source: source)
         if lastLocation.map({ location.timestamp >= $0.timestamp }) ?? true { lastLocation = location }
-        let resumed = lastDelivered.map { Date.now.timeIntervalSince($0) >= Self.stationaryAfter } ?? true
-        lastDelivered = .now
+        // Only a fresh fix says you're moving now (a movement wake can hand over one from long ago).
+        let fresh = Date.now.timeIntervalSince(location.timestamp) <= PresenceRules.maxFixAge
+        let resumed = fresh && (lastDelivered.map { Date.now.timeIntervalSince($0) >= Self.stationaryAfter } ?? true)
+        if fresh { lastDelivered = .now }
         apply(.fix(fix), now: .now)
         updatePolicy(resumed: resumed && source == "tracking", speed: fix.speed)
     }
@@ -175,13 +178,19 @@ final class LocationEngine: NSObject, CLLocationManagerDelegate {
             states[key] = new
             if new.presence != old.presence {
                 changed = true
+                dirty = true
                 Trace.presence(place, new)
                 Log.app.notice("Engine: \(place.name, privacy: .private) \(new.presence.rawValue, privacy: .public) (\(new.reason?.rawValue ?? "", privacy: .public))")
             }
         }
-        save()
+        // A burst brings a fix a second: save presence changes at once, the rest (pairs waiting
+        // for their second fix) at most every 30 s.
+        if dirty || Date.now.timeIntervalSince(lastSave) >= 30 { save() }
         if changed { onChange?() }
     }
+
+    private var dirty = false
+    private var lastSave = Date.distantPast
 
     /// Picks the tracking mode and applies it to Core Location.
     private func updatePolicy(resumed: Bool = false, speed: Double = -1) {
@@ -258,10 +267,21 @@ final class LocationEngine: NSObject, CLLocationManagerDelegate {
         timer = Task { [weak self] in
             while !Task.isCancelled {
                 try? await Task.sleep(for: .seconds(20))
-                guard !Task.isCancelled else { return }
-                self?.updatePolicy()
+                guard !Task.isCancelled, let self else { return }
+                self.heartbeat()
+                self.updatePolicy()
             }
         }
+    }
+
+    private var lastHeartbeat = Date.distantPast
+
+    /// Shows in the trace whether iOS keeps Cove running in the background while it tracks
+    /// (at most once a minute). Gaps mean iOS suspended it.
+    private func heartbeat() {
+        guard UIApplication.shared.applicationState != .active, Date.now.timeIntervalSince(lastHeartbeat) >= 60 else { return }
+        lastHeartbeat = .now
+        Trace.note("alive in background (\(tracking.rawValue))")
     }
 
     private func endCheck() {
@@ -274,6 +294,8 @@ final class LocationEngine: NSObject, CLLocationManagerDelegate {
 
     private func save() {
         if let data = try? JSONEncoder().encode(states) { Storage.defaults.set(data, forKey: Keys.states) }
+        dirty = false
+        lastSave = .now
     }
 
     // MARK: CLLocationManagerDelegate

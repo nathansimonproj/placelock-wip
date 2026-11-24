@@ -15,14 +15,28 @@ enum Trace {
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         return dir.appendingPathComponent("location-trace.jsonl")
     }()
-    /// Past this, the oldest half is dropped.
-    private static let maxBytes = 8_000_000
+    /// Past this, the oldest half is dropped. Bursts log a fix a second, so a busy day can be
+    /// ~10 MB; this keeps a 3-day test whole.
+    private static let maxBytes = 64_000_000
+    private static var handle: FileHandle?
+    private static var writes = 0
     private static var lastBattery: Float = -2
     #endif
 
     static func fix(_ fix: Fix, source: String) {
         record("fix", ["source": source, "lat": fix.latitude, "lon": fix.longitude, "acc": fix.accuracy,
                        "speed": fix.speed, "fixAt": fix.at.timeIntervalSince1970])
+    }
+
+    /// Every place's circle, so a trace can be replayed and measured on its own. Logged when the
+    /// engine starts and whenever places change.
+    static func places(_ places: [Place]) {
+        record("places", ["places": places.map { p -> [String: Any] in
+            var entry: [String: Any] = ["id": p.id.uuidString, "name": p.name, "lat": p.latitude, "lon": p.longitude,
+                                        "radius": p.radius]
+            if let after = p.activeAfter { entry["activeAfter"] = after.timeIntervalSince1970 }
+            return entry
+        }])
     }
 
     static func geofence(_ event: GeofenceMonitor.Event) {
@@ -46,7 +60,8 @@ enum Trace {
 
     /// `engine` is "shadow" (what the new engine would do) or "current" (what Cove did).
     static func decision(_ engine: String, _ what: String, place: Place? = nil) {
-        record("decision", ["engine": engine, "what": what, "place": place?.name ?? ""])
+        record("decision", ["engine": engine, "what": what, "place": place?.name ?? "",
+                            "placeID": place?.id.uuidString ?? ""])
     }
 
     static func note(_ text: String) {
@@ -76,12 +91,23 @@ enum Trace {
     #if DEBUG
     private static func append(_ data: Data) {
         let fm = FileManager.default
-        if !fm.fileExists(atPath: url.path) { fm.createFile(atPath: url.path, contents: nil) }
-        if let size = (try? fm.attributesOfItem(atPath: url.path)[.size] as? Int), size > maxBytes { trim() }
-        guard let handle = try? FileHandle(forWritingTo: url) else { return }
-        defer { try? handle.close() }
-        _ = try? handle.seekToEnd()
+        writes += 1
+        if writes % 500 == 1, let size = (try? fm.attributesOfItem(atPath: url.path)[.size] as? Int), size > maxBytes {
+            close()
+            trim()
+        }
+        if handle == nil {
+            if !fm.fileExists(atPath: url.path) { fm.createFile(atPath: url.path, contents: nil) }
+            handle = try? FileHandle(forWritingTo: url)
+        }
+        guard let handle else { return }
+        _ = try? handle.seekToEnd() // the file may have been cleared or trimmed
         try? handle.write(contentsOf: data)
+    }
+
+    private static func close() {
+        try? handle?.close()
+        handle = nil
     }
 
     /// Keeps the newer half, cut at a line break.
@@ -93,6 +119,7 @@ enum Trace {
     }
 
     static func clear() {
+        close()
         try? FileManager.default.removeItem(at: url)
     }
 
